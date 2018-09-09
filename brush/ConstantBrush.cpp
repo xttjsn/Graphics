@@ -30,7 +30,7 @@ void ConstantBrush::makeMask() {
     // So, for radius = rad, the maximum value for i is (considering a circular brush) rad
     m_mask.reserve(this->getRadius()+1);
     std::fill(m_mask.begin(), m_mask.end(), 0.);       // Use -O3 to speed up std::fill
-    for (int i = 0; i < this->getRadius(); i++) {
+    for (int i = 0; i < this->getRadius()+1; i++) {
         m_mask[i] = 1.;    // All mask values are 1.
     }
 }
