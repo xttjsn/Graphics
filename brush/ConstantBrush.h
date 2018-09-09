@@ -2,6 +2,7 @@
 #define ConstantBrush_Header
 
 #include "Brush.h"
+#include "SimpleBrushPainter.h"
 
 /**
  * @class ConstantBrush
@@ -21,8 +22,9 @@ public:
     virtual void brushUp(int x, int y, Canvas2D *canvas);
 
 protected:
-    void makeMask(); // Constructs the mask for this brush.
-    void paintHere(int x, int y, Canvas2D *canvas);
+    void makeMask(); // Constructs the mask for this brush
+
+    std::unique_ptr<SimpleBrushPainter> m_painter;
 };
 
 #endif

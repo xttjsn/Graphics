@@ -2,7 +2,7 @@
 #define QuadraticBrush_Header
 
 #include "Brush.h"
-
+#include "SimpleBrushPainter.h"
 
 /**
  * @class QuadraticBrush
@@ -22,6 +22,8 @@ public:
 
 protected:
     void makeMask(); // Constructs the mask for this brush.
+
+    std::unique_ptr<SimpleBrushPainter> m_painter;
 };
 
 #endif

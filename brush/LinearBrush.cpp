@@ -13,7 +13,7 @@
 #include "glm.hpp"
 
 LinearBrush::LinearBrush(BGRA color, int radius)
-    : Brush(color, radius)
+    : Brush(color, radius), m_painter(std::make_unique<SimpleBrushPainter>())
 {
     // @TODO: [BRUSH] You'll probably want to set up the mask right away.
     makeMask();
@@ -37,41 +37,13 @@ void LinearBrush::makeMask() {
 }
 
 void LinearBrush::brushDown(int x, int y, Canvas2D *canvas) {
-    paintHere(x, y, canvas);
+    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
 }
 
 void LinearBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-    paintHere(x, y, canvas);
+    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
 }
 
 void LinearBrush::brushUp(int x, int y, Canvas2D *canvas) {
 
-}
-
-void LinearBrush::paintHere(int x, int y, Canvas2D *canvas) {
-    BGRA *pix = canvas->data();
-
-    int w = canvas->width();
-    int h = canvas->height();
-    int r = getRadius();
-
-    float mask, srcA, dstA, outA;
-
-    for (int row = glm::max(0, y - r); row < glm::min(h, y + r + 1); row++) {
-        for (int col = glm::max(0, x - r); col < glm::min(w, x + r + 1); col++) {
-            int dst = glm::round(glm::sqrt((float)((row - y) * (row - y) + (col - x) * (col - x))));
-            if (dst <= getRadius()) {
-                mask = m_mask[dst];
-                srcA = getAlpha() / 255.;
-                dstA = pix[row * w + col].A() / 255.;
-                outA = srcA * (1. - mask) + dstA * (1. - srcA) * mask;
-                BGRA& p = pix[row * w + col];
-//                qDebug("%d, %d before: (%d, %d, %d, %d)", row, col, p.R(), p.G(), p.B(), p.A());
-                p = pix[row * w + col] * (1. - mask * srcA) + getBGRA() * mask * srcA;
-//                qDebug("%d, %d after: (%d, %d, %d, %d)", row, col, p.R(), p.G(), p.B(), p.A());
-            }
-        }
-    }
-
-    canvas->update();
 }

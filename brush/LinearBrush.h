@@ -3,6 +3,7 @@
 
 
 #include "Brush.h"
+#include "SimpleBrushPainter.h"
 
 /**
  * @class LinearBrush
@@ -23,7 +24,8 @@ public:
 
 protected:
     void makeMask(); // Constructs the mask for this brush.
-    void paintHere(int x, int y, Canvas2D *canvas);
+
+    std::unique_ptr<SimpleBrushPainter> m_painter;
 };
 
 #endif

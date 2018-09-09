@@ -62,7 +62,8 @@ SOURCES += \
     main.cpp \
     glew-1.10.0/src/glew.c \
     brush/SpecialBrush2.cpp \
-    brush/SpecialBrush1.cpp
+    brush/SpecialBrush1.cpp \
+    brush/SimpleBrushPainter.cpp
 
 
 HEADERS += \
@@ -110,7 +111,8 @@ HEADERS += \
     lib/ResourceLoader.h \
     glew-1.10.0/include/GL/glew.h \
     brush/SpecialBrush2.h \
-    brush/SpecialBrush1.h
+    brush/SpecialBrush1.h \
+    brush/SimpleBrushPainter.h
 
 
 FORMS += ui/mainwindow.ui
