@@ -36,11 +36,14 @@ void ConstantBrush::makeMask() {
 }
 
 void ConstantBrush::brushDown(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
+    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas->width(), canvas->height(), canvas->data());
+    canvas->update();
 }
 
 void ConstantBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
+//    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
+    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas->width(), canvas->height(), canvas->data());
+    canvas->update();
 }
 
 void ConstantBrush::brushUp(int x, int y, Canvas2D *canvas) {

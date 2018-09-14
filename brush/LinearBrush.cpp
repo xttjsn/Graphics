@@ -32,7 +32,7 @@ void LinearBrush::makeMask() {
     m_mask.reserve(r+1);
     std::fill(m_mask.begin(), m_mask.end(), 0.f);
     for (int i = 0; i < getRadius()+1; i++) {
-        m_mask[i] = 1. - static_cast<float>(i) / static_cast<float>(r);
+        m_mask[i] = 1.f - static_cast<float>(i) / static_cast<float>(r);
     }
 }
 

@@ -3,7 +3,10 @@
 #include <cmath>
 
 BGRA BGRA::operator+(const BGRA &that) const {
-    return BGRA(this->r + that.r, this->g + that.g, this->b + that.b, this->a + that.a);
+    return BGRA(glm::min(this->r + that.r, 255),
+                glm::min(this->g + that.g, 255),
+                glm::min(this->b + that.b, 255),
+                glm::min(this->a + that.a, 255));
 }
 
 BGRA BGRA::operator-(const BGRA &that) const {
@@ -27,7 +30,10 @@ bool operator!=(const BGRA &c1, const BGRA &c2) {
 }
 
 BGRA BGRA::operator*(const float f) const {
-    return BGRA(std::round(this->r * f), std::round(this->g * f), std::round(this->b * f), std::round(this->a * f));
+    return BGRA(glm::round(static_cast<int>(this->r) * f),
+                glm::round(static_cast<int>(this->g) * f),
+                glm::round(static_cast<int>(this->b) * f),
+                glm::round(static_cast<int>(this->a) * f));
 }
 
 BGRA BGRA::operator /(const float f) const {

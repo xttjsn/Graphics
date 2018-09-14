@@ -11,6 +11,7 @@ public:
 
 protected:
     virtual void paint(std::vector<float>& mask, BGRA bgra, int r, int x, int y, Canvas2D* canvas);
+    virtual void paint(std::vector<float>& mask, BGRA bgra, int r, int x, int y, int w, int h, BGRA* pix);
 
     bool m_useAlphaBlending;
     friend class ConstantBrush;

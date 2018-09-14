@@ -5,7 +5,11 @@
 struct BGRA {
     BGRA() : b(0), g(0), r(0), a(0) {}
     BGRA(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha = 255)
-        : b(blue), g(green), r(red), a(alpha) {}
+        : b(blue), g(green), r(red), a(alpha) {
+        if (red == 0) {
+            int x = 0;
+        }
+    }
 
     // C++ TIP:
     // A union struct. Essentially, this makes b <==> channels[0],
