@@ -13,7 +13,7 @@
 #include "glm.hpp"
 
 LinearBrush::LinearBrush(BGRA color, int radius)
-    : Brush(color, radius), m_painter(std::make_unique<SimpleBrushPainter>())
+    : ConstantBrush(color, radius)
 {
     // @TODO: [BRUSH] You'll probably want to set up the mask right away.
     makeMask();
@@ -29,21 +29,8 @@ void LinearBrush::makeMask() {
     // m_mask[i] = 1.0 * (1 - i / r), where i is the distance between the point and the center, and r is the radius
     // So there are r+1 masks
     int r = getRadius();
-    m_mask.reserve(r+1);
-    std::fill(m_mask.begin(), m_mask.end(), 0.f);
+    m_mask.resize(r + 1);
     for (int i = 0; i < getRadius()+1; i++) {
         m_mask[i] = 1.f - static_cast<float>(i) / static_cast<float>(r);
     }
-}
-
-void LinearBrush::brushDown(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
-}
-
-void LinearBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
-}
-
-void LinearBrush::brushUp(int x, int y, Canvas2D *canvas) {
-
 }

@@ -28,10 +28,9 @@ void ConstantBrush::makeMask() {
 
     // m_mask[i] is the mask value for pixels that are d distances away from the center, where i = round(d)
     // So, for radius = rad, the maximum value for i is (considering a circular brush) rad
-    m_mask.reserve(this->getRadius()+1);
-    std::fill(m_mask.begin(), m_mask.end(), 0.);       // Use -O3 to speed up std::fill
-    for (int i = 0; i < this->getRadius()+1; i++) {
-        m_mask[i] = 1.;    // All mask values are 1.
+    m_mask.resize(getRadius() + 1);
+    for (int i = 0; i < getRadius()+1; i++) {
+        m_mask[i] = 1.f;    // All mask values are 1.
     }
 }
 
@@ -41,7 +40,6 @@ void ConstantBrush::brushDown(int x, int y, Canvas2D *canvas) {
 }
 
 void ConstantBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-//    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
     m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas->width(), canvas->height(), canvas->data());
     canvas->update();
 }

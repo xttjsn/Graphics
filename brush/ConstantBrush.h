@@ -22,7 +22,7 @@ public:
     virtual void brushUp(int x, int y, Canvas2D *canvas);
 
 protected:
-    void makeMask(); // Constructs the mask for this brush
+    virtual void makeMask(); // Constructs the mask for this brush
 
     std::unique_ptr<SimpleBrushPainter> m_painter;
 };
