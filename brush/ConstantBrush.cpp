@@ -36,15 +36,12 @@ void ConstantBrush::makeMask() {
 }
 
 void ConstantBrush::brushDown(int x, int y, Canvas2D *canvas) {
-    qDebug("Brush down at %d, %d.", x, y);
     m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
 }
 
 void ConstantBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-    qDebug("Brush dragged at %d, %d.", x, y);
     m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas);
 }
 
 void ConstantBrush::brushUp(int x, int y, Canvas2D *canvas) {
-    qDebug("Brush up at %d, %d.", x, y);
 }

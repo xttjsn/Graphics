@@ -65,11 +65,13 @@ void Canvas2D::mouseDown(int x, int y) {
     // need to use the actual alpha value to compute the new color of the pixel
 
     //bool fixAlphaBlending = settings.fixAlphaBlending; // for extra/half credit
+    if (x < 0 || y < 0) return;
     m_brush->brushDown(x, y, this);
 }
 
 void Canvas2D::mouseDragged(int x, int y) {
     // qDebug("Mouse Dragged at %d, %d.", x, y);
+    if (x < 0 || y < 0) return;
     m_brush->brushDragged(x, y, this);
 }
 
