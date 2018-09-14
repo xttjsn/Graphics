@@ -9,7 +9,6 @@
  */
 
 // For your convenience, a few headers are included for you.
-#include <assert.h>
 #include <iostream>
 #include <math.h>
 #include <memory>
@@ -30,7 +29,7 @@
 
 Canvas2D::Canvas2D() :
     // @TODO: Initialize any pointers in this class here.
-    m_rayScene(nullptr)
+    m_rayScene(nullptr), m_brush(nullptr)
 {
     set_brush();
 
@@ -65,23 +64,17 @@ void Canvas2D::mouseDown(int x, int y) {
     // You're going to need to leave the alpha value on the canvas itself at 255, but you will
     // need to use the actual alpha value to compute the new color of the pixel
 
-//    bool fixAlphaBlending = settings.fixAlphaBlending; // for extra/half credit
-    qDebug("Mouse down at %d, %d.", x, y);
-    assert(m_brush);
+    //bool fixAlphaBlending = settings.fixAlphaBlending; // for extra/half credit
     m_brush->brushDown(x, y, this);
 }
 
 void Canvas2D::mouseDragged(int x, int y) {
-    // TODO: [BRUSH] Mouse interaction for Brush.
-    qDebug("Mouse Dragged at %d, %d.", x, y);
-    assert(m_brush);
+    // qDebug("Mouse Dragged at %d, %d.", x, y);
     m_brush->brushDragged(x, y, this);
 }
 
 void Canvas2D::mouseUp(int x, int y) {
-    // TODO: [BRUSH] Mouse interaction for Brush.
-    qDebug("Mouse Up at %d, %d.", x, y);
-    assert(m_brush);
+    // qDebug("Mouse Up at %d, %d.", x, y);
     m_brush->brushUp(x, y, this);
 }
 
@@ -125,14 +118,13 @@ void Canvas2D::cancelRender() {
 
 
 void Canvas2D::settingsChanged() {
-    // TODO: Process changes to the application settings.
-    set_brush();  // TODO: only reset brush if brush's type changes, SAVE CYCLES! For now, we just reset it every time.
-
+    set_brush();
 }
 
 void Canvas2D::set_brush() {
     BGRA bgra = settings.brushColor;
     int rad = settings.brushRadius;
+
     switch (settings.brushType) {
         case BRUSH_CONSTANT:
             m_brush = std::make_unique<ConstantBrush>(bgra, rad); break;

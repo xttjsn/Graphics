@@ -2,6 +2,8 @@
 #define SPECIALBRUSH1_H
 
 #include "Brush.h"
+#include "Canvas2D.h"
+#include "LineBrushPainter.h"
 
 /**
  * @class SpecialBrush1
@@ -20,6 +22,13 @@ public:
 
 protected:
     void makeMask();
+    void initVisited(Canvas2D* canvas);
+    void visitHere(int x, int y, Canvas2D* canvas);
+
+    float m_offset = 0.3;
+    std::vector<bool> m_visited;
+    bool m_visited_inited = false;
+    std::unique_ptr<LineBrushPainter> m_painter;
 };
 
 

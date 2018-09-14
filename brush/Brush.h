@@ -48,6 +48,7 @@ protected:
     // C++ coding convention is to put m_ in front of member variables
     BGRA m_color;
     std::vector<float> m_mask;
+    std::vector<float> m_canvas_cache;
     int m_radius;
 
 };

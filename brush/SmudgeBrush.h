@@ -25,6 +25,7 @@ protected:
     //! Copy paint in the bounding box of the brush from canvas to m_paint
     void pickUpPaint(int x, int y, Canvas2D* canvas);
 
+    std::unique_ptr<BGRA[]> m_buffer;
 };
 
 #endif
