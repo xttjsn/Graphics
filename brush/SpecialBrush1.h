@@ -25,7 +25,7 @@ protected:
     void initVisited(Canvas2D* canvas);
     void visitHere(int x, int y, Canvas2D* canvas);
 
-    float m_offset = 0.3;
+    float m_offset = 0.2;
     std::vector<bool> m_visited;
     bool m_visited_inited = false;
     std::unique_ptr<LineBrushPainter> m_painter;
