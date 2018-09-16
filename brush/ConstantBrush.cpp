@@ -12,7 +12,7 @@
 #include "Canvas2D.h"
 
 ConstantBrush::ConstantBrush(BGRA color, int radius)
-    : Brush(color, radius), m_painter(std::make_unique<SimpleBrushPainter>())
+    : Brush(color, radius)
 {
     // @TODO: [BRUSH] You'll probably want to set up the mask right away.
     makeMask();

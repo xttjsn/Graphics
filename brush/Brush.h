@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "BGRA.h"
+#include <memory>
 
 
 class Canvas2D;
