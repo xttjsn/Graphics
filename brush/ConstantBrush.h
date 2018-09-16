@@ -21,9 +21,11 @@ public:
     virtual void brushDragged(int x, int y, Canvas2D *canvas);
     virtual void brushUp(int x, int y, Canvas2D *canvas);
 
+
 protected:
     virtual void makeMask(); // Constructs the mask for this brush
-
+    virtual void paintFixAlpha(int x, int y, Canvas2D* canvas);
+    virtual void paintNormal(int x, int y, Canvas2D* canvas);
     std::unique_ptr<SimpleBrushPainter> m_painter;
 };
 

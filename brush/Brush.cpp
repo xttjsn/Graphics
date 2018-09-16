@@ -20,7 +20,8 @@ static unsigned char lerp(unsigned char a, unsigned char b, float percent) {
 Brush::Brush(BGRA color, int radius) :
     // Pro-tip: Initialize all variables in the initialization list
     m_color(color),
-    m_radius(radius)
+    m_radius(radius),
+    m_pixel_src(nullptr)
 {
     // Pro-tip: By the time you get to the constructor body, all of the
     // member variables have already been initialized.
@@ -85,7 +86,27 @@ void Brush::setRadius(int radius) {
 }
 
 
+void Brush::createNewDrawingLayer(Canvas2D* canvas, bool fixAlphaBlending) {
+    if (fixAlphaBlending) {
+        // Copy canvas to m_canvas_cache
+        int w = canvas->width(), h = canvas->height();
+        BGRA* pix = canvas->data();
+        m_canvas_cache.resize(w * h);
+        m_mask_cache.resize(w * h);
+        for (int i = 0; i < h; ++i) {
+            for (int j = 0; j < w; ++j) {
+                m_canvas_cache[i * w + j] = pix[i * w + j];
+                m_mask_cache[i * w + j] = 0.f;
+            }
+        }
 
+        m_pixel_src = m_canvas_cache.data();
+        m_fix_alpha_blending = true;
+    } else {
+        m_pixel_src = canvas->data();
+        m_fix_alpha_blending = false;
+    }
+}
 
 void Brush::brushDragged(int mouseX, int mouseY, Canvas2D* canvas) {
     // @TODO: [BRUSH] You can do any painting on the canvas here. Or, you can

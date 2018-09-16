@@ -63,7 +63,6 @@ SOURCES += \
     glew-1.10.0/src/glew.c \
     brush/SpecialBrush2.cpp \
     brush/SpecialBrush1.cpp \
-    brush/SimpleBrushPainter.cpp \
     brush/LineBrushPainter.cpp
 
 
@@ -113,7 +112,6 @@ HEADERS += \
     glew-1.10.0/include/GL/glew.h \
     brush/SpecialBrush2.h \
     brush/SpecialBrush1.h \
-    brush/SimpleBrushPainter.h \
     brush/LineBrushPainter.h
 
 

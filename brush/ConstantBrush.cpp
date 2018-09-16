@@ -34,15 +34,65 @@ void ConstantBrush::makeMask() {
     }
 }
 
+
 void ConstantBrush::brushDown(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas->width(), canvas->height(), canvas->data());
+    if (m_fix_alpha_blending)
+        paintFixAlpha(x, y, canvas);
+    else
+        paintNormal(x, y, canvas);
     canvas->update();
 }
 
 void ConstantBrush::brushDragged(int x, int y, Canvas2D *canvas) {
-    m_painter->paint(m_mask, getBGRA(), getRadius(), x, y, canvas->width(), canvas->height(), canvas->data());
+    if (m_fix_alpha_blending)
+        paintFixAlpha(x, y, canvas);
+    else
+        paintNormal(x, y, canvas);
     canvas->update();
 }
 
 void ConstantBrush::brushUp(int x, int y, Canvas2D *canvas) {
+}
+
+void ConstantBrush::paintFixAlpha(int x, int y, Canvas2D* canvas) {
+    int r = getRadius(), w = canvas->width(), h = canvas->height();
+    float mask, prev_mask, srcA;
+
+    BGRA bgra = getBGRA();
+    BGRA* pix = canvas->data();
+
+    for (int row = glm::max(0, y - r); row < glm::min(h, y + r + 1); row++) {
+        for (int col = glm::max(0, x - r); col < glm::min(w, x + r + 1); col++) {
+            int dst = glm::round(glm::sqrt(static_cast<float>((row - y) * (row - y) + (col - x) * (col - x))));
+            if (dst <= r) {
+                mask = m_mask[dst];
+                srcA = bgra.A() / 255.f;
+                prev_mask = m_mask_cache[row * w + col];
+                mask = glm::min(mask + prev_mask, 1.f);
+                pix[row * w + col] = m_pixel_src[row * w + col] * (1.0f - mask * srcA) + bgra * mask * srcA;
+                m_mask_cache[row * w + col] = mask;
+            }
+        }
+    }
+}
+
+void ConstantBrush::paintNormal(int x, int y, Canvas2D* canvas) {
+    int r = getRadius(), w = canvas->width(), h = canvas->height();
+    float mask, srcA;
+
+    BGRA bgra = getBGRA();
+    BGRA* pix = canvas->data();
+
+    for (int row = glm::max(0, y - r); row < glm::min(h, y + r + 1); row++) {
+        for (int col = glm::max(0, x - r); col < glm::min(w, x + r + 1); col++) {
+            int dst = glm::round(glm::sqrt(static_cast<float>((row - y) * (row - y) + (col - x) * (col - x))));
+            if (dst <= r) {
+                mask = m_mask[dst];
+                srcA = bgra.A() / 255.f;
+                pix[row * w + col] = pix[row * w + col] * (1.f - mask * srcA) + bgra * mask * srcA;
+            } else {
+                
+            }
+        }
+    }
 }

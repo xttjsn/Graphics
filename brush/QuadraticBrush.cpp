@@ -27,7 +27,7 @@ void QuadraticBrush::makeMask() {
     int r = getRadius();
     m_mask.resize(r + 1);
     for (int i = 0; i < getRadius()+1; i++) {
-        m_mask[i] = 1.f - static_cast<float>(i) / static_cast<float>(r);
+        m_mask[i] = 1.f - i * (1.f / r);
         m_mask[i] *= m_mask[i];
     }
 }
