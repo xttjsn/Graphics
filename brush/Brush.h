@@ -52,7 +52,7 @@ protected:
     int m_radius;
     BGRA* m_pixel_src;
     std::vector<float> m_mask;
-    std::vector<float> m_mask_cache;
+    std::vector<float> m_mask_cache;    // Contain w * h elements, each element is the previous mask applied in that pixel
     std::vector<BGRA> m_canvas_cache;
     bool m_fix_alpha_blending;
 };

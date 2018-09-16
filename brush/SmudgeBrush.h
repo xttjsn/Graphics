@@ -14,9 +14,8 @@ public:
     SmudgeBrush(BGRA color, int radius);
     virtual ~SmudgeBrush();
 
-    virtual void brushDown(int x, int y, Canvas2D *canvas);
-    virtual void brushDragged(int x, int y, Canvas2D *canvas);
-    virtual void brushUp(int x, int y, Canvas2D *canvas);
+    virtual void brushDown(int x, int y, Canvas2D *canvas) override;
+    virtual void brushDragged(int x, int y, Canvas2D *canvas) override;
 
 protected:
     // Constructs the mask for this brush.

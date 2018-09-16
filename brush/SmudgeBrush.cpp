@@ -29,10 +29,6 @@ SmudgeBrush::~SmudgeBrush()
     //       this will be empty.
 }
 
-void SmudgeBrush::brushUp(int x, int y, Canvas2D* canvas) {
-}
-
-
 //! create a mask with a distribution of your choice (probably want to use quadratic for best results)
 void SmudgeBrush::makeMask() {
     // @TODO: [BRUSH] Set up the mask for your brush here. For this brush you will probably want

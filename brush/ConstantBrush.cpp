@@ -90,8 +90,6 @@ void ConstantBrush::paintNormal(int x, int y, Canvas2D* canvas) {
                 mask = m_mask[dst];
                 srcA = bgra.A() / 255.f;
                 pix[row * w + col] = pix[row * w + col] * (1.f - mask * srcA) + bgra * mask * srcA;
-            } else {
-                
             }
         }
     }
