@@ -1,6 +1,7 @@
 **Design choices:
 
-1. I use inheritance when developing ConstantBrush, LinearBrush and QuadraticBrush. Specifically, I made it that ConstantBrush is the parent of both LinearBrush and QuadraticBrush. This decision was made because the the only difference among those brushes is the mask. As a result, the only thing that I need to write in LinearBrush and QuadraticBrush is minumum - different formula for calculating the mask.
+1. I use inheritance when developing ConstantBrush, LinearBrush and QuadraticBrush. Specifically, I made it that ConstantBrush is the parent of both LinearBrush and QuadraticBrush. This decision was made because the the only difference among those brushes is the mask. As a result, the only thing that I need to write in LinearBrush and QuadraticBrush is minumum - different formula for calculating the mask. The only disadvantage about this approach is probably that the constructor of ConstantBrush
+will call makeMask, and thus LinearBrush's constructor will call ConstantBrush's makeMask before it, and the same goes for QuadraticBrush. This causes some useless overhead at the constructor, but I think the advantage of this approach overweighs the disadvantage.
 
 2. The SmudgeBrush uses a quadratic dropoff function, so I made it a child of QuadraticBrush. However, its brushDown and brushDragged functions are quite different, so I override it.
 
