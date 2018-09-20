@@ -18,7 +18,7 @@ using namespace CS123::GL;
 class OpenGLShape
 {
 public:
-    OpenGLShape();
+    OpenGLShape(int param1, int param2, int param3);
     ~OpenGLShape();
 
     /* Initialize VBO with given vertex data */
@@ -33,13 +33,22 @@ public:
     /* Draw the initialized geometry. */
     void draw();
 
+    /* LOOK HERE: Added member methods  */
+    virtual void reCalculateVertices();
+
 private:
+
     GLfloat *m_data;                            /// Vector of floats containing the vertex data.
     GLsizeiptr m_size;                          /// Size of the data array, in bytes.
     VBO::GEOMETRY_LAYOUT m_drawMode;            /// Drawing mode
     int m_numVertices;                          /// Number of vertices to be rendered.
     std::vector<VBOAttribMarker> m_markers;     /// List of VBOAttribMarkers that describe how data is laid out.
     std::unique_ptr<CS123::GL::VAO> m_VAO;      /// A wrapper for the vertex array object (VAO)
+
+    bool m_needRecalculate;
+    int m_p1, m_p2, m_p3;
+
+    friend class ShapesScene;
 };
 
 #endif // OPENGLSHAPE_H

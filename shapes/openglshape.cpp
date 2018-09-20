@@ -4,11 +4,14 @@
 
 using namespace CS123::GL;
 
-OpenGLShape::OpenGLShape() :
+OpenGLShape::OpenGLShape(int p1, int p2, int p3) :
     m_size(0),
     m_drawMode(VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLES),
     m_numVertices(0),
-    m_VAO(nullptr)
+    m_VAO(nullptr),
+    m_p1(p1),
+    m_p2(p2),
+    m_p3(p3)
 {
     // You shouldn't need to do anything here
     // Aren't initializer lists amazing?
@@ -58,4 +61,10 @@ void OpenGLShape::draw() {
         m_VAO->draw();
         m_VAO->unbind();
     }
+}
+
+/* LOOK HERE: methods implementation */
+
+void OpenGLShape::reCalculateVertices() {
+
 }

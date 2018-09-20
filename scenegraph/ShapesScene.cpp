@@ -13,6 +13,12 @@ using namespace CS123::GL;
 
 #include "ResourceLoader.h"
 
+#include "shapes/cube.h"
+#include "shapes/cone.h"
+#include "shapes/cylinder.h"
+#include "shapes/sphere.h"
+#include "shapes/torus.h"
+
 ShapesScene::ShapesScene(int width, int height) :
     m_width(width),
     m_height(height)
@@ -176,9 +182,36 @@ void ShapesScene::setLights(const glm::mat4 viewMatrix) {
 
 void ShapesScene::settingsChanged() {
     // TODO: [SHAPES] Fill this in if applicable.
-//    switch (settings.shapeType) {
-//    case SHAPE_CUBE:
-//        m_shape = std::make_unique<>
-//    }
-}
+    int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2, p3 = settings.shapeParameter3;
 
+    if (settings.shapeType != m_shapeType) {                    /// If the shape type changed
+        switch (settings.shapeType) {
+        case SHAPE_CUBE:
+            m_shape = std::make_unique<Cube>(p1, p2, p3);
+            break;
+        case SHAPE_CONE:
+            m_shape = std::make_unique<Cone>(p1, p2, p3);
+            break;
+        case SHAPE_CYLINDER:
+            m_shape = std::make_unique<Cylinder>(p1, p2, p3);
+            break;
+        case SHAPE_SPHERE:
+            m_shape = std::make_unique<Sphere>(p1, p2, p3);
+            break;
+        case SHAPE_TORUS:
+            m_shape = std::make_unique<Torus>(p1, p2, p3);
+            break;
+        }
+        m_shapeType = settings.shapeType;
+
+    } else {                                                    /// If only parameters change
+        if (p1 != m_shape->m_p1)
+            m_shape->m_p1 = p1;
+        if (p2 != m_shape->m_p2)
+            m_shape->m_p2 = p2;
+        if (p3 != m_shape->m_p3)
+            m_shape->m_p3 = p3;
+        m_shape->reCalculateVertices();
+    }
+
+}

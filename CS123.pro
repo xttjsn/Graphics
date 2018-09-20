@@ -64,7 +64,11 @@ SOURCES += \
     brush/SpecialBrush2.cpp \
     brush/SpecialBrush1.cpp \
     shapes/openglshape.cpp \
-    shapes/cube.cpp
+    shapes/cube.cpp \
+    shapes/cone.cpp \
+    shapes/sphere.cpp \
+    shapes/cylinder.cpp \
+    shapes/torus.cpp
 
 
 HEADERS += \
@@ -115,6 +119,10 @@ HEADERS += \
     brush/SpecialBrush1.h \
     shapes/openglshape.h \
     shapes/cube.h \
+    shapes/cone.h \
+    shapes/sphere.h \
+    shapes/cylinder.h \
+    shapes/torus.h
 
 
 

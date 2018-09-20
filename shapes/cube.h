@@ -6,7 +6,7 @@
 class Cube : public OpenGLShape
 {
 public:
-    Cube();
+    Cube(int p1, int p2, int p3);
 };
 
 #endif // CUBE_H

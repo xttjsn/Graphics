@@ -67,7 +67,10 @@ private:
     CS123SceneLightData  m_light;
     CS123SceneMaterial   m_material;
 
+    /* LOOK HERE: Added member variables */
     std::unique_ptr<OpenGLShape> m_shape;
+    int m_shapeType;
+    /* END LOOK HERE */
 
     glm::vec4 m_lightDirection = glm::normalize(glm::vec4(1.f, -1.f, -1.f, 0.f));
 
