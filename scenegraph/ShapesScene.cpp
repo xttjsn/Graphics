@@ -176,5 +176,9 @@ void ShapesScene::setLights(const glm::mat4 viewMatrix) {
 
 void ShapesScene::settingsChanged() {
     // TODO: [SHAPES] Fill this in if applicable.
+//    switch (settings.shapeType) {
+//    case SHAPE_CUBE:
+//        m_shape = std::make_unique<>
+//    }
 }
 

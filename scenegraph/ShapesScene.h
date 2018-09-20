@@ -8,8 +8,8 @@
 #include <GL/glew.h>
 
 #include "gl/datatype/FBO.h"
+#include "shapes/openglshape.h"
 #include "Settings.h"
-
 
 namespace CS123 { namespace GL {
 
@@ -18,6 +18,8 @@ namespace CS123 { namespace GL {
     class FullScreenQuad;
 
 }}
+
+class OpenGLShape;
 
 /**
  *
@@ -64,6 +66,8 @@ private:
     std::unique_ptr<CS123::GL::Shader> m_fsqShader;
     CS123SceneLightData  m_light;
     CS123SceneMaterial   m_material;
+
+    std::unique_ptr<OpenGLShape> m_shape;
 
     glm::vec4 m_lightDirection = glm::normalize(glm::vec4(1.f, -1.f, -1.f, 0.f));
 
