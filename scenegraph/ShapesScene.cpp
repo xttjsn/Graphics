@@ -21,7 +21,9 @@ using namespace CS123::GL;
 
 ShapesScene::ShapesScene(int width, int height) :
     m_width(width),
-    m_height(height)
+    m_height(height),
+    m_shape(nullptr),
+    m_shapeType(-1)
 {
     initializeSceneMaterial();
     initializeSceneLight();
@@ -31,7 +33,7 @@ ShapesScene::ShapesScene(int width, int height) :
     loadNormalsArrowShader();
 
     //TODO: [SHAPES] Allocate any additional memory you need...
-
+    setShape();
 }
 
 ShapesScene::~ShapesScene()
@@ -159,7 +161,7 @@ void ShapesScene::renderNormalsPass (SupportCanvas3D *context) {
 
 void ShapesScene::renderGeometry() {
     // TODO: [SHAPES] Render the shape. Lab 1 seems like it'll come in handy...
-
+    m_shape->draw();
 }
 
 void ShapesScene::clearLights() {
@@ -182,6 +184,10 @@ void ShapesScene::setLights(const glm::mat4 viewMatrix) {
 
 void ShapesScene::settingsChanged() {
     // TODO: [SHAPES] Fill this in if applicable.
+    setShape();
+}
+
+void ShapesScene::setShape() {
     int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2, p3 = settings.shapeParameter3;
 
     if (settings.shapeType != m_shapeType) {                    /// If the shape type changed
@@ -205,13 +211,9 @@ void ShapesScene::settingsChanged() {
         m_shapeType = settings.shapeType;
 
     } else {                                                    /// If only parameters change
-        if (p1 != m_shape->m_p1)
-            m_shape->m_p1 = p1;
-        if (p2 != m_shape->m_p2)
-            m_shape->m_p2 = p2;
-        if (p3 != m_shape->m_p3)
-            m_shape->m_p3 = p3;
+        m_shape->setP1(p1);
+        m_shape->setP2(p2);
+        m_shape->setP3(p3);
         m_shape->reCalculateVertices();
     }
-
 }

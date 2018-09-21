@@ -11,7 +11,9 @@ OpenGLShape::OpenGLShape(int p1, int p2, int p3) :
     m_VAO(nullptr),
     m_p1(p1),
     m_p2(p2),
-    m_p3(p3)
+    m_p3(p3),
+    m_radius(0.5),
+    m_needRecalculate(true)
 {
     // You shouldn't need to do anything here
     // Aren't initializer lists amazing?
@@ -65,6 +67,27 @@ void OpenGLShape::draw() {
 
 /* LOOK HERE: methods implementation */
 
-void OpenGLShape::reCalculateVertices() {
+void OpenGLShape::reCalculateVertices() {}
 
+int OpenGLShape::getP1() { return m_p1; }
+int OpenGLShape::getP2() { return m_p2; }
+int OpenGLShape::getP3() { return m_p3; }
+
+void OpenGLShape::setP1(int p1) {
+    if (m_p1 == p1) return;
+    m_p1 = p1;
+    m_needRecalculate = true;
 }
+
+void OpenGLShape::setP2(int p2) {
+    if (m_p2 == p2) return;
+    m_p2 = p2;
+    m_needRecalculate = true;
+}
+
+void OpenGLShape::setP3(int p3) {
+    if (m_p3 == p3) return;
+    m_p3 = p3;
+    m_needRecalculate = true;
+}
+

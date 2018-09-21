@@ -8,6 +8,9 @@
 
 #include "gl/datatype/VBO.h"
 #include "gl/datatype/VBOAttribMarker.h"
+#include "gl/shaders/ShaderAttribLocations.h"
+
+#define PI 3.1415926f
 
 namespace CS123 { namespace GL {
 class VAO;
@@ -33,10 +36,16 @@ public:
     /* Draw the initialized geometry. */
     void draw();
 
-    /* LOOK HERE: Added member methods  */
+    /* LOOK HERE: Added member methods. */
     virtual void reCalculateVertices();
+    int getP1();
+    int getP2();
+    int getP3();
+    void setP1(int p1);
+    void setP2(int p2);
+    void setP3(int p3);
 
-private:
+protected:
 
     GLfloat *m_data;                            /// Vector of floats containing the vertex data.
     GLsizeiptr m_size;                          /// Size of the data array, in bytes.
@@ -47,7 +56,8 @@ private:
 
     bool m_needRecalculate;
     int m_p1, m_p2, m_p3;
-
+    std::vector<float> m_coords;
+    float m_radius;
     friend class ShapesScene;
 };
 
