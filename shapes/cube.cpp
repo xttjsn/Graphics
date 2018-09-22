@@ -2,6 +2,7 @@
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <tuple>
 
 Cube::Cube(int p1, int p2, int p3) :
     OpenGLShape(p1, p2, p3)
@@ -21,7 +22,7 @@ void Cube::reCalculateVertices() {
     std::vector<glm::vec4> xside0;
     std::vector<glm::vec4> xside1;
 
-     float stepSize = 1.0f / m_p1, x, y, z;
+    float stepSize = 1.0f / m_p1, x, y, z;
 
      // z = -0.5 face
      x = -m_radius, z = y = m_radius;
@@ -39,7 +40,6 @@ void Cube::reCalculateVertices() {
          y += j * stepSize;
      }
      zside0.erase(zside0.end() - 1); // Remove the last element, since the next point will be from the next surface
-
 
      // Translate zside0 to zside1
      glm::mat4x4 z0z1 = glm::rotate(PI, glm::vec3(0, 1, 0));
@@ -71,7 +71,10 @@ void Cube::reCalculateVertices() {
      yside1.erase(yside1.end() - 1);
 
      float* data;
-      std::vector<glm::vec4>* side_ptrs[] = {&zside0, &zside1, &xside0, &xside1, &yside0, &yside1};
+     std::vector<glm::vec4>* side_ptrs[] = {&zside0, &zside1, &xside0, &xside1, &yside0, &yside1};
+     std::vector<float> norm_z0 = {0.0f, 0.0f, 1.0f}, norm_z1 = {0.0f, 0.0f, -1.0f},
+                        norm_x0 = {1.0f, 0.0f, 0.0f}, norm_x1 = {-1.0f, 0.0f, 0.0f},
+                        norm_y0 = {0.0f, 1.0f, 0.0f}, norm_y1 = {0.0f, -1.0f, 0.0f};
      for (std::vector<glm::vec4>* side_ptr : side_ptrs) {
         std::vector<glm::vec4>& side = *side_ptr;
         for (int i = 0; i < side.size(); ++i) {
@@ -79,17 +82,22 @@ void Cube::reCalculateVertices() {
            m_coords.push_back(*data);
            m_coords.push_back(*(data + 1));
            m_coords.push_back(*(data + 2));
+           m_coords.push_back(1.0f);
+           m_coords.push_back(1.0f);
+           m_coords.push_back(1.0f);
         }
      }
 
+     static constexpr int kFloatsPerVertex = 6;
      // 1 -> 2 * 2 * 6
      // 2 -> 3 * 2 * 6
      // 3 -> (4 * 2 * 3 + 2 * 3) * 6
      // 4 -> 5 * 2 * 4 * 6
      // n -> ((n + 1) * 2 + 2) * n * 6
-     m_numVertices = (m_p1 + 2) * m_p1 * 12;
+     m_numVertices = m_coords.size() / kFloatsPerVertex;
      setVertexData(m_coords.data(), m_coords.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, m_numVertices);
      setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+     setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
      buildVAO();
 
      m_needRecalculate = false;
