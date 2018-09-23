@@ -74,7 +74,9 @@ void Cube::reCalculateVertices() {
      std::vector<glm::vec4>* side_ptrs[] = {&zside0, &zside1, &xside0, &xside1, &yside0, &yside1};
      std::vector<float> norm_z0 = {0.0f, 0.0f, 1.0f}, norm_z1 = {0.0f, 0.0f, -1.0f},
                         norm_x0 = {1.0f, 0.0f, 0.0f}, norm_x1 = {-1.0f, 0.0f, 0.0f},
-                        norm_y0 = {0.0f, 1.0f, 0.0f}, norm_y1 = {0.0f, -1.0f, 0.0f};
+                        norm_y0 = {0.0f, -1.0f, 0.0f}, norm_y1 = {0.0f, 1.0f, 0.0f};
+     std::vector<float>* norm_ptrs[] = {&norm_z0, &norm_z1, &norm_x0, &norm_x1, &norm_y0, &norm_y1};
+     int norm_idx = 0;
      for (std::vector<glm::vec4>* side_ptr : side_ptrs) {
         std::vector<glm::vec4>& side = *side_ptr;
         for (int i = 0; i < side.size(); ++i) {
@@ -82,10 +84,11 @@ void Cube::reCalculateVertices() {
            m_coords.push_back(*data);
            m_coords.push_back(*(data + 1));
            m_coords.push_back(*(data + 2));
-           m_coords.push_back(1.0f);
-           m_coords.push_back(1.0f);
-           m_coords.push_back(1.0f);
+           m_coords.push_back(norm_ptrs[norm_idx]->at(0));
+           m_coords.push_back(norm_ptrs[norm_idx]->at(1));
+           m_coords.push_back(norm_ptrs[norm_idx]->at(2));
         }
+        norm_idx += 1;
      }
 
      static constexpr int kFloatsPerVertex = 6;
