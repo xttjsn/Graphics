@@ -68,7 +68,8 @@ SOURCES += \
     shapes/cone.cpp \
     shapes/sphere.cpp \
     shapes/cylinder.cpp \
-    shapes/torus.cpp
+    shapes/torus.cpp \
+    shapes/shape2d.cpp
 
 
 HEADERS += \
@@ -122,7 +123,8 @@ HEADERS += \
     shapes/cone.h \
     shapes/sphere.h \
     shapes/cylinder.h \
-    shapes/torus.h
+    shapes/torus.h \
+    shapes/shape2d.h
 
 
 
