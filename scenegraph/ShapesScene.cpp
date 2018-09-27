@@ -207,6 +207,8 @@ void ShapesScene::setShape() {
         case SHAPE_TORUS:
             m_shape = std::make_unique<Torus>(p1, p2, p3);
             break;
+        default:
+            m_shape = std::make_unique<Cube>(p1, p2, p3);
         }
         m_shapeType = settings.shapeType;
 

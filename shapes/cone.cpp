@@ -21,24 +21,31 @@ void Cone::reCalculateVertices() {
         int p1 = glm::max(m_p1, 3);
         float delta = 2.0f * PI / p1, theta = 0.0f, delta_rad = m_radius / m_p2, rad = 0.0f, x, y, z;
 
+        std::vector<glm::vec4> slices;
         std::vector<glm::vec4> slice;
+
+        // Build a slice
         x = 0.0f, y = -m_radius, z = 0.0f;
-        for (int i = 0; i <= 2 * p1; ++i) {
-            theta = i * delta;
-            slice.push_back(glm::vec4(x, y, z, 1));
-            for (int j = 1; j <= m_p2; ++j) {
-                rad = delta_rad * j;
-                slice.push_back(glm::vec4(x + rad * glm::cos(theta), y + rad * glm::sin(theta), z, 1));
-                slice.push_back(glm::vec4(x + rad * glm::cos(theta + delta), y + rad * glm::sin(theta + delta), z, 1));
-            }
-            // Degenerate triangles ?
+        slice.push_back(glm::vec4(x, y, z, 1));
+        for (int j = 1; j <= m_p2; ++j) {
+            rad = delta_rad * j;
+            slice.push_back(glm::vec4(x + rad * glm::cos(theta), y, z + rad * glm::sin(theta), 1));
+            slice.push_back(glm::vec4(x + rad * glm::cos(theta + delta), y, z  + rad * glm::sin(theta + delta), 1));
         }
 
-
-        //
+        // Rotate the slice to get all the slices
+        for (int i = 0; i < m_p1; ++i) {
+            glm::mat4 rot = glm::rotate(i * delta, glm::vec3(0, 1, 0));
+            for (int j = 0; j < slice.size(); ++j) {
+                slices.push_back(rot * slice[j]);
+            }
+            // Degenerate triangles
+            slices.push_back(slices[slices.size() - 1]);
+//            slices.push_back(glm::vec4(x, y, z, 1));
+        }
 
         float* data;
-        for (glm::vec4& v : slice) {
+        for (glm::vec4& v : slices) {
             data = glm::value_ptr(v);
             m_coords.push_back(*data);
             m_coords.push_back(*(data + 1));
