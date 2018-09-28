@@ -2,7 +2,7 @@
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "shape2d.h"
+#include "shapeutil.h"
 
 Cone::Cone(int p1, int p2, int p3):
     OpenGLShape(p1, p2, p3)
@@ -18,8 +18,8 @@ void Cone::reCalculateVertices() {
         std::vector<glm::vec4> vertices;
 
         // 1. Build the bottom
-        Shape2D shape2d_helper;
-        shape2d_helper.buildCircle(vertices, m_p2, m_p1, m_radius);
+        ShapeUtil shapeutil_helper;
+        shapeutil_helper.buildCircle(vertices, m_p2, m_p1, m_radius);
 
         // 2. Build the side
         // 2.1 Build a single side
@@ -28,7 +28,7 @@ void Cone::reCalculateVertices() {
         glm::vec4 A(0, m_radius, 0, 1);
         glm::vec4 B(m_radius * glm::cos(theta), -m_radius, m_radius * glm::sin(theta), 1);
         glm::vec4 C(m_radius * glm::cos(theta + delta), -m_radius, m_radius * glm::sin(theta + delta), 1);
-        shape2d_helper.buildTriangleStrip(side, A, C, B, m_p1);
+        shapeutil_helper.buildTriangleStrip(side, A, C, B, m_p1);
 
         // 2.2 Rotate and duplicate the side
         for (int i = 0; i < m_p2; i++) {

@@ -69,7 +69,7 @@ SOURCES += \
     shapes/sphere.cpp \
     shapes/cylinder.cpp \
     shapes/torus.cpp \
-    shapes/shape2d.cpp
+    shapes/shapeutil.cpp
 
 
 HEADERS += \
@@ -124,7 +124,7 @@ HEADERS += \
     shapes/sphere.h \
     shapes/cylinder.h \
     shapes/torus.h \
-    shapes/shape2d.h
+    shapes/shapeutil.h
 
 
 

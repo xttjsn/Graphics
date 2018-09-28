@@ -2,7 +2,7 @@
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "shape2d.h"
+#include "shapeutil.h"
 
 Cylinder::Cylinder(int p1, int p2, int p3):
     OpenGLShape(p1, p2, p3)
@@ -17,12 +17,12 @@ void Cylinder::reCalculateVertices() {
 
     std::vector<glm::vec4> vertices;
 
-    Shape2D shape2d_helper;
+    ShapeUtil shapeutil_helper;
 
     int p2 = glm::max(m_p2, 3), p1 = m_p1;
 
     // Build bottom circle
-    shape2d_helper.buildCircle(vertices, p2, p1, m_radius);
+    shapeutil_helper.buildCircle(vertices, p2, p1, m_radius);
 
     // Build top circle
     glm::mat4 rot = glm::rotate(PI, glm::vec3(0, 0, 1));
@@ -38,7 +38,7 @@ void Cylinder::reCalculateVertices() {
     glm::vec4 B = glm::vec4(-m_radius * glm::sin(delta), m_radius, m_radius * glm::cos(delta), 1);
     glm::vec4 C = glm::vec4(0, -m_radius, m_radius, 1);
     glm::vec4 D = glm::vec4(-m_radius * glm::sin(delta), -m_radius, m_radius * glm::cos(delta), 1);
-    shape2d_helper.buildQuadStrip(side, A, B, C, D, p1);
+    shapeutil_helper.buildQuadStrip(side, A, B, C, D, p1);
 
     // Duplicate for all sides
     for (int i = 0; i < p2; ++i) {

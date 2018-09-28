@@ -1,14 +1,14 @@
-#include "shape2d.h"
+#include "shapeutil.h"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 #define PI 3.1415926f
 
-Shape2D::Shape2D()
+ShapeUtil::ShapeUtil()
 {
 }
 
-void Shape2D::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius) {
+void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius) {
 
     // Start with (0, -0.5, 0)
     // m_p1 is the number of sides, minimum is 3
@@ -31,7 +31,7 @@ void Shape2D::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float ra
     }
 }
 
-void Shape2D::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides) {
+void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides) {
     /*       A
      *      / \
      *     /   \
@@ -53,7 +53,7 @@ void Shape2D::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm:
     data.push_back(norm4);
 }
 
-void Shape2D::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D, int numQuads) {
+void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D, int numQuads) {
     /* A ---- C
      * |      |
      * |      |
@@ -75,7 +75,7 @@ void Shape2D::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec
     data.push_back(norm4);
 }
 
-void Shape2D::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips) {
+void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips) {
     /*      A
      *     / \
      *    X---X
@@ -119,7 +119,7 @@ void Shape2D::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm
     data.push_back(glm::normalize(B));
 }
 
-glm::vec4 Shape2D::interpolate(glm::vec4 A, glm::vec4 B, float t) {
+glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t) {
     float *dataA = glm::value_ptr(A), *dataB = glm::value_ptr(B), x, y, z;
     x = *(dataA + 0) * (1.0 - t) + t * (*(dataB + 0));
     y = *(dataA + 1) * (1.0 - t) + t * (*(dataB + 1));

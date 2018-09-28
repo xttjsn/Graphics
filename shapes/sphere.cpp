@@ -2,7 +2,7 @@
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "shape2d.h"
+#include "shapeutil.h"
 
 Sphere::Sphere(int p1, int p2, int p3):
     OpenGLShape(p1, p2, p3)
@@ -27,7 +27,7 @@ void Sphere::reCalculateVertices() {
     // y = r * sin(theta) * sin(phi)
     // z = r * cos(theta)
 
-    Shape2D shape2d_helper;
+    ShapeUtil shapeutil_helper;
     int p1 = glm::max(2, m_p1), p2 = glm::max(3, m_p2);
     float delta = 2 * PI / p2;
 
@@ -35,7 +35,7 @@ void Sphere::reCalculateVertices() {
     std::vector<glm::vec4> side;
     glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
     glm::vec4 B = glm::vec4(0, 0, -m_radius, 1);
-    shape2d_helper.buildSphericalStrip(side, A, B, p1, p2);
+    shapeutil_helper.buildSphericalStrip(side, A, B, p1, p2);
 
     // 2. Rotate and duplicate the strip
     glm::mat4 rot;

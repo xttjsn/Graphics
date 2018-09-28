@@ -2,7 +2,7 @@
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "shape2d.h"
+#include "shapeutil.h"
 
 Cube::Cube(int p1, int p2, int p3) :
         OpenGLShape(p1, p2, p3)
@@ -25,7 +25,7 @@ void Cube::reCalculateVertices() {
         float stepSize = 2.0f * m_radius / m_p1, x, y, z;
 
         // z = -0.5 face
-        Shape2D shape2D_helper;
+        ShapeUtil shape2D_helper;
 
         for (int i = 0; i < m_p1; i++) {
             // Set up the vertex for four corners
