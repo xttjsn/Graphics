@@ -75,6 +75,50 @@ void Shape2D::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec
     data.push_back(norm4);
 }
 
+void Shape2D::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips) {
+    /*      A
+     *     / \
+     *    X---X
+     *   /     \
+     *  X-------X
+     *   \     /
+     *    X---X
+     *     \ /
+     *      B
+     */
+    glm::vec4 center = interpolate(A, B, 0.5);
+    glm::vec3 norm3;
+    glm::vec4 norm4;
+
+    data.push_back(A);
+    data.push_back(glm::normalize(A));
+
+    float phi = 0.0f, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks, radius = glm::distance(A, B) / 2.0f;
+    float x, y, z;
+    for (int i = 1; i < numStacks; i++) {
+        phi = 0.0f;
+        theta = i * delta_theta;
+        x = radius * glm::sin(theta) * glm::cos(phi);
+        y = radius * glm::sin(theta) * glm::sin(phi);
+        z = radius * glm::cos(theta);
+        glm::vec4 left = glm::vec4(x, y, z, 1);
+
+        phi = delta_phi;  // We do minus here coz we need counter-clockwise vertices
+        x = radius * glm::sin(theta) * glm::cos(phi);
+        y = radius * glm::sin(theta) * glm::sin(phi);
+        z = radius * glm::cos(theta);
+        glm::vec4 right = glm::vec4(x, y, z, 1);
+
+        data.push_back(left);
+        data.push_back(glm::normalize(left));
+        data.push_back(right);
+        data.push_back(glm::normalize(right));
+    }
+
+    data.push_back(B);
+    data.push_back(glm::normalize(B));
+}
+
 glm::vec4 Shape2D::interpolate(glm::vec4 A, glm::vec4 B, float t) {
     float *dataA = glm::value_ptr(A), *dataB = glm::value_ptr(B), x, y, z;
     x = *(dataA + 0) * (1.0 - t) + t * (*(dataB + 0));
