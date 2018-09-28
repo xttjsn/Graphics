@@ -3,7 +3,6 @@
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "shape2d.h"
-#include <tuple>
 
 Cube::Cube(int p1, int p2, int p3) :
         OpenGLShape(p1, p2, p3)
