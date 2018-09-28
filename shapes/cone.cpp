@@ -43,9 +43,6 @@ void Cone::reCalculateVertices() {
             m_coords.push_back(*data);
             m_coords.push_back(*(data + 1));
             m_coords.push_back(*(data + 2));
-            m_coords.push_back(0.0f);
-            m_coords.push_back(0.0f);
-            m_coords.push_back(-1.0f);
         }
 
         static constexpr int kFloatsPerVertex = 6;
