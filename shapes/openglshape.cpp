@@ -4,7 +4,7 @@
 
 using namespace CS123::GL;
 
-OpenGLShape::OpenGLShape(int p1, int p2, int p3) :
+OpenGLShape::OpenGLShape(int p1, int p2, float p3) :
     m_size(0),
     m_drawMode(VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLES),
     m_numVertices(0),
@@ -71,7 +71,7 @@ void OpenGLShape::reCalculateVertices() {}
 
 int OpenGLShape::getP1() { return m_p1; }
 int OpenGLShape::getP2() { return m_p2; }
-int OpenGLShape::getP3() { return m_p3; }
+float OpenGLShape::getP3() { return m_p3; }
 
 void OpenGLShape::setP1(int p1) {
     if (m_p1 == p1) return;
@@ -85,7 +85,7 @@ void OpenGLShape::setP2(int p2) {
     m_needRecalculate = true;
 }
 
-void OpenGLShape::setP3(int p3) {
+void OpenGLShape::setP3(float p3) {
     if (m_p3 == p3) return;
     m_p3 = p3;
     m_needRecalculate = true;

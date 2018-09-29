@@ -5,11 +5,9 @@
 #define PI 3.1415926f
 
 ShapeUtil::ShapeUtil()
-{
-}
+{ }
 
-void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius) {
-
+void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius){
     // Start with (0, -0.5, 0)
     // m_p1 is the number of sides, minimum is 3
 
@@ -31,7 +29,7 @@ void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float 
     }
 }
 
-void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides) {
+void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides){
     /*       A
      *      / \
      *     /   \
@@ -43,7 +41,7 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
     data.push_back(norm4);
     for (int t = 1; t <= numSlides; ++t) {
         glm::vec4 right = interpolate(A, B, t / static_cast<float>(numSlides));
-        glm::vec4 left = interpolate(A, C, t / static_cast<float>(numSlides));
+        glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numSlides));
         data.push_back(right);
         data.push_back(norm4);
         data.push_back(left);
@@ -53,7 +51,8 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
     data.push_back(norm4);
 }
 
-void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D, int numQuads) {
+void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
+  int numQuads){
     /* A ---- C
      * |      |
      * |      |
@@ -62,7 +61,7 @@ void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::v
     glm::vec3 norm3 = glm::normalize(glm::cross(glm::vec3(A - C), glm::vec3(B - A)));
     glm::vec4 norm4 = glm::vec4(norm3, 0);
     for (int t = 0; t <= numQuads; t++) {
-        glm::vec4 up = interpolate(A, C, t / static_cast<float>(numQuads));
+        glm::vec4 up   = interpolate(A, C, t / static_cast<float>(numQuads));
         glm::vec4 down = interpolate(B, D, t / static_cast<float>(numQuads));
         data.push_back(up);
         data.push_back(norm4);
@@ -75,7 +74,8 @@ void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::v
     data.push_back(norm4);
 }
 
-void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips) {
+void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks,
+  int numStrips){
     /*      A
      *     / \
      *    X---X
@@ -93,20 +93,21 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
     data.push_back(A);
     data.push_back(glm::normalize(A));
 
-    float phi = 0.0f, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks, radius = glm::distance(A, B) / 2.0f;
+    float phi = 0.0f, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
+      radius = glm::distance(A, B) / 2.0f;
     float x, y, z;
     for (int i = 1; i < numStacks; i++) {
-        phi = 0.0f;
+        phi   = 0.0f;
         theta = i * delta_theta;
-        x = radius * glm::sin(theta) * glm::cos(phi);
-        y = radius * glm::sin(theta) * glm::sin(phi);
-        z = radius * glm::cos(theta);
+        x     = radius * glm::sin(theta) * glm::cos(phi);
+        y     = radius * glm::sin(theta) * glm::sin(phi);
+        z     = radius * glm::cos(theta);
         glm::vec4 left = glm::vec4(x, y, z, 1);
 
-        phi = delta_phi;  // We do minus here coz we need counter-clockwise vertices
-        x = radius * glm::sin(theta) * glm::cos(phi);
-        y = radius * glm::sin(theta) * glm::sin(phi);
-        z = radius * glm::cos(theta);
+        phi = delta_phi;
+        x   = radius * glm::sin(theta) * glm::cos(phi);
+        y   = radius * glm::sin(theta) * glm::sin(phi);
+        z   = radius * glm::cos(theta);
         glm::vec4 right = glm::vec4(x, y, z, 1);
 
         data.push_back(left);
@@ -117,10 +118,58 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
 
     data.push_back(B);
     data.push_back(glm::normalize(B));
+} // ShapeUtil::buildSphericalStrip
+
+void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 center, float radius, int numPoints,
+  float phi){
+    float delta_theta = 2 * PI / numPoints, theta = 0.0f, x, y, z;
+
+    glm::vec4 norm;
+
+    for (int i = 0; i < numPoints; i++) {
+        theta = i * delta_theta;
+        x     = radius * glm::sin(theta) * glm::cos(phi);
+        y     = radius * glm::sin(theta) * glm::sin(phi);
+        z     = radius * glm::cos(theta);
+        glm::vec4 point = glm::translate(glm::vec3(center)) * glm::vec4(x, y, z, 1);
+
+        norm = glm::normalize(point - center);
+
+        data.push_back(point);
+        data.push_back(norm);
+    }
 }
 
-glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t) {
-    float *dataA = glm::value_ptr(A), *dataB = glm::value_ptr(B), x, y, z;
+void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vector<glm::vec4>& circ1,
+  std::vector<glm::vec4>& circ2){
+    if (circ1.size() != circ2.size()) return;
+
+    data.push_back(circ1[0]);
+    data.push_back(circ1[1]);
+
+    for (int i = 0; i < circ1.size() - 1; i += 2) {
+        data.push_back(circ1[i]);
+        data.push_back(circ1[i + 1]); // Add the normal
+        data.push_back(circ2[i]);
+        data.push_back(circ2[i + 1]);
+    }
+
+    // Connnect back to start
+    data.push_back(circ1[0]);
+    data.push_back(circ1[1]);
+    data.push_back(circ2[0]);
+    data.push_back(circ2[1]);
+
+    // Degenerate triangles
+    glm::vec4 last_vert = data[data.size() - 2];
+    glm::vec4 last_norm = data[data.size() - 1];
+    data.push_back(last_vert);
+    data.push_back(last_norm);
+}
+
+glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t){
+    float * dataA = glm::value_ptr(A), * dataB = glm::value_ptr(B), x, y, z;
+
     x = *(dataA + 0) * (1.0 - t) + t * (*(dataB + 0));
     y = *(dataA + 1) * (1.0 - t) + t * (*(dataB + 1));
     z = *(dataA + 2) * (1.0 - t) + t * (*(dataB + 2));

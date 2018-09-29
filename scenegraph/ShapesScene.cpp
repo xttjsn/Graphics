@@ -188,7 +188,8 @@ void ShapesScene::settingsChanged() {
 }
 
 void ShapesScene::setShape() {
-    int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2, p3 = settings.shapeParameter3;
+    int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
+    float p3 = settings.shapeParameter3;
 
     if (settings.shapeType != m_shapeType) {                    /// If the shape type changed
         switch (settings.shapeType) {

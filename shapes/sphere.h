@@ -6,7 +6,7 @@
 class Sphere : public OpenGLShape
 {
 public:
-    Sphere(int p1, int p2, int p3);
+    Sphere(int p1, int p2, float p3);
 
     virtual void reCalculateVertices();
 };

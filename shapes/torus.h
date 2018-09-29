@@ -6,7 +6,8 @@
 class Torus : public OpenGLShape
 {
 public:
-    Torus(int p1, int p2, int p3);
+    Torus(int p1, int p2, float p3);
+    void reCalculateVertices();
 };
 
 #endif // TORUS_H

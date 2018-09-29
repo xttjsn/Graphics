@@ -4,7 +4,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "shapeutil.h"
 
-Cylinder::Cylinder(int p1, int p2, int p3):
+Cylinder::Cylinder(int p1, int p2, float p3):
     OpenGLShape(p1, p2, p3)
 {
     reCalculateVertices();

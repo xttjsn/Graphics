@@ -21,7 +21,7 @@ using namespace CS123::GL;
 class OpenGLShape
 {
 public:
-    OpenGLShape(int param1, int param2, int param3);
+    OpenGLShape(int param1, int param2, float param3);
     ~OpenGLShape();
 
     /* Initialize VBO with given vertex data */
@@ -40,10 +40,10 @@ public:
     virtual void reCalculateVertices();
     int getP1();
     int getP2();
-    int getP3();
+    float getP3();
     void setP1(int p1);
     void setP2(int p2);
-    void setP3(int p3);
+    void setP3(float p3);
 
 protected:
 
@@ -55,7 +55,8 @@ protected:
     std::unique_ptr<CS123::GL::VAO> m_VAO;      /// A wrapper for the vertex array object (VAO)
 
     bool m_needRecalculate;
-    int m_p1, m_p2, m_p3;
+    int m_p1, m_p2;
+    float m_p3;
     std::vector<float> m_coords;
     float m_radius;
     friend class ShapesScene;
