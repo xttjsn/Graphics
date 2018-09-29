@@ -69,7 +69,8 @@ SOURCES += \
     shapes/sphere.cpp \
     shapes/cylinder.cpp \
     shapes/torus.cpp \
-    shapes/shapeutil.cpp
+    shapes/shapeutil.cpp \
+    shapes/mobiusstrip.cpp
 
 
 HEADERS += \
@@ -124,7 +125,8 @@ HEADERS += \
     shapes/sphere.h \
     shapes/cylinder.h \
     shapes/torus.h \
-    shapes/shapeutil.h
+    shapes/shapeutil.h \
+    shapes/mobiusstrip.h
 
 
 

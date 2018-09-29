@@ -144,6 +144,7 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
   std::vector<glm::vec4>& circ2){
     if (circ1.size() != circ2.size()) return;
 
+    // Degenerate triangles
     data.push_back(circ1[0]);
     data.push_back(circ1[1]);
 
@@ -167,11 +168,120 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
     data.push_back(last_norm);
 }
 
-glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t){
-    float * dataA = glm::value_ptr(A), * dataB = glm::value_ptr(B), x, y, z;
+void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, bool counter_clockwise){
+    float delta_v = 2.0f / p1, delta_u = 2.0f * PI / p2, x, y, z, u, v;
 
-    x = *(dataA + 0) * (1.0 - t) + t * (*(dataB + 0));
-    y = *(dataA + 1) * (1.0 - t) + t * (*(dataB + 1));
-    z = *(dataA + 2) * (1.0 - t) + t * (*(dataB + 2));
+    for (int i = 0; i < p2; i++) { // one extra i for connecting back to start
+        for (int j = 0; j < p1 + 1; j++) {
+            u = i * delta_u;
+            v = -1.0f + j * delta_v;
+            glm::vec4 pA = mobiusVertex(u, v);
+            glm::vec4 pB = mobiusVertex(u + delta_u, v);
+            if (counter_clockwise)
+                buildMobiusBlock(data, pA, pB, u, v, delta_u, delta_v, p1, j, counter_clockwise);
+            else
+                buildMobiusBlock(data, pB, pA, u, v, delta_u, delta_v, p1, j, 1 - counter_clockwise);
+        }
+
+        // Degenerate triangles
+        glm::vec4 last_vert = data[data.size() - 2];
+        glm::vec4 last_norm = data[data.size() - 1];
+        data.push_back(last_vert);
+        data.push_back(last_norm);
+    }
+} // ShapeUtil::buildMobiusStrip
+
+void ShapeUtil::buildMobiusBlock(std::vector<glm::vec4>& data, glm::vec4 pA, glm::vec4 pB,
+  float u, float v, float delta_u, float delta_v, int p1, int j, bool counter_clockwise){
+    /* +----H----I----+
+     * |    |    |    |
+     * |    |    |    |     |                          u space grows rightwards
+     * E----A----B----F     | v space grows downwards, ---->
+     * |    |    |    |     v
+     * |    |    |    |
+     * +----C----D----+
+     *
+     */
+
+    glm::vec4 pC, pD, pE, pF, pH, pI, normA, normB, norm_cur, norm_left, norm_right, norm_up, norm_upleft, norm_upright;
+    if (j == 0) {
+        // To compute the normal for the inner most vertices, we only need one
+        // vertex from the next iteration in v space and one vertex from the next
+        // iteration in u space
+        pC         = mobiusVertex(u, v + delta_v);
+        pD         = mobiusVertex(u + delta_u, v + delta_v);
+        pE         = mobiusVertex(u - delta_u, v);
+        pF         = mobiusVertex(u + 2 * delta_u, v);
+        norm_cur   = normalFromTriangle(pA, pB, pC);
+        norm_left  = normalFromTriangle(pE, pA, pC);
+        norm_right = normalFromTriangle(pB, pF, pD);
+        normA      = interpolate(norm_cur, norm_left, 0.5);
+        normB      = interpolate(norm_cur, norm_right, 0.5);
+
+        data.push_back(pA); // Degenerate triangle
+        data.push_back(normA);
+    } else if (j == p1) {
+        // To compute the normal for the outer most vertices (left and right), we
+        // need to computed three normals: norm_cur, norm_left, norm_right.
+        // Averaging norm_cur with norm_left gives us the normal for the left vertex.
+        // Averaging norm_cur with norm_right gives us the normal for the right vertex.
+        pH           = data[data.size() - 4];
+        pI           = data[data.size() - 2];
+        pE           = mobiusVertex(u - delta_u, v);
+        pF           = mobiusVertex(u + 2 * delta_u, v);
+        norm_up      = normalFromTriangle(pA, pH, pB);
+        norm_upleft  = normalFromTriangle(pA, pE, pH);
+        norm_upright = normalFromTriangle(pB, pI, pF);
+        normA        = interpolate(norm_up, norm_upleft, 0.5);
+        normB        = interpolate(norm_up, norm_upright, 0.5);
+    } else {
+        // To compute the normal for the intermediate vertices, we need the normals
+        // from the previous iteration and the next iteration.
+        pC           = data[data.size() - 4];
+        pD           = data[data.size() - 2];
+        pE           = mobiusVertex(u - delta_u, v);
+        pF           = mobiusVertex(u + 2 * delta_u, v);
+        pH           = mobiusVertex(u, v + delta_v);
+        pI           = mobiusVertex(u + delta_u, v + delta_v);
+        norm_cur     = normalFromTriangle(pA, pB, pC);
+        norm_left    = normalFromTriangle(pE, pA, pC);
+        norm_right   = normalFromTriangle(pB, pF, pD);
+        norm_up      = normalFromTriangle(pA, pH, pB);
+        norm_upleft  = normalFromTriangle(pA, pE, pH);
+        norm_upright = normalFromTriangle(pB, pI, pF);
+
+        normA = interpolate(interpolate(norm_cur, norm_left, 0.5), interpolate(norm_up, norm_upleft, 0.5), 0.5);
+        normB = interpolate(interpolate(norm_cur, norm_right, 0.5), interpolate(norm_up, norm_upright, 0.5), 0.5);
+    }
+
+    data.push_back(pA);
+    data.push_back(counter_clockwise ? normA : reverse(normA));
+    data.push_back(pB);
+    data.push_back(counter_clockwise ? normB : reverse(normB));
+} // ShapeUtil::buildMobiusBlock
+
+glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t){
+    float x, y, z, w;
+
+    x = A.x * (1.0 - t) + t * B.x;
+    y = A.y * (1.0 - t) + t * B.y;
+    z = A.z * (1.0 - t) + t * B.z;
+    w = A.w * (1.0 - t) + t * B.w;
+    return glm::vec4(x, y, z, w);
+}
+
+glm::vec4 ShapeUtil::mobiusVertex(float u, float v){
+    float x = (1.0f + v / 2 * glm::cos(u / 2)) * glm::cos(u);
+    float y = (1.0f + v / 2 * glm::cos(u / 2)) * glm::sin(u);
+    float z = v / 2 * glm::sin(u / 2);
+
     return glm::vec4(x, y, z, 1);
+}
+
+glm::vec4 ShapeUtil::reverse(glm::vec4 v){
+    return glm::vec4(-v.x, -v.y, -v.z, v.w);
+}
+
+glm::vec4 ShapeUtil::normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C){
+    return glm::normalize(glm::vec4(glm::normalize(glm::cross(glm::vec3(C - A), glm::vec3(B - A))), 0));
 }

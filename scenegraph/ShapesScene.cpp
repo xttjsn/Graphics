@@ -18,6 +18,7 @@ using namespace CS123::GL;
 #include "shapes/cylinder.h"
 #include "shapes/sphere.h"
 #include "shapes/torus.h"
+#include "shapes/mobiusstrip.h"
 
 ShapesScene::ShapesScene(int width, int height) :
     m_width(width),
@@ -207,6 +208,9 @@ void ShapesScene::setShape() {
             break;
         case SHAPE_TORUS:
             m_shape = std::make_unique<Torus>(p1, p2, p3);
+            break;
+        case SHAPE_SPECIAL_1:
+            m_shape = std::make_unique<MobiusStrip>(p1, p2, p3);
             break;
         default:
             m_shape = std::make_unique<Cube>(p1, p2, p3);

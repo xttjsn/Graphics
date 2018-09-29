@@ -1,7 +1,6 @@
 #include "torus.h"
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "shapeutil.h"
 
 Torus::Torus(int p1, int p2, float p3) :
@@ -53,20 +52,5 @@ void Torus::reCalculateVertices(){
     }
 
     // 5. Populate m_coords
-    float * data;
-    for (glm::vec4& v : vertices) {
-        data = glm::value_ptr(v);
-        m_coords.push_back(*data);
-        m_coords.push_back(*(data + 1));
-        m_coords.push_back(*(data + 2));
-    }
-
-    static constexpr int kFloatsPerVertex = 6;
-    m_numVertices = m_coords.size() / kFloatsPerVertex;
-    setVertexData(m_coords.data(), m_coords.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, m_numVertices);
-    setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
-    setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
-    buildVAO();
-
-    m_needRecalculate = false;
+    populateCoordinates(vertices);
 } // Torus::reCalculateVertices

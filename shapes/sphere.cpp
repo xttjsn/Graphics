@@ -1,16 +1,14 @@
 #include "sphere.h"
 #include "glm.hpp"
 #include "glm/gtx/transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "shapeutil.h"
 
-Sphere::Sphere(int p1, int p2, float p3):
-    OpenGLShape(p1, p2, p3)
-{
+Sphere::Sphere(int p1, int p2, float p3) :
+    OpenGLShape(p1, p2, p3){
     reCalculateVertices();
 }
 
-void Sphere::reCalculateVertices() {
+void Sphere::reCalculateVertices(){
     if (!m_needRecalculate) return;
 
     m_coords.clear();
@@ -55,20 +53,5 @@ void Sphere::reCalculateVertices() {
     }
 
     // 3. Populate m_coords
-    float* data;
-    for (glm::vec4& v : vertices) {
-        data = glm::value_ptr(v);
-        m_coords.push_back(*data);
-        m_coords.push_back(*(data + 1));
-        m_coords.push_back(*(data + 2));
-    }
-
-    static constexpr int kFloatsPerVertex = 6;
-    m_numVertices = m_coords.size() / kFloatsPerVertex;
-    setVertexData(m_coords.data(), m_coords.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, m_numVertices);
-    setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
-    setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
-    buildVAO();
-
-    m_needRecalculate = false;
-}
+    populateCoordinates(vertices);
+} // Sphere::reCalculateVertices
