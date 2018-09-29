@@ -22,16 +22,18 @@ public:
     void buildSegmentFromCircles(std::vector<glm::vec4> &data, std::vector<glm::vec4> &circ1,
       std::vector<glm::vec4> &circ2);
 
-    void buildMobiusStrip(std::vector<glm::vec4> &data, int p1, int p2, bool counter_clockwise);
+    void buildMobiusStrip(std::vector<glm::vec4> &data, int p1, int p2, bool clockwise);
 
     void buildMobiusBlock(std::vector<glm::vec4>& data, glm::vec4 pA, glm::vec4 pB,
-      float u, float v, float delta_u, float delta_v, int p1, int j, bool counter_clockwise);
+      float u, float v, float delta_u, float delta_v, int p1, int p2, int i, int j, bool clockwise);
 
     glm::vec4 mobiusVertex(float u, float v);
 
     glm::vec4 interpolate(glm::vec4 A, glm::vec4 B, float t);
 
     glm::vec4 reverse(glm::vec4 v);
+
+    glm::vec4 average(std::vector<glm::vec4>& vertices);
 
     glm::vec4 normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C);
 };

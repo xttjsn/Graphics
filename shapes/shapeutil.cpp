@@ -168,7 +168,7 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
     data.push_back(last_norm);
 }
 
-void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, bool counter_clockwise){
+void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, bool clockwise){
     float delta_v = 2.0f / p1, delta_u = 2.0f * PI / p2, x, y, z, u, v;
 
     for (int i = 0; i < p2; i++) { // one extra i for connecting back to start
@@ -177,10 +177,7 @@ void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, b
             v = -1.0f + j * delta_v;
             glm::vec4 pA = mobiusVertex(u, v);
             glm::vec4 pB = mobiusVertex(u + delta_u, v);
-            if (counter_clockwise)
-                buildMobiusBlock(data, pA, pB, u, v, delta_u, delta_v, p1, j, counter_clockwise);
-            else
-                buildMobiusBlock(data, pB, pA, u, v, delta_u, delta_v, p1, j, 1 - counter_clockwise);
+            buildMobiusBlock(data, pA, pB, u, v, delta_u, delta_v, p1, p2, i, j, clockwise);
         }
 
         // Degenerate triangles
@@ -192,72 +189,112 @@ void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, b
 } // ShapeUtil::buildMobiusStrip
 
 void ShapeUtil::buildMobiusBlock(std::vector<glm::vec4>& data, glm::vec4 pA, glm::vec4 pB,
-  float u, float v, float delta_u, float delta_v, int p1, int j, bool counter_clockwise){
-    /* +----H----I----+
-     * |    |    |    |
-     * |    |    |    |     |                          u space grows rightwards
+  float u, float v, float delta_u, float delta_v, int p1, int p2, int i, int j, bool clockwise){
+    /* Clock wise
+     * +----G----H----J
+     * |   /|   /|   /|
+     * | / c|b/a |j/i |     |                          u space grows rightwards
      * E----A----B----F     | v space grows downwards, ---->
-     * |    |    |    |     v
-     * |    |    |    |
-     * +----C----D----+
+     * |  d/|f  /|h  /|     v
+     * | / e| / g| /  |
+     * I----C----D----+
      *
+     * Counter clock wise
+     * J----G----H----+
+     * | \  | \  | \  |
+     * | c\b|a \j|i \ |     |                          u space grows rightwards
+     * E----A----B----F     | v space grows downwards, ---->
+     * | \d |e\f |g\h |     v
+     * |  \ |  \ |  \ |
+     * +----C----D----I
      */
 
-    glm::vec4 pC, pD, pE, pF, pH, pI, normA, normB, norm_cur, norm_left, norm_right, norm_up, norm_upleft, norm_upright;
+    glm::vec4 pC, pD, pE, pF, pG, pH, pI, pJ, normA, normB, norm_a, norm_b, norm_c, norm_d, norm_e, norm_f, norm_g,
+      norm_h, norm_i, norm_j;
+    std::vector<glm::vec4> vs;
+
+    pC = mobiusVertex(u, v + delta_v);
+    pD = mobiusVertex(u + delta_u, v + delta_v);
+    pE = mobiusVertex(u - delta_u, v);
+    pF = mobiusVertex(u + 2 * delta_u, v);
+    pG = mobiusVertex(u, v - delta_v);
+    pH = mobiusVertex(u + delta_u, v - delta_v);
+    if (clockwise) {
+        pI     = mobiusVertex(u - delta_u, v + delta_v);
+        pJ     = mobiusVertex(u + 2 * delta_u, v - delta_v);
+        norm_a = normalFromTriangle(pB, pA, pH);
+        norm_b = normalFromTriangle(pG, pH, pA);
+        norm_c = normalFromTriangle(pA, pE, pG);
+        norm_d = normalFromTriangle(pE, pA, pI);
+        norm_e = normalFromTriangle(pC, pI, pA);
+        norm_f = normalFromTriangle(pA, pB, pC);
+        norm_g = normalFromTriangle(pD, pC, pB);
+        norm_h = normalFromTriangle(pB, pF, pD);
+        norm_i = normalFromTriangle(pF, pB, pJ);
+        norm_j = normalFromTriangle(pH, pJ, pH);
+    } else {
+        pI     = mobiusVertex(u + 2 * delta_u, v + delta_v);
+        pJ     = mobiusVertex(u - delta_u, v - delta_v);
+        norm_a = normalFromTriangle(pA, pB, pG);
+        norm_b = normalFromTriangle(pA, pG, pJ);
+        norm_c = normalFromTriangle(pA, pJ, pE);
+        norm_d = normalFromTriangle(pA, pE, pC);
+        norm_e = normalFromTriangle(pA, pC, pD);
+        norm_f = normalFromTriangle(pA, pD, pB);
+        norm_g = normalFromTriangle(pB, pD, pI);
+        norm_h = normalFromTriangle(pB, pI, pF);
+        norm_i = normalFromTriangle(pB, pF, pH);
+        norm_j = normalFromTriangle(pB, pH, pG);
+    }
+
     if (j == 0) {
         // To compute the normal for the inner most vertices, we only need one
         // vertex from the next iteration in v space and one vertex from the next
         // iteration in u space
-        pC         = mobiusVertex(u, v + delta_v);
-        pD         = mobiusVertex(u + delta_u, v + delta_v);
-        pE         = mobiusVertex(u - delta_u, v);
-        pF         = mobiusVertex(u + 2 * delta_u, v);
-        norm_cur   = normalFromTriangle(pA, pB, pC);
-        norm_left  = normalFromTriangle(pE, pA, pC);
-        norm_right = normalFromTriangle(pB, pF, pD);
-        normA      = interpolate(norm_cur, norm_left, 0.5);
-        normB      = interpolate(norm_cur, norm_right, 0.5);
+        vs    = { norm_d, norm_e, norm_f };
+        normA = average(vs);
+        vs    = { norm_f, norm_g, norm_h };
+        normB = average(vs);
 
-        data.push_back(pA); // Degenerate triangle
-        data.push_back(normA);
+        // Degenerate triangle
+        if (clockwise) {
+            data.push_back(pA);
+            data.push_back(normA);
+        } else {
+            data.push_back(pB);
+            data.push_back(normB);
+        }
     } else if (j == p1) {
         // To compute the normal for the outer most vertices (left and right), we
         // need to computed three normals: norm_cur, norm_left, norm_right.
         // Averaging norm_cur with norm_left gives us the normal for the left vertex.
         // Averaging norm_cur with norm_right gives us the normal for the right vertex.
-        pH           = data[data.size() - 4];
-        pI           = data[data.size() - 2];
-        pE           = mobiusVertex(u - delta_u, v);
-        pF           = mobiusVertex(u + 2 * delta_u, v);
-        norm_up      = normalFromTriangle(pA, pH, pB);
-        norm_upleft  = normalFromTriangle(pA, pE, pH);
-        norm_upright = normalFromTriangle(pB, pI, pF);
-        normA        = interpolate(norm_up, norm_upleft, 0.5);
-        normB        = interpolate(norm_up, norm_upright, 0.5);
+        vs    = { norm_a, norm_b, norm_c };
+        normA = average(vs);
+        vs    = { norm_a, norm_i, norm_j };
+        normB = average(vs);
+        // normA = normB = glm::vec4(0, 0, 0, 0);
     } else {
         // To compute the normal for the intermediate vertices, we need the normals
         // from the previous iteration and the next iteration.
-        pC           = data[data.size() - 4];
-        pD           = data[data.size() - 2];
-        pE           = mobiusVertex(u - delta_u, v);
-        pF           = mobiusVertex(u + 2 * delta_u, v);
-        pH           = mobiusVertex(u, v + delta_v);
-        pI           = mobiusVertex(u + delta_u, v + delta_v);
-        norm_cur     = normalFromTriangle(pA, pB, pC);
-        norm_left    = normalFromTriangle(pE, pA, pC);
-        norm_right   = normalFromTriangle(pB, pF, pD);
-        norm_up      = normalFromTriangle(pA, pH, pB);
-        norm_upleft  = normalFromTriangle(pA, pE, pH);
-        norm_upright = normalFromTriangle(pB, pI, pF);
-
-        normA = interpolate(interpolate(norm_cur, norm_left, 0.5), interpolate(norm_up, norm_upleft, 0.5), 0.5);
-        normB = interpolate(interpolate(norm_cur, norm_right, 0.5), interpolate(norm_up, norm_upright, 0.5), 0.5);
+        vs    = { norm_a, norm_b, norm_c, norm_d, norm_e, norm_f };
+        normA = average(vs);
+        vs    = { norm_i, norm_j, norm_a, norm_f, norm_g, norm_h };
+        normB = average(vs);
+        // normA = normB = glm::vec4(0, 0, 0, 0);
     }
 
-    data.push_back(pA);
-    data.push_back(counter_clockwise ? normA : reverse(normA));
-    data.push_back(pB);
-    data.push_back(counter_clockwise ? normB : reverse(normB));
+    if (clockwise) {
+        data.push_back(pA);
+        data.push_back(normA);
+        data.push_back(pB);
+        data.push_back(normB);
+    } else {
+        data.push_back(pB);
+        data.push_back(normB);
+        data.push_back(pA);
+        data.push_back(normA);
+    }
 } // ShapeUtil::buildMobiusBlock
 
 glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t){
@@ -280,6 +317,17 @@ glm::vec4 ShapeUtil::mobiusVertex(float u, float v){
 
 glm::vec4 ShapeUtil::reverse(glm::vec4 v){
     return glm::vec4(-v.x, -v.y, -v.z, v.w);
+}
+
+glm::vec4 ShapeUtil::average(std::vector<glm::vec4>& vertices){
+    float x = 0.0f, y = 0.0f, z = 0.0f, w;
+
+    for (glm::vec4& v : vertices) {
+        x += v.x;
+        y += v.y;
+        z += v.z;
+    }
+    return glm::normalize(glm::vec4(x / vertices.size(), y / vertices.size(), z / vertices.size(), vertices[0].w));
 }
 
 glm::vec4 ShapeUtil::normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C){

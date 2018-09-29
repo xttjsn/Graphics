@@ -33,8 +33,8 @@ void MobiusStrip::reCalculateVertices(){
     int p1 = m_p1, p2 = glm::max(3, m_p2);
 
     ShapeUtil shapeutil;
-    shapeutil.buildMobiusStrip(vertices, p1, p2, true);
     shapeutil.buildMobiusStrip(vertices, p1, p2, false);
+    shapeutil.buildMobiusStrip(vertices, p1, p2, true);
 
     // Populate m_coords
     populateCoordinates(vertices);
