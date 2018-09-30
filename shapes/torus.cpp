@@ -12,8 +12,8 @@ void Torus::reCalculateVertices(){
     if (!m_needRecalculate) return;
 
     m_coords.clear();
-
     std::vector<glm::vec4> vertices;
+    ShapeUtil shapeutil;
 
     /*
      * To build torus, we first build two circle of vertices, which are then
@@ -33,7 +33,6 @@ void Torus::reCalculateVertices(){
         (radius - p3) * glm::sin(PI / 2 + delta), 0, 1);
 
     // 2. Build two circles of vertices with radius p3, with a specified phi
-    ShapeUtil shapeutil;
     std::vector<glm::vec4> circle1, circle2;
     shapeutil.buildCircleOfVertices(circle1, center1, p3, p2, PI / 2);
     shapeutil.buildCircleOfVertices(circle2, center2, p3, p2, PI / 2 + delta);

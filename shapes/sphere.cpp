@@ -12,8 +12,8 @@ void Sphere::reCalculateVertices(){
     if (!m_needRecalculate) return;
 
     m_coords.clear();
-
     std::vector<glm::vec4> vertices;
+    ShapeUtil shapeutil;
 
     // Spherical coordinates
     // phi is the azimuthal angle, theta is the polar angle
@@ -24,8 +24,6 @@ void Sphere::reCalculateVertices(){
     // x = r * sin(theta) * cos(phi)
     // y = r * sin(theta) * sin(phi)
     // z = r * cos(theta)
-
-    ShapeUtil shapeutil_helper;
     int p1 = glm::max(2, m_p1), p2 = glm::max(3, m_p2);
     float delta = 2 * PI / p2;
 
@@ -33,7 +31,7 @@ void Sphere::reCalculateVertices(){
     std::vector<glm::vec4> side;
     glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
     glm::vec4 B = glm::vec4(0, 0, -m_radius, 1);
-    shapeutil_helper.buildSphericalStrip(side, A, B, p1, p2);
+    shapeutil.buildSphericalStrip(side, A, B, p1, p2);
 
     // 2. Rotate and duplicate the strip
     glm::mat4 rot;

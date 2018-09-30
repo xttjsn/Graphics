@@ -13,14 +13,11 @@ void Cube::reCalculateVertices(){
     if (!m_needRecalculate) return;
 
     m_coords.clear();
-
+    ShapeUtil shapeutil;
     std::vector<glm::vec4> vertices;
-    std::vector<glm::vec4> zside0;
-
+    std::vector<glm::vec4> zside0; // z = -m_radius face
     float stepSize = 2.0f * m_radius / m_p1, x, y, z;
 
-    // z = -0.5 face
-    ShapeUtil shape2D_helper;
 
     for (int i = 0; i < m_p1; i++) {
         // Set up the vertex for four corners
@@ -28,7 +25,7 @@ void Cube::reCalculateVertices(){
         glm::vec4 B = glm::vec4(-m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
         glm::vec4 C = glm::vec4(m_radius, m_radius - i * stepSize, m_radius, 1);
         glm::vec4 D = glm::vec4(m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
-        shape2D_helper.buildQuadStrip(zside0, A, B, C, D, m_p1);
+        shapeutil.buildQuadStrip(zside0, A, B, C, D, m_p1);
     }
     zside0.erase(zside0.end() - 2, zside0.end()); // Remove last one vertex and its normal, since it's of no use for connecting one face to another
 
