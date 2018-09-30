@@ -63,6 +63,7 @@ void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::v
     for (int t = 0; t <= numQuads; t++) {
         glm::vec4 up   = interpolate(A, C, t / static_cast<float>(numQuads));
         glm::vec4 down = interpolate(B, D, t / static_cast<float>(numQuads));
+
         data.push_back(up);
         data.push_back(norm4);
         data.push_back(down);
