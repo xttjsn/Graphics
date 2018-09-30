@@ -1,28 +1,37 @@
-**Design choices:
+README for shape
 
-1. I use inheritance when developing ConstantBrush, LinearBrush and QuadraticBrush. Specifically, I made it that ConstantBrush is the parent of both LinearBrush and QuadraticBrush. This decision was made because the the only difference among those brushes is the mask. As a result, the only thing that I need to write in LinearBrush and QuadraticBrush is minumum - different formula for calculating the mask. The only disadvantage about this approach is probably that the constructor of ConstantBrush
-will call makeMask, and thus LinearBrush's constructor will call ConstantBrush's makeMask before it, and the same goes for QuadraticBrush. This causes some useless overhead at the constructor, but I think the advantage of this approach overweighs the disadvantage.
+This is the readme file for the shape project. In this project I created 6 shapes: cube, cone, cylinder, sphere, torus and a mobius strip.
 
-2. The SmudgeBrush uses a quadratic dropoff function, so I made it a child of QuadraticBrush. However, its brushDown and brushDragged functions are quite different, so I override it.
+To take advantage of polymorphism, I created a base class for all of them: the OpenGLShape class (which is a modified duplicate of the OpenGLShape class from lab1 and lab2). I also add implementations for VAO and VBO to make this class works as intended.
 
-3. For quadratic dropoff function, I used (1.f - i / r)^2, where i is the distance between the pixel and the center of the click, and r is the radius.
+Additionally, I noticed that there are places that I could reuse code. For example, creating the bottom of the cylinder and the bottom of the cone is identical. So I created a utility class called ShapeUtil, which helps all the other shape classes to create their sub-geometry.
 
-4. Since I am doing the extra credit, so I developed a special brush - SpecialBrush1. For the SpecialBrush1, I tried to mimic the spider web brush shown in the demo. Basically, we have to memorize where the mouse has visited. We store that information in a boolean matrix `m_visited` of the same size as the canvas. If pixel (x, y) has been visited before, `m_visited[x][y] = 1`, otherwise `m_visited[x][y] = 0`. When the mouse visit a pixel, say at (x, y), for every pixel in the cicle of radius r, and center (x, y), we check whether it's been visited before.
-And if so, we draw a stright line between that pixel and the center, with some offset in both ends.  A small difference between my version and the demo's version though, is that my line drawing algorithm does not have anti-aliasing enabled, and as a result, the line is sometimes discrete and jaggy. This could be improved by anti-aliasing techniques.
+To create normals for each vertex, I specified such that each vertex data consists of 6 floats, where the first 3 are its position and the last 3 are its normal.
 
-5. Alpha blending. To enable alpha blending, I add some variables in the Brush class. The reason for this is that ideally, alpha blending should be a feature that all brushes can have (although in the demo only ConstantBrush, LinearBrush and QuadraticBrush has that feature). I also separate the paint function to 2 cases depending on whether it has `fixAlphaBlending` enabled or not - paintFixAlpha and paintNormal. When fixAlphaBlending is enabled, we will first copy the canvas to a local
-cache, and later use that cache as the pixel source instead of the current canvas (which might have been changed). Then inside the paint function, we will accumulate the mask value until it's 1.0f, therefore we have to store the previous mask of every pixel in a cache of the same size as the canvas.
+1. Cube
+To create the cube, I firstly call the createQuadStrip() method provided by the ShapeUtil class, which creates a trip of small flat quads by interpolating the intermediate points from the four corners of the big quad. Then I duplicate that quad strip row by row to create a surface of the cube. Lastly I rotate that surface 5 more times for each and every face of the cube.
 
-6. In BGRA operator+, I add the glm::min(result, 255) to prevent the value from overflowing. Additionally, to facilitate BGRA * float value, I add an operator* in BGRA.cpp which deals with that situation.
+2. Cone
+To create the bottom of the cone, I firtly call the createTriangleStrip() method provided by the ShapeUtil class, which interpolates the intermediate vertex from the three vertices of the big triangle. Then I rotate that triangle strip to form the bottom. To create the side of the cone, I use the same technique, only with different starting vertex (A) and ending vertices (B and C).
 
-7. I did not use the lerp function.
+The normals of vertices on the side of the cone are pretty tricky to handle, since in createTriangleStrip() the normals created are the normal for the triangle face, but they are not the normal we are after. The correct normal for a vertex would be the average of two adjacent surface normals. So I use the interpolate() method to compute the averaged normals.
 
-8. I reset the brush everytime the setting changes.
+3. Cylinder
+Creating the bottom of the cylinder is identical to cone. To create the sides of the cylinder, I use createQuadStrip() and then rotate it to get enough duplicates forming a circular form. I also handled the normals for each vertex as I did with cone.
 
-**Known Bugs:
+4. Sphere
+To compute the position of vertex in a sphere, I used the spherical coordinate formula, which uses the polar angle theta and the azimuth angle phi. The normals are very convenient to compute, since it's basically the normalized version of the coordinate.
 
-ConstantBrush - None
-LinearBrush - None
-QuadraticBrush - None
-SmudgeBrush - None
-SpecialBrush1 - Lines are sometimes jaggy.
+5. Torus
+I used a three-pass method to create the torus. I noticed that torus is formed by many sub-circles located in a circular form, with a fixed distance from the center of the torus. So I created two centers for two of those sub-circles (adjacent). Then I create two circles of vertices around those centers. Next, I connect those vertices to form a segment of the torus. Finally, I rotate and duplicate the segment to create the torus. The normals can be computed relative to the centers
+of the sub-circles.
+
+6. Mobius Strip
+A mobius strip is a geometry with only one face. To create it, I used the Euclidean form of mobius strip (see my code), which takes input u and v, where u ranges from 0 to 2 * PI, and v ranges from -1 to 1. The normals are pretty tricky, since each vertex are shared by 6 triangles (except for the inner most and outer most vertices, which are only shared by 3 triangles), and the normals of those triangls are all different. Hence, for each normal, I compute the normals for all the triangles
+needed, and take the average of them.
+
+This only creates half of the mobius strip. To create the other half, I call the createMobiusStrip() function again, but with counter-clockwise order.
+
+
+Known bugs:
+No major bug, but I noticed that the lighting for one half of the mobius strip are kind of strange (dark-ish on some triangles).
