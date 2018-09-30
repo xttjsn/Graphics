@@ -35,20 +35,19 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
      *     /   \
      *    B --- C
      */
-    glm::vec3 norm3 = glm::normalize(glm::cross(glm::vec3(B - A), glm::vec3(C - A)));
-    glm::vec4 norm4 = glm::vec4(norm3, 0);
+    glm::vec4 norm = normalFromTriangle(B, A, C);
     data.push_back(A);
-    data.push_back(norm4);
+    data.push_back(norm);
     for (int t = 1; t <= numSlides; ++t) {
         glm::vec4 right = interpolate(A, B, t / static_cast<float>(numSlides));
         glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numSlides));
         data.push_back(right);
-        data.push_back(norm4);
+        data.push_back(norm);
         data.push_back(left);
-        data.push_back(norm4);
+        data.push_back(norm);
     }
     data.push_back(A);
-    data.push_back(norm4);
+    data.push_back(norm);
 }
 
 void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
@@ -58,21 +57,20 @@ void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::v
      * |      |
      * B ---- D
      */
-    glm::vec3 norm3 = glm::normalize(glm::cross(glm::vec3(A - C), glm::vec3(B - A)));
-    glm::vec4 norm4 = glm::vec4(norm3, 0);
+    glm::vec4 norm = normalFromTriangle(A, B, C);
     for (int t = 0; t <= numQuads; t++) {
         glm::vec4 up   = interpolate(A, C, t / static_cast<float>(numQuads));
         glm::vec4 down = interpolate(B, D, t / static_cast<float>(numQuads));
 
         data.push_back(up);
-        data.push_back(norm4);
+        data.push_back(norm);
         data.push_back(down);
-        data.push_back(norm4);
+        data.push_back(norm);
     }
     data.push_back(D);
-    data.push_back(norm4);
+    data.push_back(norm);
     data.push_back(B);
-    data.push_back(norm4);
+    data.push_back(norm);
 }
 
 void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks,
