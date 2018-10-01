@@ -27,6 +27,8 @@ void Torus::reCalculateVertices(){
     int p1 = glm::max(3, m_p1), p2 = glm::max(3, m_p2);
     float delta = 2.0f * PI / p1, radius = m_radius, p3 = m_p3 / 100.0f * m_radius;
 
+    vertices.reserve((p1 + 1) * 2 * p2);
+
     // 1. Set up two centers of those two circles
     glm::vec4 center1 = glm::vec4(0, radius - p3, 0, 1);
     glm::vec4 center2 = glm::vec4((radius - p3) * glm::cos(PI / 2 + delta),

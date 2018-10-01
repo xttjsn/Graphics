@@ -18,6 +18,8 @@ void Cube::reCalculateVertices(){
     std::vector<glm::vec4> zside0; // z = -m_radius face
     float stepSize = 2.0f * m_radius / m_p1;
 
+    vertices.reserve(2 * (m_p1 + 2) * m_p1 * 6);
+
     for (int i = 0; i < m_p1; i++) {
         // Set up the vertex for four corners
         glm::vec4 A = glm::vec4(-m_radius, m_radius - i * stepSize, m_radius, 1);

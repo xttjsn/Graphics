@@ -16,6 +16,8 @@ void Cone::reCalculateVertices(){
     ShapeUtil shapeutil;
     int p1 = m_p1, p2 = glm::max(3, m_p2);
 
+    vertices.reserve((1 + 2 * p1 + 2) * p2 * 2);
+
     // 1. Build the bottom
     shapeutil.buildCircle(vertices, p2, p1, m_radius);
 

@@ -27,6 +27,8 @@ void Sphere::reCalculateVertices(){
     int p1 = glm::max(2, m_p1), p2 = glm::max(3, m_p2);
     float delta = 2 * PI / p2;
 
+    vertices.reserve((2 + p1) * 2 * p2);
+
     // 1. Build a spherical strip
     std::vector<glm::vec4> side;
     glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
