@@ -35,13 +35,14 @@ void Sphere::reCalculateVertices(){
 
     // 2. Rotate and duplicate the strip
     glm::mat4 rot;
+    int sz = side.size();
     for (int i = 0; i < p2; i++) {
         rot = glm::rotate(delta * i, glm::vec3(0, 0, 1));
         if (i > 0) {
             vertices.push_back(rot * side[0]);
             vertices.push_back(rot * side[1]);
         }
-        for (int j = 0; j < side.size(); j++) {
+        for (int j = 0; j < sz; j++) {
             vertices.push_back(rot * side[j]);
         }
         if (i < p2 - 1) {

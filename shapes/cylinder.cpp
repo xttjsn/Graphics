@@ -59,9 +59,10 @@ void Cylinder::reCalculateVertices(){
             vertices.push_back(rot * side[0]);
             vertices.push_back(norm_odd);
         }
-        for (int j = 0; j < side.size(); j += 4) {
+        int sz = side.size();
+        for (int j = 0; j < sz; j += 4) {
             vertices.push_back(rot * side[j]); // vertex
-            vertices.push_back(j == side.size() - 4 ? norm_even : norm_odd);
+            vertices.push_back(j == sz - 4 ? norm_even : norm_odd);
             vertices.push_back(rot * side[j + 2]);
             vertices.push_back(glm::vec4(0, 0, 0, 0)); // No need for extra normal
         }

@@ -43,9 +43,10 @@ void Torus::reCalculateVertices(){
 
     // 4. Duplicate segements to form the torus
     glm::mat4 rot;
+    int sz = segment.size();
     for (int i = 0; i < p1; i++) {
         rot = glm::rotate(i * delta, glm::vec3(0, 0, 1));
-        for (int j = 0; j < segment.size(); j++) {
+        for (int j = 0; j < sz; j++) {
             vertices.push_back(rot * segment[j]);
         }
     }

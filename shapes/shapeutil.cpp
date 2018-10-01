@@ -21,9 +21,10 @@ void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float 
     buildTriangleStrip(slice, A, B, C, p2);
 
     glm::mat4 rot;
+    int sz = slice.size();
     for (int i = 0; i < p1; ++i) {
         rot = glm::rotate(i * delta, glm::vec3(0, 1, 0));
-        for (int j = 0; j < slice.size(); ++j) {
+        for (int j = 0; j < sz; ++j) {
             data.push_back(rot * slice[j]);
         }
     }
@@ -147,7 +148,8 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
     data.push_back(circ1[0]);
     data.push_back(circ1[1]);
 
-    for (int i = 0; i < circ1.size() - 1; i += 2) {
+    int sz = circ1.size();
+    for (int i = 0; i < sz - 1; i += 2) {
         data.push_back(circ1[i]);
         data.push_back(circ1[i + 1]); // Add the normal
         data.push_back(circ2[i]);
@@ -168,7 +170,7 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
 }
 
 void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, bool clockwise){
-    float delta_v = 2.0f / p1, delta_u = 2.0f * PI / p2, x, y, z, u, v;
+    float delta_v = 2.0f / p1, delta_u = 2.0f * PI / p2, u, v;
 
     for (int i = 0; i < p2; i++) { // one extra i for connecting back to start
         for (int j = 0; j < p1 + 1; j++) {
@@ -319,7 +321,7 @@ glm::vec4 ShapeUtil::reverse(glm::vec4 v){
 }
 
 glm::vec4 ShapeUtil::average(std::vector<glm::vec4>& vertices){
-    float x = 0.0f, y = 0.0f, z = 0.0f, w;
+    float x = 0.0f, y = 0.0f, z = 0.0f;
 
     for (glm::vec4& v : vertices) {
         x += v.x;

@@ -30,13 +30,14 @@ void Cone::reCalculateVertices(){
 
     // 2.2 Rotate and duplicate the side
     glm::vec4 norm;
+    int sz = side.size();
     for (int i = 0; i < p2; i++) {
         glm::mat4 rot      = glm::rotate(i * delta, glm::vec3(0, 1, 0));
         glm::mat4 rot_prev = glm::rotate((i - 1) * delta, glm::vec3(0, 1, 0));
         glm::mat4 rot_next = glm::rotate((i + 1) * delta, glm::vec3(0, 1, 0));
-        for (int j = 0; j < side.size(); j += 2) {
+        for (int j = 0; j < sz; j += 2) {   // Use static_cast to avoid -Wsign-compare
             vertices.push_back(rot * side[j]);
-            if (j < 2 || j == side.size() - 2)
+            if (j < 2 || j == sz - 2)
                 vertices.push_back(rot * side[j + 1]);
             else if (j % 4 == 0)
                 vertices.push_back(glm::normalize(shapeutil.interpolate(rot * side[j + 1], rot_next * side[j + 1],
