@@ -27,6 +27,8 @@ void Torus::reCalculateVertices(){
     int p1 = glm::max(3, m_p1), p2 = glm::max(3, m_p2);
     float delta = 2.0f * PI / p1, radius = m_radius, p3 = m_p3 / 100.0f * m_radius;
 
+    vertices.reserve((p1 + 1) * 2 * p2);
+
     // 1. Set up two centers of those two circles
     glm::vec4 center1 = glm::vec4(0, radius - p3, 0, 1);
     glm::vec4 center2 = glm::vec4((radius - p3) * glm::cos(PI / 2 + delta),
@@ -43,9 +45,10 @@ void Torus::reCalculateVertices(){
 
     // 4. Duplicate segements to form the torus
     glm::mat4 rot;
+    int sz = segment.size();
     for (int i = 0; i < p1; i++) {
         rot = glm::rotate(i * delta, glm::vec3(0, 0, 1));
-        for (int j = 0; j < segment.size(); j++) {
+        for (int j = 0; j < sz; j++) {
             vertices.push_back(rot * segment[j]);
         }
     }

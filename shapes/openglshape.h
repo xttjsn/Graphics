@@ -57,11 +57,12 @@ protected:
     std::vector<VBOAttribMarker> m_markers; /// List of VBOAttribMarkers that describe how data is laid out.
     std::unique_ptr<CS123::GL::VAO> m_VAO;  /// A wrapper for the vertex array object (VAO)
 
-    bool m_needRecalculate;
+    std::vector<float> m_coords;
     int m_p1, m_p2;
     float m_p3;
     float m_radius;
-    std::vector<float> m_coords;
+    bool m_needRecalculate;
+
 };
 
 #endif // OPENGLSHAPE_H
