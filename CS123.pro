@@ -70,7 +70,14 @@ SOURCES += \
     shapes/cylinder.cpp \
     shapes/torus.cpp \
     shapes/shapeutil.cpp \
-    shapes/mobiusstrip.cpp
+    shapes/mobiusstrip.cpp \
+    filters/filter.cpp \
+    filters/filterblur.cpp \
+    filters/filteredgedetect.cpp \
+    filters/filterscale.cpp \
+    filters/filterrotate.cpp \
+    filters/filterutils.cpp \
+    filters/filtergray.cpp
 
 
 HEADERS += \
@@ -126,7 +133,14 @@ HEADERS += \
     shapes/cylinder.h \
     shapes/torus.h \
     shapes/shapeutil.h \
-    shapes/mobiusstrip.h
+    shapes/mobiusstrip.h \
+    filters/filter.h \
+    filters/filterblur.h \
+    filters/filteredgedetect.h \
+    filters/filterscale.h \
+    filters/filterrotate.h \
+    filters/filterutils.h \
+    filters/filtergray.h
 
 
 

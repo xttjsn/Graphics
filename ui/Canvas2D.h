@@ -5,10 +5,13 @@
 
 #include "SupportCanvas2D.h"
 #include "Brush.h"
+#include "filters/filter.h"
 
 class RayScene;
 
 class Camera;
+
+class Filter;
 
 /**
  * @class Canvas2D
@@ -22,15 +25,15 @@ public:
     Canvas2D();
     virtual ~Canvas2D();
 
-    void setScene(RayScene *scene);
+    void setScene(RayScene * scene);
 
     // UI will call this from the button on the "Ray" dock
-    void renderImage(Camera *camera, int width, int height);
+    void renderImage(Camera * camera, int width, int height);
 
     // This will be called when the settings have changed
     virtual void settingsChanged();
 
-    QImage* getImage() { return m_image; }
+    QImage * getImage(){ return m_image; }
 
 
 public slots:
@@ -54,10 +57,12 @@ private:
 
     std::unique_ptr<RayScene> m_rayScene;
 
-    //TODO: [BRUSH, INTERSECT, RAY] Put your member variables here.
+    // TODO: [BRUSH, INTERSECT, RAY] Put your member variables here.
     std::unique_ptr<Brush> m_brush;
+    std::unique_ptr<Filter> m_filter;
 
     void set_brush();
+    void set_filter();
 };
 
 #endif // CANVAS2D_H

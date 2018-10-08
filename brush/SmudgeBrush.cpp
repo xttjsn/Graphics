@@ -64,8 +64,6 @@ void SmudgeBrush::pickUpPaint(int x, int y, Canvas2D* canvas) {
     int h = canvas->height();
     int buffer_row, buffer_col, r = getRadius();
 
-    float mask;
-
     for (int row = glm::max(0, y - r); row < glm::min(h, y + r + 1); row++) {
         for (int col = glm::max(0, x - r); col < glm::min(w, x + r + 1); col++) {
             int dst = glm::round(glm::sqrt((float)((row - y) * (row - y) + (col - x) * (col - x))));
