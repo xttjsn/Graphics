@@ -169,7 +169,7 @@ void Canvas2D::set_filter() {
     case FILTER_BLUR:
         m_filter =
             std::make_unique<FilterBlur>(settings.blurRadius,
-                                         NaiveGaussianSeparablePrecomputed);
+                                         FastBox);
         break;
 
     // fill in the rest

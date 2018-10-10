@@ -9,7 +9,7 @@ enum BlurType {
     NaiveGaussianPrecomputed,
     NaiveGaussianSeparablePrecomputed,
     Box,
-    BoxGaussian,
+    BoxSeparable,
     FastBox,
     Triangle,
     TriangleSeparable
@@ -27,7 +27,7 @@ public:
     void apply_ngp(Canvas2D *canvas);
     void apply_ngsp(Canvas2D *canvas);
     void apply_bo(Canvas2D *canvas);
-    void apply_bg(Canvas2D *canvas);
+    void apply_bs(Canvas2D *canvas);
     void apply_fb(Canvas2D *canvas);
     void apply_tr(Canvas2D *canvas);
     void apply_ts(Canvas2D *canvas);
