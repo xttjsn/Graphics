@@ -247,7 +247,7 @@ void FilterBlur::apply_tr(Canvas2D *canvas) {}
 void FilterBlur::apply_ts(Canvas2D *canvas) {}
 
 void FilterBlur::calcGaussianKernel() {
-    m_gauss_kernel.resize(m_rad * m_rad * 2);
+    m_gauss_kernel.resize(m_rad * m_rad * 2 + 1);
     int   dst = 0;
     float k   = 0.0f;
 
