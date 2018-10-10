@@ -168,7 +168,8 @@ void Canvas2D::set_filter() {
     switch (settings.filterType) {
     case FILTER_BLUR:
         m_filter =
-            std::make_unique<FilterBlur>(settings.blurRadius, NaiveGaussianSeparable);
+            std::make_unique<FilterBlur>(settings.blurRadius,
+                                         NaiveGaussianSeparablePrecomputed);
         break;
 
     // fill in the rest
