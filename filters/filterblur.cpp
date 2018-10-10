@@ -39,14 +39,6 @@ void FilterBlur::apply(Canvas2D *canvas) {
         apply_fb(canvas);
         break;
 
-    case Triangle:
-        apply_tr(canvas);
-        break;
-
-    case TriangleSeparable:
-        apply_ts(canvas);
-        break;
-
     default:
         perror("Invalid blur type!");
         exit(-1);
