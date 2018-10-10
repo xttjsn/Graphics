@@ -2,7 +2,7 @@
  * @file Canvas2D.cpp
  *
  * CS123 2-dimensional canvas. Contains support code necessary for Brush,
- *Filter, Intersect, and
+ * Filter, Intersect, and
  * Ray.
  *
  * YOU WILL NEED TO FILL THIS IN!
@@ -168,7 +168,7 @@ void Canvas2D::set_filter() {
     switch (settings.filterType) {
     case FILTER_BLUR:
         m_filter =
-            std::make_unique<FilterBlur>(settings.blurRadius, NaiveGaussian);
+            std::make_unique<FilterBlur>(settings.blurRadius, NaiveGaussianSeparable);
         break;
 
     // fill in the rest
