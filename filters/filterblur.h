@@ -10,9 +10,7 @@ enum BlurType {
     NaiveGaussianSeparablePrecomputed,
     Box,
     BoxSeparable,
-    FastBox,
-    Triangle,
-    TriangleSeparable
+    FastBox
 };
 
 class FilterBlur : public Filter {
@@ -29,8 +27,6 @@ public:
     void apply_bo(Canvas2D *canvas);
     void apply_bs(Canvas2D *canvas);
     void apply_fb(Canvas2D *canvas);
-    void apply_tr(Canvas2D *canvas);
-    void apply_ts(Canvas2D *canvas);
 
     virtual ~FilterBlur() override;
 
