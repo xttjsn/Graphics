@@ -16,6 +16,9 @@ private:
 
     float m_scaleX;
     float m_scaleY;
+
+    float g(float x, float a);
+    float h(int k, float a);
 };
 
 #endif // FILTERSCALE_H
