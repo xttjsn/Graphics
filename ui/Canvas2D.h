@@ -6,6 +6,7 @@
 #include "SupportCanvas2D.h"
 #include "Brush.h"
 #include "filters/filter.h"
+#include "marqueecanvas2d.h"
 
 class RayScene;
 
@@ -34,6 +35,8 @@ public:
     virtual void settingsChanged();
 
     QImage * getImage(){ return m_image; }
+
+    void getMarqueeCanvas2D(MarqueeCanvas2D * mcanv);
 
 
 public slots:

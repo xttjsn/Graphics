@@ -4,16 +4,20 @@
 
 FilterScale::FilterScale(float scaleX, float scaleY)
     : m_scaleX(scaleX), m_scaleY(scaleY)
-{}
+{ }
 
 FilterScale::~FilterScale()
-{}
+{ }
 
-void FilterScale::apply(Canvas2D *canvas) {
+void FilterScale::apply(Canvas2D * canvas){
     // Get the current image's size and compute the new width and height
-    int   w = canvas->width(), h = canvas->height();
-    int   nw = std::ceil(w * m_scaleX), nh = std::ceil(h * m_scaleY);
-    BGRA *data = canvas->data();
+
+    MarqueeCanvas2D mcanv;
+
+    canvas->getMarqueeCanvas2D(&mcanv);
+    int w = mcanv.width(), h = mcanv.height();
+    int nw = std::ceil(w * m_scaleX), nh = std::ceil(h * m_scaleY);
+    BGRA * data = mcanv.data();
 
     // Create two temporary vector, one for horizontally scaled image
     // another for both horizontally and vertically scaled image.
@@ -26,11 +30,11 @@ void FilterScale::apply(Canvas2D *canvas) {
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < nw; c++) {
             float r_acc = 0, g_acc = 0, b_acc = 0, k = 0, k_acc = 0, a = m_scaleX;
-            int   left, right;
+            int left, right;
             float support = (a > 1) ? 1 : 1 / a;
 
             float center = c / a + (1 - a) / (2 * a);
-            BGRA *cur;
+            BGRA * cur;
 
             left  = std::ceil(center - support);
             right = std::floor(center + support);
@@ -55,11 +59,11 @@ void FilterScale::apply(Canvas2D *canvas) {
     for (int r = 0; r < nh; r++) {
         for (int c = 0; c < nw; c++) {
             float r_acc = 0, g_acc = 0, b_acc = 0, k = 0, k_acc = 0, a = m_scaleY;
-            int   left, right;
+            int left, right;
             float support = (a > 1) ? 1 : 1 / a;
 
             float center = r / a + (1 - a) / (2 * a);
-            BGRA *cur;
+            BGRA * cur;
 
             left  = std::ceil(center - support);
             right = std::floor(center + support);
@@ -83,9 +87,9 @@ void FilterScale::apply(Canvas2D *canvas) {
     // Copy hvimg to canvas
     canvas->resize(nw, nh);
     std::memcpy(canvas->data(), hvimg.data(), sizeof(BGRA) * nw * nh);
-}
+} // FilterScale::apply
 
-float FilterScale::g(float x, float a) {
+float FilterScale::g(float x, float a){
     float r = a < 1 ? 1.0 / a : 1.0;
 
     if ((x < -r) || (x > r)) return 0;
