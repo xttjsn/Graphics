@@ -15,6 +15,12 @@ public:
     Filter();
     virtual void apply(Canvas2D *canvas) = 0;
     virtual ~Filter();
+
+protected:
+
+    inline BGRA * getBGRA(BGRA *start, int row, int col, int width) {
+        return start + row * width + col;
+    }
 };
 
 #endif // FILTER_H
