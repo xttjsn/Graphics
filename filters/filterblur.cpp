@@ -1,5 +1,7 @@
 #include "filterblur.h"
+#include "marqueecanvas2d.h"
 #include <cmath>
+#include "cstring"
 
 FilterBlur::FilterBlur(int radius, BlurType type) : m_rad(radius), m_type(type)
 {
@@ -284,7 +286,12 @@ void FilterBlur::apply_fb(Canvas2D *canvas) {
      */
 
     int   w = canvas->width(), h = canvas->height();
-    BGRA *data = canvas->data(), *cur, *ncur;
+    MarqueeCanvas2D mcanv;
+    canvas->getMarqueeCanvas2D(&mcanv);
+    std::vector<BGRA> buffer;
+    buffer.resize(w * h);
+    std::memcpy(buffer.data(), canvas->data(), sizeof(BGRA) * w * h);
+    BGRA *data = buffer.data(), *cur, *ncur;
 
     // Horizontal pass
     for (int r = 0; r < h; r++) {
@@ -317,7 +324,7 @@ void FilterBlur::apply_fb(Canvas2D *canvas) {
                     rr     = ncur->r; rg = ncur->g; rb = ncur->b;
                     k_acc += 1;
                 } else {
-                    rr = ncur->r; rg = ncur->g; rb = ncur->b;
+                    rr = 0; rg = 0; rb = 0;
                 }
 
                 r_acc = r_acc - lr + rr;
@@ -360,7 +367,7 @@ void FilterBlur::apply_fb(Canvas2D *canvas) {
                     rr     = ncur->r; rg = ncur->g; rb = ncur->b;
                     k_acc += 1;
                 } else {
-                    rr = ncur->r; rg = ncur->g; rb = ncur->b;
+                    rr = 0; rg = 0; rb = 0;
                 }
 
                 r_acc = r_acc - lr + rr;
@@ -371,6 +378,17 @@ void FilterBlur::apply_fb(Canvas2D *canvas) {
             cur->r = MAX(0, MIN(std::round((r_acc / k_acc)), 255));
             cur->g = MAX(0, MIN(std::round((g_acc / k_acc)), 255));
             cur->b = MAX(0, MIN(std::round((b_acc / k_acc)), 255));
+        }
+    }
+
+    // Copy pixels to selection
+    int startX = mcanv.startX(), startY = mcanv.startY(), szX = mcanv.width(), szY = mcanv.height();
+    for (int r = 0; r < h; r++) {
+        for (int c = 0; c < w; c++) {
+            if (r < startY || r >= (startY + szY) || c < startX || c >= (startX + szX))
+                continue;
+            cur = canvas->data() + r * w + c;
+            (*cur) = *(data + r * w + c);
         }
     }
 }

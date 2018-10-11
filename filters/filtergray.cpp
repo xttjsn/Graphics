@@ -11,21 +11,23 @@ FilterGray::FilterGray()
 FilterGray::~FilterGray()
 { }
 
-void FilterGray::apply(Canvas2D * canvas){
-    int width = canvas->width();
+void FilterGray::apply(Canvas2D * canvas) {}
+
+void FilterGray::apply(MarqueeCanvas2D * mcanv){
+    int width = mcanv->width();
 
     BGRA * current_pixel = nullptr;
 
     /* Initialize the first pixel of the first row */
-    BGRA * current_row = canvas->data();
+    BGRA * current_row = mcanv->data();
 
     size_t currentIndex = 0;
 
-    for (int r = 0; r < canvas->height(); r++) {
+    for (int r = 0; r < mcanv->height(); r++) {
         current_pixel = current_row;
         currentIndex  = r * width;
 
-        for (int c = 0; c < canvas->width(); c++) {
+        for (int c = 0; c < mcanv->width(); c++) {
             // TODO: Task 4
             unsigned char gray = BGRAToGray(*current_pixel);
 
