@@ -184,7 +184,7 @@ void Canvas2D::set_filter(){
             break;
 
         case FILTER_ROTATE:
-            m_filter = std::make_unique<FilterRotate>();
+            m_filter = std::make_unique<FilterRotate>(settings.rotateAngle);
             break;
 
         case FILTER_SPECIAL_1:

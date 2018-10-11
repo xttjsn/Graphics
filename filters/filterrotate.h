@@ -6,11 +6,14 @@
 class FilterRotate : public Filter
 {
 public:
-    FilterRotate();
+    FilterRotate(int rotateAngle);
 
     void apply(Canvas2D * canvas) override;
 
     virtual ~FilterRotate() override;
+
+private:
+    float m_angle;
 };
 
 #endif // FILTERROTATE_H
