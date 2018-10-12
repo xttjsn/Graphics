@@ -14,6 +14,8 @@ public:
 
 private:
     float m_angle;
+
+    unsigned char mix(int a, int b, int c, int d, float xfrac, float yfrac);
 };
 
 #endif // FILTERROTATE_H

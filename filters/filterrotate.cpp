@@ -48,6 +48,7 @@ void FilterRotate::apply(Canvas2D * canvas){
 
             float xfrac = glm::fract(xprime);
             float yfrac = glm::fract(yprime);
+
             // Bicubic Interpolation
             xfrac = 3 * xfrac * xfrac - 2 * xfrac * xfrac * xfrac;
             yfrac = 3 * yfrac * yfrac - 2 * yfrac * yfrac * yfrac;
@@ -63,21 +64,10 @@ void FilterRotate::apply(Canvas2D * canvas){
             BGRA * D = getBGRA(canvas->data(), ymax, xmax, canvas->width());
 
             BGRA * cur = getBGRA(buffer.data(), r, c, nw);
-            cur->r =
-              MIN(MAX(0,
-                glm::round(glm::mix(glm::mix(static_cast<float>(A->r), static_cast<float>(B->r), xfrac),
-                glm::mix(static_cast<float>(C->r), static_cast<float>(D->r),
-                xfrac), yfrac))), 255);
-            cur->g =
-              MIN(MAX(0,
-                glm::round(glm::mix(glm::mix(static_cast<float>(A->g), static_cast<float>(B->g), xfrac),
-                glm::mix(static_cast<float>(C->g), static_cast<float>(D->g),
-                xfrac), yfrac))), 255);
-            cur->b =
-              MIN(MAX(0,
-                glm::round(glm::mix(glm::mix(static_cast<float>(A->b), static_cast<float>(B->b), xfrac),
-                glm::mix(static_cast<float>(C->b), static_cast<float>(D->b),
-                xfrac), yfrac))), 255);
+
+            cur->r = mix(A->r, B->r, C->r, D->r, xfrac, yfrac);
+            cur->g = mix(A->g, B->g, C->g, D->g, xfrac, yfrac);
+            cur->b = mix(A->b, B->b, C->b, D->b, xfrac, yfrac);
         }
     }
 
@@ -85,3 +75,10 @@ void FilterRotate::apply(Canvas2D * canvas){
     canvas->resize(nw, nh);
     std::memcpy(canvas->data(), buffer.data(), sizeof(BGRA) * nw * nh);
 } // FilterRotate::apply
+
+unsigned char FilterRotate::mix(int a, int b, int c, int d, float xfrac, float yfrac){
+    return MIN(MAX(0,
+             glm::round(glm::mix(glm::mix(static_cast<float>(a), static_cast<float>(b), xfrac),
+             glm::mix(static_cast<float>(c), static_cast<float>(d),
+             xfrac), yfrac))), 255);
+}
