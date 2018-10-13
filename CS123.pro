@@ -78,7 +78,8 @@ SOURCES += \
     filters/filterrotate.cpp \
     filters/filterutils.cpp \
     filters/filtergray.cpp \
-    ui/marqueecanvas2d.cpp
+    ui/marqueecanvas2d.cpp \
+    filters/filterfft.cpp
 
 
 HEADERS += \
@@ -142,7 +143,8 @@ HEADERS += \
     filters/filterrotate.h \
     filters/filterutils.h \
     filters/filtergray.h \
-    ui/marqueecanvas2d.h
+    ui/marqueecanvas2d.h \
+    filters/filterfft.h
 
 
 

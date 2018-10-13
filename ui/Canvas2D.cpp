@@ -32,6 +32,7 @@
 #include "filters/filteredgedetect.h"
 #include "filters/filterrotate.h"
 #include "filters/filterscale.h"
+#include "filters/filterfft.h"
 
 Canvas2D::Canvas2D() :
 
@@ -188,6 +189,7 @@ void Canvas2D::set_filter(){
             break;
 
         case FILTER_SPECIAL_1:
+            m_filter = std::make_unique<FilterFFT>();
             break;
 
         case FILTER_SPECIAL_2:
