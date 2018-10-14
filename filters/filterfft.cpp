@@ -1,20 +1,12 @@
 #include "filterfft.h"
 
-ComplexFloat::ComplexFloat(float r, float i)
-    : m_real(r),
-    m_imagine(i) {}
-
-ComplexFloat& ComplexFloat::operator+=(const ComplexFloat& rhs) {
-    m_real    += rhs.m_real;
-    m_imagine += rhs.m_imagine;
-}
-
 RGBComplex::RGBComplex()
-    : m_r(ComplexFloat(0, 0)),
-    m_g(ComplexFloat(0, 0)),
-    m_b(ComplexFloat(0, 0)) {}
+    : m_r(std::complex<float>(0.0f, 0.0f)),
+    m_g(std::complex<float>(0.0f, 0.0f)),
+    m_b(std::complex<float>(0.0f, 0.0f)) {}
 
-RGBComplex::RGBComplex(ComplexFloat r, ComplexFloat g, ComplexFloat b)
+RGBComplex::RGBComplex(std::complex<float> r, std::complex<float> g,
+                       std::complex<float> b)
     : m_r(r),
     m_g(g),
     m_b(b) {}
@@ -23,6 +15,7 @@ RGBComplex& RGBComplex::operator+=(const RGBComplex& rhs) {
     m_r += rhs.m_r;
     m_g += rhs.m_g;
     m_b += rhs.m_b;
+    return *this;
 }
 
 FilterFFT::FilterFFT()
@@ -53,23 +46,20 @@ void FilterFFT::apply(Canvas2D *canvas) {
                     r   = static_cast<float>(cur->r);
                     g   = static_cast<float>(cur->g);
                     b   = static_cast<float>(cur->b);
-                    p   = -2 * PI *
-                          (static_cast<float>(u) * x / w + static_cast<float>(v) *
-                           y /
-                           h);
+                    p   = -2 * PI * (static_cast<float>(v) * x / w + static_cast<float>(u) * y / h);
                     float cos = std::cos(p);
                     float sin = std::sin(p);
-                    freq[u * w + v] += RGBComplex(ComplexFloat(r * cos, r * sin),
-                                                  ComplexFloat(g * cos, g * sin),
-                                                  ComplexFloat(b * cos, b * sin));
+                    freq[u * w + v] += RGBComplex(std::complex<float>(r * cos, r * sin),
+                                                  std::complex<float>(g * cos, g * sin),
+                                                  std::complex<float>(b * cos, b * sin));
                 }
             }
         }
     }
 
     // Frequency Domain to Spatial Domain
-    std::vector<BGRAFloat> bufFloat;
-    bufFloat.resize(w * h);
+    std::vector<RGBComplex> buf;
+    buf.resize(w * h);
 
     for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
@@ -77,37 +67,24 @@ void FilterFFT::apply(Canvas2D *canvas) {
             for (int u = 0; u < h; u++) {
                 for (int v = 0; v < w; v++) {
                     freqAmp = freq[u * w + v];
-                    p       = 2 * PI *
-                              (static_cast<float>(u) * x / w +
-                               static_cast<float>(v) * y /
-                               h);
+                    p       = 2 * PI * (static_cast<float>(v) * x / w + static_cast<float>(u) * y / h);
                     float cos = std::cos(p);
                     float sin = std::sin(p);
-                    ComplexFloat cmp(cos, sin);
-                    bufFloat[y * w + x] += BGRAFloat(cmp * freqAmp.R(),
-                                                     cmp * freqAmp.G(),
-                                                     cmp * freqAmp.B(),
-                                                     255);
+                    std::complex<float> f(cos, sin);
+                    buf[y * w + x] += RGBComplex(f * freqAmp.R(),
+                                                 f * freqAmp.G(),
+                                                 f * freqAmp.B());
                 }
             }
 
-            bufFloat[y * w + x] /= w * h;
+            // Convert back to unsigned char
+            RGBComplex cplx = buf[y * w + x];
+            cur    = canvas->data() + y * w + x;
+            *(cur) =
+                BGRA(MIN(MAX(static_cast<int>(std::abs(cplx.R()) / (w * h)), 0), 255),
+                     MIN(MAX(static_cast<int>(std::abs(cplx.G()) / (w * h)), 0), 255),
+                     MIN(MAX(static_cast<int>(std::abs(cplx.B()) / (w * h)), 0), 255),
+                     255);
         }
     }
-
-    // Convert float to unsigned char
-    BGRAFloat bgraFloat;
-    BGRA     *cur;
-
-    for (int y = 0; y < h; y++) {
-        for (int x = 0; x < w; x++) {
-            bgraFloat = bufFloat[y * w + x];
-            cur       = canvas->data() + y * w + x;
-            *(cur)    = BGRA(MIN(MAX(static_cast<int>(bufFloat->r), 0), 255),
-                             MIN(MAX(static_cast<int>(bufFloat->g), 0), 255),
-                             MIN(MAX(static_cast<int>(bufFloat->b), 0), 255));
-        }
-    }
-
-    //
 } // FilterFFT::apply

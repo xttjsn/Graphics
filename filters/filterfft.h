@@ -2,33 +2,46 @@
 #define FILTERFFT_H
 
 #include "filter.h"
-
-class ComplexFloat {
-public:
-
-    ComplexFloat(float r, float i);
-
-    ComplexFloat& operator+=(const ComplexFloat& rhs);
-
-private:
-
-    float m_real;
-    float m_imagine;
-};
+#include <complex>
 
 class RGBComplex {
 public:
 
     RGBComplex();
-    RGBComplex(ComplexFloat r, ComplexFloat g, ComplexFloat b);
+    RGBComplex(std::complex<float> r, std::complex<float> g, std::complex<float> b);
 
-    RGBComplex& operator+=(const RGBComplex& rhs);
+    RGBComplex               & operator+=(const RGBComplex& rhs);
+
+    inline std::complex<float> R() {
+        return m_r;
+    }
+
+    inline std::complex<float> G() {
+        return m_g;
+    }
+
+    inline std::complex<float> B() {
+        return m_b;
+    }
 
 private:
 
-    ComplexFloat m_r;
-    ComplexFloat m_g;
-    ComplexFloat m_b;
+    std::complex<float> m_r;
+    std::complex<float> m_g;
+    std::complex<float> m_b;
+};
+
+class RGBFloat {
+public:
+
+    RGBFloat();
+    RGBFloat(float r, float g, float b);
+
+private:
+
+    float m_r;
+    float m_g;
+    float m_b;
 };
 
 class FilterFFT : public Filter {
