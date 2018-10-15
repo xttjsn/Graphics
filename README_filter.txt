@@ -7,7 +7,7 @@ In this assignment I created 5 filters: EdgeDetection, Blur, Scale, Rotate and F
 I firstly created a base class "Filter", which has the public method "apply", which accepts "Canvas2D" as a parameter and filter it accordingly. The Canvas2D class has a single unique_ptr of Filter type, which gets initialized to its appropriate derived class whenever Canvas2D is initialized or the setting is changed.
 
 Edge Detection:
-For edge detection, I used a separable sobel kernel as described in the handout, which proves to be very fast and effective. I encountered one caveat where I didn't use floating point to store the value from intermediate pass, and as a result the negative values are trunked to 0 and the result looks bad. After I adjusted it, it works fine.
+For edge detection, I used a separable sobel kernel as described in the handout, which proves to be very fast and effective. I encountered one caveat where I didn't use floating point to store the value from intermediate pass, and as a result the negative values are trunked to 0 and the result looks bad. After I adjusted it, it works fine. Marquee selection is supported.
 
 Blur:
 I implemented 7 different blur filters for comparison purpose.
@@ -19,8 +19,11 @@ I implemented 7 different blur filters for comparison purpose.
     apply_bs: This is the separable box filter. It's the fastest filter so far.
     apply_fb: This is THE fastest filter of all. It uses O(1) space and O(1) time for each pixel! I've written down the idea of it in filterblur.cpp, but the core idea is based on the fact that adjacent values only differ by the difference of the value of the left pixel and the right pixel. This is also the filter that get's called when you click filter!
 
+Marquee selection is supported.
+
 Scale:
 I implemented a separable scale filter by using the formula given in the lecture notes.
+Marquee selection is supported.
 
 Rotate:
 I implemented a rotation filter. First I compute the scaled width and height, and then used back-map to find the corresponding location of each new pixel in the un-rotated image. This location probably contains fractions. To deal with fractions, I used the bicubic interpolation technique given in lab05 via glm::mix.
