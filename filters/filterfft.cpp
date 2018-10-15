@@ -25,23 +25,19 @@ RGBComplex& RGBComplex::operator+=(const RGBComplex& rhs) {
     return *this;
 }
 
-FilterFFT::FilterFFT()
-{}
+void RGBComplex::average() {
+    Complex c = R() * 0.299 + G() * 0.587 + B() * 0.114;
+
+    m_r = c;
+    m_g = c;
+    m_b = c;
+}
+
+FilterFFT::FilterFFT(FFTFeature feature)
+    : m_feature(feature) {}
 
 FilterFFT::~FilterFFT()
 {}
-
-void FilterFFT::separate(RGBComplex *X, int N) {
-    std::vector<RGBComplex> tmp;
-
-    tmp.resize(N / 2);
-
-    for (int i = 0; i < N / 2; i++) tmp[i] = X[i * 2 + 1];  // Copy odd to tmp
-
-    for (int i = 0; i < N / 2; i++) X[i] = X[i * 2];        // Move even to front
-
-    for (int i = 0; i < N / 2; i++) X[i + N / 2] = tmp[i];  // Move odd to back
-}
 
 void FilterFFT::separate(Complex *X, int N) {
     std::vector<Complex> tmp;
@@ -229,6 +225,21 @@ void FilterFFT::apply(Canvas2D *canvas) {
     freq.reserve(nw * nh);
     fft2(freq, data, nw, nh);
 
+    switch (m_feature) {
+    case Smoothing:
+        smoothing(freq, nw, nh); break;
+
+    case EdgeDetection:
+        edgeDetection(freq, nw, nh); break;
+
+    case Sharpening:
+        sharpening(freq, nw, nh); break;
+
+    default:
+        recover(freq, nw, nh); break;
+    }
+
+
     // Convert frequency domain to spatial domain
     std::vector<RGBComplex> spatial;
     spatial.reserve(nw * nh);
@@ -250,6 +261,61 @@ void FilterFFT::apply(Canvas2D *canvas) {
 
     // Last step, scale down to original size
     filterDown.apply(canvas);
+}
+
+void FilterFFT::recover(std::vector<RGBComplex>& freq, int nw, int nh)       {
+    // Do nothing
+}
+
+void FilterFFT::smoothing(std::vector<RGBComplex>& freq, int nw, int nh)     {
+    // Truncate high frequencies
+    double r     = 0.8;
+    double limit = r * ((nw - 1) * (nw - 1) + (nh - 1) * (nh - 1));
+
+    for (int u = 0; u < nh; u++) {
+        for (int v = 0; v < nw; v++) {
+            double dst = u * u + v * v;
+
+            if (dst > limit) freq[u * nw + v] = RGBComplex();
+        }
+    }
+}
+
+void FilterFFT::edgeDetection(std::vector<RGBComplex>& freq, int nw, int nh) {
+    // Attenuate low frequencies
+    double r     = 0.5;
+    double limit = r * ((nw - 1) * (nw - 1) + (nh - 1) * (nh - 1));
+
+    for (int u = 0; u < nh; u++) {
+        for (int v = 0; v < nw; v++) {
+            double dst = u * u + v * v;
+
+            if (dst < limit) freq[u * nw + v] = RGBComplex();
+        }
+    }
+
+    // Turn RGB to gray
+    for (int u = 0; u < nh; u++) {
+        for (int v = 0; v < nw; v++) {
+            freq[u * nw + v].average();
+        }
+    }
+}
+
+void FilterFFT::sharpening(std::vector<RGBComplex>& freq, int nw, int nh) {
+    // Truncate intermediate frequencies
+    double rlo = 0.15;
+    double rhi = 0.51;
+    double lo  = rlo * ((nw - 1) * (nw - 1) + (nh - 1) * (nh - 1));
+    double hi  = rhi * ((nw - 1) * (nw - 1) + (nh - 1) * (nh - 1));
+
+    for (int u = 0; u < nh; u++) {
+        for (int v = 0; v < nw; v++) {
+            double dst = u * u + v * v;
+
+            if ((dst < hi) && (dst > lo)) freq[u * nw + v] = RGBComplex();
+        }
+    }
 }
 
 void FilterFFT::applyDFT(Canvas2D *canvas) {

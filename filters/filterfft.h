@@ -15,6 +15,8 @@ public:
 
     RGBComplex   & operator+=(const RGBComplex& rhs);
 
+    void           average();
+
     inline Complex R() {
         return m_r;
     }
@@ -34,10 +36,17 @@ private:
     Complex m_b;
 };
 
+enum FFTFeature {
+    Smoothing,
+    EdgeDetection,
+    Sharpening,
+    Recover
+};
+
 class FilterFFT : public Filter {
 public:
 
-    FilterFFT();
+    FilterFFT(FFTFeature feature);
     ~FilterFFT() override;
 
     void applyDFT(Canvas2D *canvas);
@@ -45,12 +54,10 @@ public:
 
 private:
 
-    void separate(RGBComplex *X, int N);
-    void separate(Complex *X, int N);
-
     // Unit test
     // void test();
     // void test1();
+    void separate(Complex *X, int N);
     void fft(Complex *X, int N);
     void ifft(Complex *X, int N);
     void fft(RGBComplex *X, int N);
@@ -58,6 +65,13 @@ private:
     void fft2(std::vector<RGBComplex>& freq, BGRA *data, int nw, int nh);
     void ifft2(std::vector<RGBComplex>& spatial, std::vector<RGBComplex>& freq, int nw, int nh);
     int  nearestPO2(int x);
+
+    void recover(std::vector<RGBComplex>& freq, int nw, int nh);
+    void smoothing(std::vector<RGBComplex>& freq, int nw, int nh);
+    void edgeDetection(std::vector<RGBComplex>& freq, int nw, int nh);
+    void sharpening(std::vector<RGBComplex>& freq, int nw, int nh);
+
+    FFTFeature m_feature;
 };
 
 #endif // FILTERFFT_H
