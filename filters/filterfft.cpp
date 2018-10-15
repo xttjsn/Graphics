@@ -1,47 +1,27 @@
 #include "filterfft.h"
 #include "filterscale.h"
+#include <iostream>
 
 RGBComplex::RGBComplex()
-    : m_r(std::complex<float>(0.0f, 0.0f)),
-    m_g(std::complex<float>(0.0f, 0.0f)),
-    m_b(std::complex<float>(0.0f, 0.0f)) {}
+    : m_r(Complex(0)),
+    m_g(Complex(0)),
+    m_b(Complex(0)) {}
 
-RGBComplex::RGBComplex(std::complex<float> r, std::complex<float> g,
-                       std::complex<float> b)
+RGBComplex::RGBComplex(Complex r, Complex g,
+                       Complex b)
     : m_r(r),
     m_g(g),
     m_b(b) {}
 
 RGBComplex::RGBComplex(BGRA bgra)
-    : m_r(std::complex<float>(bgra.r, bgra.r)),
-    m_g(std::complex<float>(bgra.g, bgra.g)),
-    m_b(std::complex<float>(bgra.b, bgra.b)) {}
+    : m_r(Complex(bgra.r)),
+    m_g(Complex(bgra.g)),
+    m_b(Complex(bgra.b)) {}
 
 RGBComplex& RGBComplex::operator+=(const RGBComplex& rhs) {
     m_r += rhs.m_r;
     m_g += rhs.m_g;
     m_b += rhs.m_b;
-    return *this;
-}
-
-RGBComplex& RGBComplex::operator+(const RGBComplex& rhs) {
-    m_r += rhs.m_r;
-    m_g += rhs.m_g;
-    m_b += rhs.m_b;
-    return *this;
-}
-
-RGBComplex& RGBComplex::operator-(const RGBComplex& rhs) {
-    m_r -= rhs.m_r;
-    m_g -= rhs.m_g;
-    m_b -= rhs.m_b;
-    return *this;
-}
-
-RGBComplex& RGBComplex::operator*(const std::complex<float> rhs) {
-    m_r *= rhs;
-    m_g *= rhs;
-    m_b *= rhs;
     return *this;
 }
 
@@ -63,7 +43,19 @@ void FilterFFT::separate(RGBComplex *X, int N) {
     for (int i = 0; i < N / 2; i++) X[i + N / 2] = tmp[i];  // Move odd to back
 }
 
-void FilterFFT::fft(RGBComplex *X, int N, bool inverse) {
+void FilterFFT::separate(Complex *X, int N) {
+    std::vector<Complex> tmp;
+
+    tmp.resize(N / 2);
+
+    for (int i = 0; i < N / 2; i++) tmp[i] = X[i * 2 + 1];  // Copy odd to tmp
+
+    for (int i = 0; i < N / 2; i++) X[i] = X[i * 2];        // Move even to front
+
+    for (int i = 0; i < N / 2; i++) X[i + N / 2] = tmp[i];  // Move odd to back
+}
+
+void FilterFFT::fft(Complex *X, int N) {
     // Cooley-Tukey FFT
     // X_k = E_k + e^(-2*PI*i*k/N) * O_k
     // X_{k+N/2} = E_k - e^(-2*PI*i*k/N) * O_k
@@ -72,18 +64,66 @@ void FilterFFT::fft(RGBComplex *X, int N, bool inverse) {
     if (N >= 2) {
         // Only perform FFT when N >= 2
         separate(X, N);
-        fft(X,         N / 2, inverse);
-        fft(X + N / 2, N / 2, inverse);
+        fft(X,         N / 2);
+        fft(X + N / 2, N / 2);
 
         for (int k = 0; k < N / 2; k++) {
-            RGBComplex E = X[k];
-            RGBComplex O = X[k + N / 2];
-            float angle  = -2.0 * PI * k / N;
-            angle *= inverse ? -1 : 1;
-            std::complex<float> p(std::cos(angle), std::sin(angle));
+            Complex E = X[k];
+            Complex O = X[k + N / 2];
+            Complex p = std::polar(1.0f, -2.0f * PI * k / N);
             X[k]         = E + O * p;
             X[k + N / 2] = E - O * p;
         }
+    }
+}
+
+void FilterFFT::ifft(Complex *X, int N) {
+    for (int i = 0; i < N; i++) {
+        X[i] = std::conj(X[i]);
+    }
+
+    fft(X, N);
+
+    for (int i = 0; i < N; i++) {
+        X[i] = std::conj(X[i]) / Complex(N);
+    }
+}
+
+void FilterFFT::fft(RGBComplex *X, int N) {
+    std::vector<Complex> Rs, Gs, Bs;
+
+    Rs.resize(N); Gs.resize(N); Bs.resize(N);
+
+    for (int i = 0; i < N; i++) {
+        Rs[i] = X[i].R();
+        Gs[i] = X[i].G();
+        Bs[i] = X[i].B();
+    }
+    fft(Rs.data(), N);
+    fft(Gs.data(), N);
+    fft(Bs.data(), N);
+
+    for (int i = 0; i < N; i++) {
+        X[i] = RGBComplex(Rs[i], Gs[i], Bs[i]);
+    }
+}
+
+void FilterFFT::ifft(RGBComplex *X, int N) {
+    std::vector<Complex> Rs, Gs, Bs;
+
+    Rs.resize(N); Gs.resize(N); Bs.resize(N);
+
+    for (int i = 0; i < N; i++) {
+        Rs[i] = X[i].R();
+        Gs[i] = X[i].G();
+        Bs[i] = X[i].B();
+    }
+    ifft(Rs.data(), N);
+    ifft(Gs.data(), N);
+    ifft(Bs.data(), N);
+
+    for (int i = 0; i < N; i++) {
+        X[i] = RGBComplex(Rs[i], Gs[i], Bs[i]);
     }
 }
 
@@ -91,27 +131,10 @@ int FilterFFT::nearestPO2(int x) {
     return 1 << static_cast<int>(std::ceil(std::log2(static_cast<double>(x))));
 }
 
-void FilterFFT::apply(Canvas2D *canvas) {
-    // Convert spatial domain to frequency domain and then convert back
-    int w = canvas->width(), h = canvas->height();
-    int nw = nearestPO2(w), nh = nearestPO2(h);
-
-    // Create a scale filter to scale the canvas such that both width and height
-    // are powers of two.
-    FilterScale filterUp(static_cast<float>(nw) / w, static_cast<float>(nh) / h);
-
-    // Create another filter to scale the image down after FFT is done
-    FilterScale filterDown(static_cast<float>(w) / nw, static_cast<float>(h) / nh);
-
-    filterUp.apply(canvas);
-
-    BGRA *data = canvas->data(), *cur;
-
-    std::vector<RGBComplex> freq;
-    freq.reserve(nw * nh);
-
+void FilterFFT::fft2(std::vector<RGBComplex>& freq, BGRA *data, int nw, int nh) {
     // For every row, do an FFT
     std::vector<RGBComplex> buf;
+
     buf.resize(nw);
 
     for (int y = 0; y < nh; y++) {
@@ -121,7 +144,7 @@ void FilterFFT::apply(Canvas2D *canvas) {
         }
 
         // Perform FFT
-        fft(buf.data(), nw, false);
+        fft(buf.data(), nw);
 
         freq.insert(freq.end(), buf.begin(), buf.end());
     }
@@ -136,18 +159,17 @@ void FilterFFT::apply(Canvas2D *canvas) {
         }
 
         // Perform FFT
-        fft(buf.data(), nh, false);
+        fft(buf.data(), nh);
 
         // Copy back
         for (int y = 0; y < nh; y++) {
             freq[y * nw + x] = buf[y];
         }
     }
+}
 
-    // Convert frequency domain to spatial domain
-    // Inverse FFT
-    std::vector<RGBComplex> spatial;
-    spatial.reserve(nw * nh);
+void FilterFFT::ifft2(std::vector<RGBComplex>& spatial, std::vector<RGBComplex>& freq, int nw, int nh) {
+    std::vector<RGBComplex> buf;
 
     buf.resize(nw);
 
@@ -158,7 +180,7 @@ void FilterFFT::apply(Canvas2D *canvas) {
         }
 
         // Perform inverse FFT
-        fft(buf.data(), nw, true);
+        ifft(buf.data(), nw);
 
         spatial.insert(spatial.end(), buf.begin(), buf.end());
     }
@@ -173,13 +195,44 @@ void FilterFFT::apply(Canvas2D *canvas) {
         }
 
         // Perform FFT
-        fft(buf.data(), nh, true);
+        ifft(buf.data(), nh);
 
         // Copy back
         for (int y = 0; y < nh; y++) {
             spatial[y * nw + x] = buf[y];
         }
     }
+}
+
+void FilterFFT::apply(Canvas2D *canvas) {
+    // Unit test
+    // test();
+    // test1();
+
+    // Convert spatial domain to frequency domain and then convert back
+    int w = canvas->width(), h = canvas->height();
+    int nw = nearestPO2(w), nh = nearestPO2(h);
+
+    // Create a scale filter to scale the canvas such that both width and height
+    // are powers of two.
+    FilterScale filterUp(static_cast<double>(nw) / w, static_cast<double>(nh) / h);
+
+    // Create another filter to scale the image down after FFT is done
+    FilterScale filterDown(static_cast<double>(w) / nw, static_cast<double>(h) / nh);
+
+    filterUp.apply(canvas);
+
+    BGRA *data = canvas->data(), *cur;
+
+    // Spatial to frequency domain
+    std::vector<RGBComplex> freq;
+    freq.reserve(nw * nh);
+    fft2(freq, data, nw, nh);
+
+    // Convert frequency domain to spatial domain
+    std::vector<RGBComplex> spatial;
+    spatial.reserve(nw * nh);
+    ifft2(spatial, freq, nw, nh);
 
     // Copy spatial to canvas
     for (int y = 0; y < nh; y++) {
@@ -187,13 +240,10 @@ void FilterFFT::apply(Canvas2D *canvas) {
             RGBComplex cplx = spatial[y * nw + x];
             cur = canvas->data() + y * nw + x;
 
-            int R = MIN(MAX(static_cast<int>(std::abs(cplx.R()) / (nw * nh)), 0), 255);
-            int G = MIN(MAX(static_cast<int>(std::abs(cplx.G()) / (nw * nh)), 0), 255);
-            int B = MIN(MAX(static_cast<int>(std::abs(cplx.B()) / (nw * nh)), 0), 255);
+            int R = MIN(MAX(static_cast<int>(std::abs(cplx.R())), 0), 255);
+            int G = MIN(MAX(static_cast<int>(std::abs(cplx.G())), 0), 255);
+            int B = MIN(MAX(static_cast<int>(std::abs(cplx.B())), 0), 255);
 
-            if ((y % 10 == 0) && (x % 10 == 0)) {
-                printf("R:%d, G:%d, B:%d\n", R, G, B);
-            }
             *(cur) = BGRA(R, G, B, 255);
         }
     }
@@ -214,7 +264,7 @@ void FilterFFT::applyDFT(Canvas2D *canvas) {
     RGBComplex freqAmp;
 
     // Spatial to Frequency Domain
-    float r = 0.0f, g = 0.0f, b = 0.0f, p = 0.0f;
+    double r = 0.0f, g = 0.0f, b = 0.0f, p = 0.0f;
 
     for (int u = 0; u < h; u++) {
         for (int v = 0; v < w; v++) {
@@ -222,15 +272,15 @@ void FilterFFT::applyDFT(Canvas2D *canvas) {
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     cur = getBGRA(data, y, x, w);
-                    r   = static_cast<float>(cur->r);
-                    g   = static_cast<float>(cur->g);
-                    b   = static_cast<float>(cur->b);
-                    p   = -2 * PI * (static_cast<float>(v) * x / w + static_cast<float>(u) * y / h);
-                    float cos = std::cos(p);
-                    float sin = std::sin(p);
-                    freq[u * w + v] += RGBComplex(std::complex<float>(r * cos, r * sin),
-                                                  std::complex<float>(g * cos, g * sin),
-                                                  std::complex<float>(b * cos, b * sin));
+                    r   = static_cast<double>(cur->r);
+                    g   = static_cast<double>(cur->g);
+                    b   = static_cast<double>(cur->b);
+                    p   = -2 * PI * (static_cast<double>(v) * x / w + static_cast<double>(u) * y / h);
+                    double cos = std::cos(p);
+                    double sin = std::sin(p);
+                    freq[u * w + v] += RGBComplex(Complex(r * cos, r * sin),
+                                                  Complex(g * cos, g * sin),
+                                                  Complex(b * cos, b * sin));
                 }
             }
         }
@@ -246,10 +296,10 @@ void FilterFFT::applyDFT(Canvas2D *canvas) {
             for (int u = 0; u < h; u++) {
                 for (int v = 0; v < w; v++) {
                     freqAmp = freq[u * w + v];
-                    p       = 2 * PI * (static_cast<float>(v) * x / w + static_cast<float>(u) * y / h);
-                    float cos = std::cos(p);
-                    float sin = std::sin(p);
-                    std::complex<float> f(cos, sin);
+                    p       = 2 * PI * (static_cast<double>(v) * x / w + static_cast<double>(u) * y / h);
+                    double  cos = std::cos(p);
+                    double  sin = std::sin(p);
+                    Complex f(cos, sin);
                     buf[y * w + x] += RGBComplex(f * freqAmp.R(),
                                                  f * freqAmp.G(),
                                                  f * freqAmp.B());
@@ -267,3 +317,62 @@ void FilterFFT::applyDFT(Canvas2D *canvas) {
         }
     }
 } // FilterFFT::apply
+
+// void FilterFFT::test() {
+//     std::vector<RGBComplex> test = { RGBComplex(1.0, 1.0, 1.0), RGBComplex(1.0, 1.0, 1.0),
+//                                      RGBComplex(1.0, 1.0, 1.0), RGBComplex(1.0, 1.0, 1.0),
+//                                      RGBComplex(0.0, 0.0, 0.0), RGBComplex(0.0, 0.0, 0.0),
+//                                      RGBComplex(0.0, 0.0, 0.0), RGBComplex(0.0, 0.0, 0.0),
+//     };
+//
+//     fft(test.data(), 8);
+//
+//     printf("fft\n");
+//
+//     for (int i = 0; i < 8; i++) {
+//         printf("R:(%f,%f), G:(%f, %f), B:(%f, %f)\n",
+//                test[i].R().real(),
+//                test[i].R().imag(),
+//                test[i].G().real(),
+//                test[i].G().imag(),
+//                test[i].B().real(),
+//                test[i].B().imag());
+//     }
+//
+//     ifft(test.data(), 8);
+//
+//     printf("ifft\n");
+//
+//     for (int i = 0; i < 8; i++) {
+//         printf("R:(%f,%f), G:(%f, %f), B:(%f, %f)\n",
+//                test[i].R().real(),
+//                test[i].R().imag(),
+//                test[i].G().real(),
+//                test[i].G().imag(),
+//                test[i].B().real(),
+//                test[i].B().imag());
+//     }
+// }
+//
+// void FilterFFT::test1() {
+//     std::vector<Complex > test = { 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
+//
+//     fft(test.data(), 8);
+//
+//     std::cout << "fft" << std::endl;
+//
+//     for (int i = 0; i < 8; ++i)
+//     {
+//         std::cout << test[i] << std::endl;
+//     }
+//
+//     // inverse fft
+//     ifft(test.data(), 8);
+//
+//     std::cout << std::endl << "ifft" << std::endl;
+//
+//     for (int i = 0; i < 8; ++i)
+//     {
+//         std::cout << test[i] << std::endl;
+//     }
+// }

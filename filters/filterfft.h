@@ -4,35 +4,34 @@
 #include "filter.h"
 #include <complex>
 
+typedef std::complex<double> Complex;
+
 class RGBComplex {
 public:
 
     RGBComplex();
-    RGBComplex(std::complex<float> r, std::complex<float> g, std::complex<float> b);
+    RGBComplex(Complex r, Complex g, Complex b);
     RGBComplex(BGRA bgra);
 
-    RGBComplex               & operator+=(const RGBComplex& rhs);
-    RGBComplex               & operator+(const RGBComplex& rhs);
-    RGBComplex               & operator-(const RGBComplex& rhs);
-    RGBComplex               & operator*(const std::complex<float> rhs);
+    RGBComplex   & operator+=(const RGBComplex& rhs);
 
-    inline std::complex<float> R() {
+    inline Complex R() {
         return m_r;
     }
 
-    inline std::complex<float> G() {
+    inline Complex G() {
         return m_g;
     }
 
-    inline std::complex<float> B() {
+    inline Complex B() {
         return m_b;
     }
 
 private:
 
-    std::complex<float> m_r;
-    std::complex<float> m_g;
-    std::complex<float> m_b;
+    Complex m_r;
+    Complex m_g;
+    Complex m_b;
 };
 
 class FilterFFT : public Filter {
@@ -47,7 +46,17 @@ public:
 private:
 
     void separate(RGBComplex *X, int N);
-    void fft(RGBComplex *X, int N, bool inverse = false);
+    void separate(Complex *X, int N);
+
+    // Unit test
+    // void test();
+    // void test1();
+    void fft(Complex *X, int N);
+    void ifft(Complex *X, int N);
+    void fft(RGBComplex *X, int N);
+    void ifft(RGBComplex *X, int N);
+    void fft2(std::vector<RGBComplex>& freq, BGRA *data, int nw, int nh);
+    void ifft2(std::vector<RGBComplex>& spatial, std::vector<RGBComplex>& freq, int nw, int nh);
     int  nearestPO2(int x);
 };
 
