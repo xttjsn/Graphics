@@ -77,9 +77,8 @@ public:
 
 private:
 
-    // @TODO: [CAMTRANS] Add member variables here as needed (ex. vec4 m_u)
-    glm::vec4 m_u, m_v, m_w, m_eye;
-    float m_ar, m_ha, m_near, m_far;
+    // @TODO TASK 1: [CAMTRANS] Add member variables here as needed (ex. vec4 m_u)
+    
 };
 
 #endif // CAMTRANSCAMERA_H
