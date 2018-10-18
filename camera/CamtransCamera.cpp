@@ -100,16 +100,51 @@ void CamtransCamera::setClip(float nearPlane, float farPlane){
 }
 
 // @TODO Task 1: Define the helper methods for updating the matrices here...
-void CamtransCamera::updateProjectionMatrix(){ }
+void CamtransCamera::updateProjectionMatrix(){
+    updateScaleMatrix();
+    updatePerspectiveMatrix();
+}
 
-void CamtransCamera::updatePerspectiveMatrix(){ }
+void CamtransCamera::updatePerspectiveMatrix(){
+    float c = - near / far;
+    m_perspectiveTransformation = glm::transpose(glm::mat4(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1 / (1 + c), (-c) / (1 + c),
+        0, 0, -1, 0
+    ));
+}
 
-void CamtransCamera::updateScaleMatrix(){ }
+void CamtransCamera::updateScaleMatrix(){
+    m_scaleMatrix = glm::transpose(glm::mat4(
+        1.0 / (m_far * glm::tan(glm::radian(m_thetaW) / 2.0)), 0, 0, 0,
+        0, 1.0 / (m_far * glm::tan(glm::radian(m_thetaH) / 2.0)), 0, 0,
+        0, 0, 1.0 / m_far, 0,
+        0, 0, 0, 1
+    ));
+}
 
-void CamtransCamera::updateViewMatrix(){ }
+void CamtransCamera::updateViewMatrix(){
+    updateTranslationMatrix();
+    updateRotationMatrix();
+}
 
-void CamtransCamera::updateRotationMatrix(){ }
+void CamtransCamera::updateRotationMatrix(){
+    m_rotationMatrix = glm::transpose(glm::mat4(
+        m_u.x, m_u.y, m_u.z, 0,
+        m_v.x, m_v.y, m_v.z, 0,
+        m_w.x, m_w.y, m_w.z, 0,
+        0,     0,     0,     1
+    ));
+}
 
-void CamtransCamera::updateTranslationMatrix(){ }
+void CamtransCamera::updateTranslationMatrix(){
+    m_translationMatrix = glm::transpose(glm::mat4(
+        1, 0, 0, -m_eye.x,
+        0, 1, 0, -m_eye.y,
+        0, 0, 1, -m_eye.z,
+        0, 0, 0, 1
+    ));
+}
 
 // @TODO Task 2: Fill in the helper methods you created for updating the matrices...
