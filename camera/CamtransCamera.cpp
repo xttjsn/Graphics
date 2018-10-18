@@ -8,86 +8,108 @@
 #include "CamtransCamera.h"
 #include <Settings.h>
 
-CamtransCamera::CamtransCamera()
-{
+CamtransCamera::CamtransCamera(){
     // @TODO Task 3: [CAMTRANS] Set up the default camera settings to match the demo...
 }
 
 glm::mat4x4 CamtransCamera::getProjectionMatrix() const {
     // TODO Task 3: Camtrans
+    return m_projectionMatrix;
 }
 
 glm::mat4x4 CamtransCamera::getViewMatrix() const {
     // TODO Task 3: Camtrans
+    return m_viewMatrix;
 }
 
 glm::mat4x4 CamtransCamera::getScaleMatrix() const {
     // TODO Task 1: Camtrans
+    return m_scaleMatrix;
 }
 
 glm::mat4x4 CamtransCamera::getPerspectiveMatrix() const {
     // TODO Task 1: Camtrans
+    return m_perspectiveTransformation;
 }
 
 glm::vec4 CamtransCamera::getPosition() const {
     // TODO Task 1: Camtrans
+    return m_eye;
 }
 
 glm::vec4 CamtransCamera::getU() const {
     // TODO Task 1: Camtrans
+    return m_u;
 }
 
 glm::vec4 CamtransCamera::getV() const {
     // TODO Task 1: Camtrans
+    return m_v;
 }
 
 glm::vec4 CamtransCamera::getW() const {
     // TODO Task 1: Camtrans
+    return m_w;
 }
 
 glm::vec4 CamtransCamera::getLook() const {
     // TODO Task 1: Camtrans
+    return -m_w;
 }
 
 float CamtransCamera::getAspectRatio() const {
     // TODO Task 1: Camtrans
+    return m_aspectRatio;
 }
 
 float CamtransCamera::getHeightAngle() const {
     // TODO Task 1: Camtrans
+    return m_thetaH;
 }
 
-void CamtransCamera::orientLook(const glm::vec4 &eye, const glm::vec4 &look, const glm::vec4 &up) {
-  // TODO Task 3: Camtrans
-}
-
-void CamtransCamera::setHeightAngle(float h) {
+void CamtransCamera::orientLook(const glm::vec4 &eye, const glm::vec4 &look, const glm::vec4 &up){
     // TODO Task 3: Camtrans
 }
 
-void CamtransCamera::setAspectRatio(float a) {
+void CamtransCamera::setHeightAngle(float h){
     // TODO Task 3: Camtrans
 }
 
-void CamtransCamera::translate(const glm::vec4 &v) {
+void CamtransCamera::setAspectRatio(float a){
+    // TODO Task 3: Camtrans
+}
+
+void CamtransCamera::translate(const glm::vec4 &v){
     // TODO: Camtrans
 }
 
-void CamtransCamera::rotateU(float degrees) {
+void CamtransCamera::rotateU(float degrees){
     // TODO Task 3: Camtrans
 }
 
-void CamtransCamera::rotateV(float degrees) {
+void CamtransCamera::rotateV(float degrees){
     // TODO Task 3: Camtrans
 }
 
-void CamtransCamera::rotateW(float degrees) {
+void CamtransCamera::rotateW(float degrees){
     // TODO Task 3: Camtrans
 }
 
-void CamtransCamera::setClip(float nearPlane, float farPlane) {
+void CamtransCamera::setClip(float nearPlane, float farPlane){
     // TODO Task 3: Camtrans
 }
 
 // @TODO Task 1: Define the helper methods for updating the matrices here...
+void CamtransCamera::updateProjectionMatrix(){ }
+
+void CamtransCamera::updatePerspectiveMatrix(){ }
+
+void CamtransCamera::updateScaleMatrix(){ }
+
+void CamtransCamera::updateViewMatrix(){ }
+
+void CamtransCamera::updateRotationMatrix(){ }
+
+void CamtransCamera::updateTranslationMatrix(){ }
+
 // @TODO Task 2: Fill in the helper methods you created for updating the matrices...
