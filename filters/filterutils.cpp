@@ -6,11 +6,6 @@
 #include <cstdio>
 
 namespace FilterUtils {
-inline unsigned char REAL2byte(float f) {
-    int i = static_cast<int>((f * 255.0 + 0.5));
-
-    return (i < 0) ? 0 : (i > 255) ? 255 : i;
-}
 
 void Convolve2D(BGRA *dst, BGRA *src, int width, int height,
                 const std::vector<float>& kernel, bool normalize) {
