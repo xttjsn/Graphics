@@ -209,8 +209,7 @@ void FilterBlur::apply_bo(Canvas2D *canvas) {
 
     for (int r = 0; r < h; r++) {
         for (int c = 0; c < w; c++) {
-            float r_acc = 0.0f, g_acc = 0.0f, b_acc = 0.0f, dst = 0.0f,
-                  k_acc     = 0.0f;
+            float r_acc = 0.0f, g_acc = 0.0f, b_acc = 0.0f, k_acc = 0.0f;
             int centerIndex = r * w + c;
 
             for (int rr = r - m_rad; rr < r + m_rad + 1; rr++) {

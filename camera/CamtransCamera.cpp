@@ -60,7 +60,7 @@ glm::vec4 CamtransCamera::getW() const {
 
 glm::vec4 CamtransCamera::getLook() const {
     // TODO Task 1: Camtrans
-    return -m_w;
+    return glm::vec4(-glm::vec3(m_w), 0);
 }
 
 float CamtransCamera::getAspectRatio() const {
@@ -75,11 +75,11 @@ float CamtransCamera::getHeightAngle() const {
 
 void CamtransCamera::orientLook(const glm::vec4 &eye, const glm::vec4 &look, const glm::vec4 &up){
     // TODO Task 3: Camtrans
-    m_eye = eye;
-    m_w = -glm::normalize(look);
-    m_up = up;
-    m_v = glm::normalize(m_up - glm::dot(m_up, m_w) * m_w);
-    m_u = glm::vec4(glm::cross(glm::vec3(m_v), glm::vec3(m_w)), 1);
+    m_eye = glm::vec4(glm::vec3(eye), 1);
+    m_w = -glm::vec4(glm::vec3(glm::normalize(look)), 0);
+    m_up = glm::vec4(glm::vec3(glm::normalize(up)), 0);
+    m_v = glm::vec4(glm::vec3(glm::normalize(m_up - glm::dot(m_up, m_w) * m_w)), 0);
+    m_u = glm::vec4(glm::cross(glm::vec3(m_v), glm::vec3(m_w)), 0);
     updateViewMatrix();
     updateProjectionMatrix();
 }
@@ -98,34 +98,34 @@ void CamtransCamera::setAspectRatio(float a){
 
 void CamtransCamera::translate(const glm::vec4 &v){
     // TODO: Camtrans
-    m_eye += v;
+    m_eye = glm::vec4(glm::vec3(m_eye) + glm::vec3(v), 1);
     updateViewMatrix();
 }
 
 void CamtransCamera::rotateU(float degrees){
     // TODO Task 3: Camtrans
     float rad = glm::radians(degrees);
-    glm::vec4 v0 = m_v, w0 = m_w;
-    m_v = v0 * glm::cos(rad) + w0 * glm::sin(rad);
-    m_w = w0 * glm::cos(rad) - v0 * glm::sin(rad);
+    glm::vec3 v0 = glm::vec3(m_v), w0 = glm::vec3(m_w);
+    m_v = glm::vec4(v0 * glm::cos(rad) + w0 * glm::sin(rad), 0);
+    m_w = glm::vec4(w0 * glm::cos(rad) - v0 * glm::sin(rad), 0);
     updateViewMatrix();
 }
 
 void CamtransCamera::rotateV(float degrees){
     // TODO Task 3: Camtrans
     float rad = glm::radians(degrees);
-    glm::vec4 u0 = m_u, w0 = m_w;
-    m_u = u0 * glm::cos(rad) + w0 * glm::sin(rad);
-    m_w = w0 * glm::cos(rad) - u0 * glm::sin(rad);
+    glm::vec3 u0 = glm::vec3(m_u), w0 = glm::vec3(m_w);
+    m_u = glm::vec4(u0 * glm::cos(rad) - w0 * glm::sin(rad), 0);
+    m_w = glm::vec4(w0 * glm::cos(rad) + u0 * glm::sin(rad), 0);
     updateViewMatrix();
 }
 
 void CamtransCamera::rotateW(float degrees){
     // TODO Task 3: Camtrans
     float rad = glm::radians(degrees);
-    glm::vec4 u0 = m_u, v0 = m_v;
-    m_u = u0 * glm::cos(rad) + v0 * glm::sin(rad);
-    m_v = v0 * glm::cos(rad) - u0 * glm::sin(rad);
+    glm::vec3 u0 = glm::vec3(m_u), v0 = glm::vec3(m_v);
+    m_u = glm::vec4(u0 * glm::cos(rad) + v0 * glm::sin(rad), 0);
+    m_v = glm::vec4(v0 * glm::cos(rad) - u0 * glm::sin(rad), 0);
     updateViewMatrix();
 }
 
@@ -145,10 +145,10 @@ void CamtransCamera::updateProjectionMatrix(){
 void CamtransCamera::updatePerspectiveMatrix(){
     float c = - m_near / m_far;
     m_perspectiveTransformation = glm::transpose(glm::mat4(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1 / (1 + c), (-c) / (1 + c),
-        0, 0, -1, 0
+        1.0, 0, 0, 0,
+        0, 1.0, 0, 0,
+        0, 0, -1.0 / (1.0 + c), c / (1.0 + c),
+        0, 0, -1.0, 0
     ));
 }
 
