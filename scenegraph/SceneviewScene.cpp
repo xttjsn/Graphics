@@ -124,60 +124,61 @@ void SceneviewScene::renderGeometry() {
     // know about OpenGL and leverage your Shapes classes to get the job done.
     //
 
-    for (auto transPrim : m_transfromPrimitives) {
-        std::unique_ptr<OpenGLShape> shape;
-        PrimitiveType type = transPrim.primitive.type;
-        glm::mat4x4 transform = transPrim.transform;
-        CS123SceneMaterial material = transPrim.primitive.material;
+    for (unsigned int i = 0; i < m_transPrims.size(); i++) {
+        PrimitiveType type = m_transPrims[i].primitive.type;
+        glm::mat4x4 transform = m_transPrims[i].transform;
+        CS123SceneMaterial material = m_transPrims[i].primitive.material;
         int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
         float p3 = settings.shapeParameter3;
 
-        switch (type) {
-        case PrimitiveType::PRIMITIVE_CUBE:
-            shape = std::make_unique<Cube>(p1, p2, p3);
-            qDebug("Drawing a Cube");
-            break;
+        if (!m_transPrims[i].shape) {
+            switch (type) {
+            case PrimitiveType::PRIMITIVE_CUBE:
+                m_transPrims[i].shape = std::make_unique<Cube>(p1, p2, p3);
+                break;
 
-        case PrimitiveType::PRIMITIVE_CONE:
-            shape = std::make_unique<Cone>(p1, p2, p3);
-            qDebug("Drawing a Cone");
-            break;
+            case PrimitiveType::PRIMITIVE_CONE:
+                m_transPrims[i].shape = std::make_unique<Cone>(p1, p2, p3);
+                break;
 
-        case PrimitiveType::PRIMITIVE_CYLINDER:
-            shape = std::make_unique<Cylinder>(p1, p2, p3);
-            qDebug("Drawing a Cylinder");
-            break;
+            case PrimitiveType::PRIMITIVE_CYLINDER:
+                m_transPrims[i].shape = std::make_unique<Cylinder>(p1, p2, p3);
+                break;
 
-        case PrimitiveType::PRIMITIVE_SPHERE:
-            shape = std::make_unique<Sphere>(p1, p2, p3);
-            qDebug("Drawing a Sphere");
-            break;
+            case PrimitiveType::PRIMITIVE_SPHERE:
+                m_transPrims[i].shape = std::make_unique<Sphere>(p1, p2, p3);
+                break;
 
-        case PrimitiveType::PRIMITIVE_TORUS:
-            shape = std::make_unique<Torus>(p1, p2, p3);
-            qDebug("Drawing a Torus");
-            break;
+            case PrimitiveType::PRIMITIVE_TORUS:
+                m_transPrims[i].shape = std::make_unique<Torus>(p1, p2, p3);
+                break;
 
-        case PrimitiveType::PRIMITIVE_MESH:
+            case PrimitiveType::PRIMITIVE_MESH:
 
-            // Temporarily use cube
-            shape = std::make_unique<Cube>(p1, p2, p3);
-            qDebug("Drawing a Cube");
-            break;
+                // Temporarily use cube
+                m_transPrims[i].shape = std::make_unique<Cube>(p1, p2, p3);
+                break;
 
-        default:
-            qDebug("Invalid primitive type!");
-            exit(-1);
+            default:
+                qDebug("Invalid primitive type!");
+                exit(-1);
+            }
         }
         m_phongShader->setUniform("m", transform);
-        m_phongShader->setUniform("ambient_color", glm::vec3(material.cAmbient));
-        m_phongShader->setUniform("diffuse_color", glm::vec3(material.cDiffuse));
-        m_phongShader->setUniform("specular_color", glm::vec3(material.cSpecular));
-        shape->draw();
+        // TODO: multiply diffuse by kd and ambient by ka
+        material.cDiffuse *= m_global.kd;
+        material.cAmbient *= m_global.ka;
+        m_phongShader->applyMaterial(material);
+        m_transPrims[i].shape->draw();
     }
 
 }
 
 void SceneviewScene::settingsChanged() {
     // TODO: [SCENEVIEW] Fill this in if applicable.
+    // reset every shape unique_ptr
+    for (unsigned int i = 0; i < m_transPrims.size(); i++) {
+        if (m_transPrims[i].shape)
+            m_transPrims[i].shape.reset();
+    }
 }

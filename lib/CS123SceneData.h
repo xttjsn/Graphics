@@ -9,7 +9,9 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
+#include "shapes/openglshape.h"
 #include "glm/glm.hpp"
 
 enum class LightType {
@@ -178,6 +180,8 @@ struct CS123SceneNode {
 struct CS123TransfromPrimitive {
     glm::mat4x4 transform;
     CS123ScenePrimitive primitive;
+    std::unique_ptr<OpenGLShape> shape;
+    CS123TransfromPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim) : transform(trans), primitive(prim), shape(nullptr) {}
 };
 
 #endif // ifndef __CS123_SCENE_DATA__
