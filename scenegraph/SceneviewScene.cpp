@@ -128,6 +128,7 @@ void SceneviewScene::renderGeometry() {
         std::unique_ptr<OpenGLShape> shape;
         PrimitiveType type = transPrim.primitive.type;
         glm::mat4x4 transform = transPrim.transform;
+        CS123SceneMaterial material = transPrim.primitive.material;
         int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
         float p3 = settings.shapeParameter3;
 
@@ -169,6 +170,9 @@ void SceneviewScene::renderGeometry() {
             exit(-1);
         }
         m_phongShader->setUniform("m", transform);
+        m_phongShader->setUniform("ambient_color", glm::vec3(material.cAmbient));
+        m_phongShader->setUniform("diffuse_color", glm::vec3(material.cDiffuse));
+        m_phongShader->setUniform("specular_color", glm::vec3(material.cSpecular));
         shape->draw();
     }
 
