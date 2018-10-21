@@ -8,9 +8,9 @@
 
 namespace CS123 { namespace GL {
 
-    class Shader;
-    class CS123Shader;
-    class Texture2D;
+class Shader;
+class CS123Shader;
+class Texture2D;
 }}
 
 /**
@@ -50,10 +50,12 @@ private:
     void loadNormalsShader();
     void loadNormalsArrowShader();
 
-    void setSceneUniforms(SupportCanvas3D *context);\
+    void setSceneUniforms(SupportCanvas3D *context); \
     void setMatrixUniforms(CS123::GL::Shader *shader, SupportCanvas3D *context);
     void setLights();
     void renderGeometry();
+
+    void buildTransformationList();
 
     std::unique_ptr<CS123::GL::CS123Shader> m_phongShader;
     std::unique_ptr<CS123::GL::Shader> m_wireframeShader;

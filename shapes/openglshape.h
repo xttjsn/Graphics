@@ -30,7 +30,7 @@ public:
 
     /* Enables the specified attribute and calls glVertexAttribPointer with the given arguments. */
     void setAttribute(GLuint index, GLuint numElementsPerVertex, int offset, VBOAttribMarker::DATA_TYPE type,
-      bool normalize);
+                      bool normalize);
 
     /* Build the VAO given the specified vertex data and attributes */
     void buildVAO();
@@ -47,11 +47,12 @@ public:
     void setP1(int p1);
     void setP2(int p2);
     void setP3(float p3);
+    void applyTransform(glm::mat4x4 transform);
 
 protected:
 
     GLfloat * m_data;                       /// Vector of floats containing the vertex data.
-    GLsizeiptr m_size;                      /// Size of the data array, in bytes.
+    GLsizeiptr m_size;                      /// Size of the data array, in floats.
     VBO::GEOMETRY_LAYOUT m_drawMode;        /// Drawing mode
     int m_numVertices;                      /// Number of vertices to be rendered.
     std::vector<VBOAttribMarker> m_markers; /// List of VBOAttribMarkers that describe how data is laid out.

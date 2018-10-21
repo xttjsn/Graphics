@@ -2,6 +2,8 @@
 
 #include "gl/datatype/VAO.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
+#include <QtGlobal>
 
 using namespace CS123::GL;
 
@@ -66,7 +68,8 @@ void OpenGLShape::draw(){
 
 /* LOOK HERE: methods implementation */
 
-void OpenGLShape::reCalculateVertices(){ }
+void OpenGLShape::reCalculateVertices(){
+}
 
 void OpenGLShape::populateCoordinates(std::vector<glm::vec4>& vertices){
     for (glm::vec4& v : vertices) {
@@ -85,29 +88,53 @@ void OpenGLShape::populateCoordinates(std::vector<glm::vec4>& vertices){
     m_needRecalculate = false;
 }
 
-int OpenGLShape::getP1(){ return m_p1; }
+int OpenGLShape::getP1(){
+    return m_p1;
+}
 
-int OpenGLShape::getP2(){ return m_p2; }
+int OpenGLShape::getP2(){
+    return m_p2;
+}
 
-float OpenGLShape::getP3(){ return m_p3; }
+float OpenGLShape::getP3(){
+    return m_p3;
+}
 
 void OpenGLShape::setP1(int p1){
     if (m_p1 == p1) return;
 
-    m_p1 = p1;
+    m_p1              = p1;
     m_needRecalculate = true;
 }
 
 void OpenGLShape::setP2(int p2){
     if (m_p2 == p2) return;
 
-    m_p2 = p2;
+    m_p2              = p2;
     m_needRecalculate = true;
 }
 
 void OpenGLShape::setP3(float p3){
     if (m_p3 == p3) return;
 
-    m_p3 = p3;
+    m_p3              = p3;
     m_needRecalculate = true;
+}
+
+void OpenGLShape::applyTransform(glm::mat4x4 transform) {
+    Q_ASSERT(m_size % 3 == 0);
+    Q_ASSERT((m_size / 3) == (m_numVertices * 2));
+    for (int i = 0; i < m_size; i += 3) {
+        float x           = static_cast<float>(*(m_data + i));
+        float y           = static_cast<float>(*(m_data + i + 1));
+        float z           = static_cast<float>(*(m_data + i + 2));
+        bool isVert       = (i / 3) % 2 == 0;
+        glm::vec4 vec     = glm::vec4(x, y, z, isVert ? 1 : 0);
+        glm::mat4x4 trans = isVert ? transform : glm::inverseTranspose(transform);
+        vec               = trans * vec;
+        *(m_data + i)     = vec.x;
+        *(m_data + i + 1) = vec.y;
+        *(m_data + i + 2) = vec.z;
+    }
+    buildVAO();
 }

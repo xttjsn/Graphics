@@ -19,9 +19,11 @@ public:
     Scene(Scene &scene);
     virtual ~Scene();
 
-    virtual void settingsChanged() {}
+    virtual void settingsChanged() {
+    }
 
     static void parse(Scene *sceneToFill, CS123ISceneParser *parser);
+    static void parseNode(Scene *sceneToFill, CS123SceneNode *node, glm::mat4x4 parentTrans);
 
 protected:
 
@@ -34,6 +36,9 @@ protected:
     // Sets the global data for the scene.
     virtual void setGlobal(const CS123SceneGlobalData &global);
 
+    std::vector<CS123TransfromPrimitive> m_transfromPrimitives;
+    std::vector<CS123SceneLightData> m_lights;
+    std::vector<CS123SceneGlobalData> m_globals;
 };
 
 #endif // SCENE_H
