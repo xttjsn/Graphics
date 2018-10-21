@@ -47,7 +47,6 @@ public:
     void setP1(int p1);
     void setP2(int p2);
     void setP3(float p3);
-    void applyTransform(glm::mat4x4 transform);
 
 protected:
 

@@ -120,21 +120,3 @@ void OpenGLShape::setP3(float p3){
     m_p3              = p3;
     m_needRecalculate = true;
 }
-
-void OpenGLShape::applyTransform(glm::mat4x4 transform) {
-    Q_ASSERT(m_size % 3 == 0);
-    Q_ASSERT((m_size / 3) == (m_numVertices * 2));
-    for (int i = 0; i < m_size; i += 3) {
-        float x           = static_cast<float>(*(m_data + i));
-        float y           = static_cast<float>(*(m_data + i + 1));
-        float z           = static_cast<float>(*(m_data + i + 2));
-        bool isVert       = (i / 3) % 2 == 0;
-        glm::vec4 vec     = glm::vec4(x, y, z, isVert ? 1 : 0);
-        glm::mat4x4 trans = isVert ? transform : glm::inverseTranspose(transform);
-        vec               = trans * vec;
-        *(m_data + i)     = vec.x;
-        *(m_data + i + 1) = vec.y;
-        *(m_data + i + 2) = vec.z;
-    }
-    buildVAO();
-}

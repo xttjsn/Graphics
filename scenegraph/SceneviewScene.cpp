@@ -168,7 +168,7 @@ void SceneviewScene::renderGeometry() {
             qDebug("Invalid primitive type!");
             exit(-1);
         }
-        // shape->applyTransform(transform);
+        m_phongShader->setUniform("m", transform);
         shape->draw();
     }
 
