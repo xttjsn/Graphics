@@ -85,7 +85,7 @@ void Scene::parseNode(Scene *sceneToFill, CS123SceneNode *node, glm::mat4x4 pare
 
 void Scene::addPrimitive(const CS123ScenePrimitive& scenePrimitive,
                          const glm::mat4x4        & matrix) {
-    m_transPrims.emplace_back(CS123TransfromPrimitive(matrix, scenePrimitive));
+    m_transPrims.emplace_back(CS123TransformPrimitive(matrix, scenePrimitive));
 }
 
 void Scene::addLight(const CS123SceneLightData& sceneLight) {

@@ -124,39 +124,39 @@ void SceneviewScene::renderGeometry() {
     // know about OpenGL and leverage your Shapes classes to get the job done.
     //
 
-    for (unsigned int i = 0; i < m_transPrims.size(); i++) {
-        PrimitiveType type = m_transPrims[i].primitive.type;
-        glm::mat4x4 transform = m_transPrims[i].transform;
-        CS123SceneMaterial material = m_transPrims[i].primitive.material;
+    for (CS123TransformPrimitive &transPrim : m_transPrims) {
+        PrimitiveType type = transPrim.primitive.type;
+        glm::mat4x4 transform = transPrim.transform;
+        CS123SceneMaterial material = transPrim.primitive.material;
         int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
         float p3 = settings.shapeParameter3;
 
-        if (!m_transPrims[i].shape) {
+        if (!transPrim.shape) {
             switch (type) {
             case PrimitiveType::PRIMITIVE_CUBE:
-                m_transPrims[i].shape = std::make_unique<Cube>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Cube>(p1, p2, p3);
                 break;
 
             case PrimitiveType::PRIMITIVE_CONE:
-                m_transPrims[i].shape = std::make_unique<Cone>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Cone>(p1, p2, p3);
                 break;
 
             case PrimitiveType::PRIMITIVE_CYLINDER:
-                m_transPrims[i].shape = std::make_unique<Cylinder>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Cylinder>(p1, p2, p3);
                 break;
 
             case PrimitiveType::PRIMITIVE_SPHERE:
-                m_transPrims[i].shape = std::make_unique<Sphere>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Sphere>(p1, p2, p3);
                 break;
 
             case PrimitiveType::PRIMITIVE_TORUS:
-                m_transPrims[i].shape = std::make_unique<Torus>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Torus>(p1, p2, p3);
                 break;
 
             case PrimitiveType::PRIMITIVE_MESH:
 
                 // Temporarily use cube
-                m_transPrims[i].shape = std::make_unique<Cube>(p1, p2, p3);
+                transPrim.shape = std::make_unique<Cube>(p1, p2, p3);
                 break;
 
             default:
@@ -169,7 +169,7 @@ void SceneviewScene::renderGeometry() {
         material.cDiffuse *= m_global.kd;
         material.cAmbient *= m_global.ka;
         m_phongShader->applyMaterial(material);
-        m_transPrims[i].shape->draw();
+        transPrim.shape->draw();
     }
 
 }
@@ -177,8 +177,8 @@ void SceneviewScene::renderGeometry() {
 void SceneviewScene::settingsChanged() {
     // TODO: [SCENEVIEW] Fill this in if applicable.
     // reset every shape unique_ptr
-    for (unsigned int i = 0; i < m_transPrims.size(); i++) {
-        if (m_transPrims[i].shape)
-            m_transPrims[i].shape.reset();
+    for (CS123TransformPrimitive &transPrim : m_transPrims) {
+        if (transPrim.shape)
+            transPrim.shape.reset();
     }
 }

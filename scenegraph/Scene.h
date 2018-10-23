@@ -36,7 +36,7 @@ protected:
     // Sets the global data for the scene.
     virtual void setGlobal(const CS123SceneGlobalData &global);
 
-    std::vector<CS123TransfromPrimitive> m_transPrims;
+    std::vector<CS123TransformPrimitive> m_transPrims;
     std::vector<CS123SceneLightData> m_lights;
     CS123SceneGlobalData m_global;
 };
