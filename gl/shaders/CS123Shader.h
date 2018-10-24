@@ -5,6 +5,7 @@
 
 class CS123SceneMaterial;
 class CS123SceneLightData;
+class CS123SceneFileMap;
 
 namespace CS123 { namespace GL {
 
@@ -13,7 +14,8 @@ public:
     CS123Shader(const std::string &vertexSource, const std::string &fragmentSource);
     CS123Shader(const std::string &vertexSource, const std::string &geometrySource, const std::string &fragmentSource);
 
-    void applyMaterial(CS123SceneMaterial &material);
+    void applyMaterial(const CS123SceneMaterial material);
+    void applyTexture(CS123SceneFileMap& texture);
     void setLight(const CS123SceneLightData &light);
 };
 

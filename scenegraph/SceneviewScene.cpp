@@ -127,7 +127,7 @@ void SceneviewScene::renderGeometry() {
     for (CS123TransformPrimitive &transPrim : m_transPrims) {
         PrimitiveType type = transPrim.primitive.type;
         glm::mat4x4 transform = transPrim.transform;
-        CS123SceneMaterial &material = transPrim.primitive.material;
+        CS123SceneMaterial material = transPrim.primitive.material;
         int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
         float p3 = settings.shapeParameter3;
 
@@ -168,6 +168,7 @@ void SceneviewScene::renderGeometry() {
         material.cDiffuse *= m_global.kd;
         material.cAmbient *= m_global.ka;
         m_phongShader->applyMaterial(material);
+        m_phongShader->applyTexture(material.textureMap);
         transPrim.shape->draw();
     }
 
