@@ -14,21 +14,28 @@ void Cube::reCalculateVertices(){
 
     m_coords.clear();
     ShapeUtil shapeutil;
-    std::vector<glm::vec4> vertices;
-    std::vector<glm::vec4> zside0; // z = -m_radius face
-    float stepSize = 2.0f * m_radius / m_p1;
 
+    std::vector<OpenGLVertex> vertices;
+    std::vector<OpenGLVertex> zside0;
+    float stepSize = 2.0f * m_radius / m_p1;
     vertices.reserve(2 * (m_p1 + 2) * m_p1 * 6);
 
     for (int i = 0; i < m_p1; i++) {
-        // Set up the vertex for four corners
-        glm::vec4 A = glm::vec4(-m_radius, m_radius - i * stepSize, m_radius, 1);
-        glm::vec4 B = glm::vec4(-m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
-        glm::vec4 C = glm::vec4(m_radius, m_radius - i * stepSize, m_radius, 1);
-        glm::vec4 D = glm::vec4(m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
-        shapeutil.buildQuadStrip(zside0, A, B, C, D, m_p1);
+        glm::vec4 Apos = glm::vec4(-m_radius, m_radius - i * stepSize, m_radius, 1);
+        glm::vec2 Auv  = glm::vec2(0, i / static_cast<float>(m_p1));
+
+        glm::vec4 Bpos = glm::vec4(-m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
+        glm::vec2 Buv  = glm::vec2(0, (i + 1) / static_cast<float>(m_p1));
+
+        glm::vec4 Cpos = glm::vec4(m_radius, m_radius - i * stepSize, m_radius, 1);
+        glm::vec2 Cuv  = glm::vec2(1, i / static_cast<float>(m_p1));
+
+        glm::vec4 Dpos = glm::vec4(m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
+        glm::vec2 Duv  = glm::vec2(1, (i + 1) / static_cast<float>(m_p1));
+
+        shapeutil.buildQuadStripUV(zside0, Apos, Bpos, Cpos, Dpos, Auv, Buv, Cuv, Duv, m_p1);
     }
-    zside0.erase(zside0.end() - 2, zside0.end()); // Remove last one vertex and its normal, since it's of no use for connecting one face to another
+    zside0.erase(zside0.end() - 1, zside0.end());
 
     // Identity
     glm::mat4x4 z0z0 = glm::rotate(0.0f, glm::vec3(0, 1, 0));
@@ -48,21 +55,19 @@ void Cube::reCalculateVertices(){
     // Rotate zside0 to yside1
     glm::mat4x4 z0y1 = glm::rotate(-PI / 2.f, glm::vec3(1, 0, 0));
 
-
-    bool is_z0 = true;
+    bool is_z0                          = true;
     std::vector<glm::mat4x4 *> rot_ptrs = { &z0z0, &z0z1, &z0x0, &z0x1, &z0y0, &z0y1 };
     for (glm::mat4x4 *& rot_ptr: rot_ptrs) {
         glm::mat4x4 rot = *rot_ptr;
         // Degenerate triangles
         if (!is_z0) {
-            vertices.push_back(rot * zside0[0]);
-            vertices.push_back(rot * zside0[1]);
+            vertices.push_back(zside0[0].rotate(rot));
         } else {
             is_z0 = false;
         }
-        for (glm::vec4& v : zside0) {
-            vertices.push_back(rot * v);
+        for (OpenGLVertex v : zside0) {
+            vertices.push_back(v.rotate(rot));
         }
     }
-    populateCoordinates(vertices);
+    populateCoordinatesUV(vertices);
 } // Cube::reCalculateVertices

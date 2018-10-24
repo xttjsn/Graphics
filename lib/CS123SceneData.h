@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <QImage>
 
 #include "shapes/openglshape.h"
 #include "glm/glm.hpp"
@@ -83,6 +84,11 @@ struct CS123SceneCameraData {
     float focalLength; // Only applicable for depth of field
 };
 
+struct CS123Texture {
+    GLuint textureID;
+    std::shared_ptr<QImage> image;
+};
+
 // Data for file maps (ie: texture maps)
 struct CS123SceneFileMap {
     //    CS123SceneFileMap() : texid(0) {}
@@ -91,11 +97,15 @@ struct CS123SceneFileMap {
     float repeatU;
     float repeatV;
 
+    CS123Texture texture;
+
     void clear() {
-        isUsed   = false;
-        repeatU  = 0.0f;
-        repeatV  = 0.0f;
-        filename = std::string();
+        isUsed            = false;
+        repeatU           = 0.0f;
+        repeatV           = 0.0f;
+        filename          = std::string();
+        texture.textureID = 0;
+        texture.image     = nullptr;
     }
 };
 
@@ -181,7 +191,9 @@ struct CS123TransformPrimitive {
     glm::mat4x4 transform;
     CS123ScenePrimitive primitive;
     std::unique_ptr<OpenGLShape> shape;
-    CS123TransformPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim) : transform(trans), primitive(prim), shape(nullptr) {}
+    CS123TransformPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim)
+        : transform(trans), primitive(prim), shape(nullptr) {
+    }
 };
 
 #endif // ifndef __CS123_SCENE_DATA__

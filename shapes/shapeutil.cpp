@@ -5,7 +5,8 @@
 #define PI 3.1415926f
 
 ShapeUtil::ShapeUtil()
-{ }
+{
+}
 
 void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius){
     // Start with (0, -0.5, 0)
@@ -52,7 +53,7 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
 }
 
 void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
-  int numQuads){
+                               int numQuads){
     /* A ---- C
      * |      |
      * |      |
@@ -74,8 +75,29 @@ void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::v
     data.push_back(norm);
 }
 
+void ShapeUtil::buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 Apos, glm::vec4 Bpos, glm::vec4 Cpos, glm::vec4 Dpos,
+                      glm::vec2 Auv,  glm::vec2 Buv, glm::vec2 Cuv,  glm::vec2 Duv, int numQuads) {
+    /* A ---- C
+     * |      |
+     * |      |
+     * B ---- D
+     */
+    glm::vec4 norm = normalFromTriangle(Apos, Cpos, Bpos);
+    for (int t = 0; t <= numQuads; t++) {
+        glm::vec4 upPos   = interpolate(Apos, Cpos, t / static_cast<float>(numQuads));
+        glm::vec2 upUV    =  interpolate(Auv, Cuv, t / static_cast<float>(numQuads));
+        glm::vec4 downPos = interpolate(Bpos, Dpos, t / static_cast<float>(numQuads));
+        glm::vec2 downUV  = interpolate(Buv, Duv, t / static_cast<float>(numQuads));
+
+        data.emplace_back(upPos, norm, upUV);
+        data.emplace_back(downPos, norm, downUV);
+    }
+    data.emplace_back(Dpos, norm, Duv);
+    data.emplace_back(Bpos, norm, Buv);
+}
+
 void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks,
-  int numStrips){
+                                    int numStrips){
     /*      A
      *     / \
      *    X---X
@@ -94,7 +116,7 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
     data.push_back(glm::normalize(A));
 
     float phi = 0.0f, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
-      radius = glm::distance(A, B) / 2.0f;
+          radius = glm::distance(A, B) / 2.0f;
     float x, y, z;
     for (int i = 1; i < numStacks; i++) {
         phi   = 0.0f;
@@ -121,7 +143,7 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
 } // ShapeUtil::buildSphericalStrip
 
 void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 center, float radius, int numPoints,
-  float phi){
+                                      float phi){
     float delta_theta = 2 * PI / numPoints, theta = 0.0f, x, y, z;
 
     glm::vec4 norm;
@@ -141,7 +163,7 @@ void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 ce
 }
 
 void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vector<glm::vec4>& circ1,
-  std::vector<glm::vec4>& circ2){
+                                        std::vector<glm::vec4>& circ2){
     if (circ1.size() != circ2.size()) return;
 
     // Degenerate triangles
@@ -190,7 +212,7 @@ void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, b
 } // ShapeUtil::buildMobiusStrip
 
 void ShapeUtil::buildMobiusBlock(std::vector<glm::vec4>& data, glm::vec4 pA, glm::vec4 pB,
-  float u, float v, float delta_u, float delta_v, int p1, int p2, int i, int j, bool clockwise){
+                                 float u, float v, float delta_u, float delta_v, int p1, int p2, int i, int j, bool clockwise){
     /* Clock wise
      * +----G----H----J
      * |   /|   /|   /|
@@ -211,7 +233,7 @@ void ShapeUtil::buildMobiusBlock(std::vector<glm::vec4>& data, glm::vec4 pA, glm
      */
 
     glm::vec4 pC, pD, pE, pF, pG, pH, pI, pJ, normA, normB, norm_a, norm_b, norm_c, norm_d, norm_e, norm_f, norm_g,
-      norm_h, norm_i, norm_j;
+              norm_h, norm_i, norm_j;
     std::vector<glm::vec4> vs;
 
     pC = mobiusVertex(u, v + delta_v);
@@ -306,6 +328,13 @@ glm::vec4 ShapeUtil::interpolate(glm::vec4 A, glm::vec4 B, float t){
     z = A.z * (1.0 - t) + t * B.z;
     w = A.w * (1.0 - t) + t * B.w;
     return glm::vec4(x, y, z, w);
+}
+
+glm::vec2 ShapeUtil::interpolate(glm::vec2 A, glm::vec2 B, float t) {
+    float x, y;
+    x = A.x * (1.0 - t) + t * B.x;
+    y = A.y * (1.0 - t) + t * B.y;
+    return glm::vec2(x, y);
 }
 
 glm::vec4 ShapeUtil::mobiusVertex(float u, float v){

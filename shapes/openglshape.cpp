@@ -7,6 +7,17 @@
 
 using namespace CS123::GL;
 
+OpenGLVertex::OpenGLVertex(glm::vec4 pos, glm::vec4 norm, glm::vec2 texc) :
+    position(pos), normal(norm), texcoord(texc) {
+}
+
+OpenGLVertex OpenGLVertex::rotate(glm::mat4x4 rot) {
+    // Only change pos and norm, keep texcoord
+    glm::vec4 new_pos  = rot * position;
+    glm::vec4 new_norm = rot * normal;
+    return OpenGLVertex(new_pos, new_norm, texcoord);
+}
+
 OpenGLShape::OpenGLShape(int p1, int p2, float p3) :
     m_size(0),
     m_drawMode(VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLES),
@@ -83,6 +94,29 @@ void OpenGLShape::populateCoordinates(std::vector<glm::vec4>& vertices){
     setVertexData(m_coords.data(), m_coords.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, m_numVertices);
     setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
     setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    buildVAO();
+
+    m_needRecalculate = false;
+}
+
+void OpenGLShape::populateCoordinatesUV(std::vector<OpenGLVertex>& vertices) {
+    for (OpenGLVertex& v : vertices) {
+        m_coords.push_back(v.position.x);
+        m_coords.push_back(v.position.y);
+        m_coords.push_back(v.position.z);
+        m_coords.push_back(v.normal.x);
+        m_coords.push_back(v.normal.y);
+        m_coords.push_back(v.normal.z);
+        m_coords.push_back(v.texcoord.x);
+        m_coords.push_back(v.texcoord.y);
+    }
+
+    static constexpr int kFloatsPerVertex = 8;
+    m_numVertices = m_coords.size() / kFloatsPerVertex;
+    setVertexData(m_coords.data(), m_coords.size(), VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLE_STRIP, m_numVertices);
+    setAttribute(ShaderAttrib::POSITION, 3, 0, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    setAttribute(ShaderAttrib::NORMAL, 3, 12, VBOAttribMarker::DATA_TYPE::FLOAT, false);
+    setAttribute(ShaderAttrib::TEXCOORD0, 2, 24, VBOAttribMarker::DATA_TYPE::FLOAT, false);
     buildVAO();
 
     m_needRecalculate = false;

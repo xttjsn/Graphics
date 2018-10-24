@@ -19,6 +19,16 @@ class VAO;
 
 using namespace CS123::GL;
 
+class OpenGLVertex {
+public:
+    glm::vec4 position;
+    glm::vec4 normal;
+    glm::vec2 texcoord;
+
+    OpenGLVertex(glm::vec4 position, glm::vec4 normal, glm::vec2 texcoord);
+    OpenGLVertex rotate(glm::mat4x4 rot);
+};
+
 class OpenGLShape
 {
 public:
@@ -41,6 +51,7 @@ public:
     /* LOOK HERE: Added member methods. */
     virtual void reCalculateVertices();
     virtual void populateCoordinates(std::vector<glm::vec4>& vertices);
+    virtual void populateCoordinatesUV(std::vector<OpenGLVertex>& vertices);
     int getP1();
     int getP2();
     float getP3();
