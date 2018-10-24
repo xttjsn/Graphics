@@ -31,34 +31,6 @@ void CS123Shader::applyMaterial(const CS123SceneMaterial material) {
     setUniform("shininess", material.shininess);
 }
 
-void CS123Shader::applyTexture(CS123SceneFileMap& textureMap) {
-    // Handle texture
-    if (textureMap.isUsed && !textureMap.filename.empty()) {
-
-        if (!textureMap.texture.image) {
-            textureMap.texture.image = std::make_shared<QImage>(QString(textureMap.filename.c_str()));
-            if (textureMap.texture.image->isNull()) {
-                fprintf(stderr, "Cannot find texture image");
-                exit(-1);
-            }
-        }
-        if (!textureMap.texture.textureID) {
-            glGenTextures(1, &textureMap.texture.textureID);
-        }
-        glBindTexture(GL_TEXTURE_2D, textureMap.texture.textureID);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureMap.texture.image->width(),
-                     textureMap.texture.image->height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     textureMap.texture.image->bits());
-        setUniform("repeateUV", glm::vec2(textureMap.repeatU, textureMap.repeatV));
-
-        setUniform("useTexture", 1);
-    } else {
-        setUniform("useTexture", 0);
-    }
-}
-
 void CS123Shader::setLight(const CS123SceneLightData &light) {
     bool ignoreLight = false;
 

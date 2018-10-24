@@ -168,8 +168,28 @@ void SceneviewScene::renderGeometry() {
         material.cDiffuse *= m_global.kd;
         material.cAmbient *= m_global.ka;
         m_phongShader->applyMaterial(material);
-        m_phongShader->applyTexture(material.textureMap);
-        transPrim.shape->draw();
+
+        // Handle texture
+        if (material.textureMap.isUsed && !material.textureMap.filename.empty()) {
+            if (!transPrim.texture) {
+                QImage image(QString(material.textureMap.filename.c_str()));
+                if (image.isNull())  {
+                    fprintf(stderr, "Cannot find texture image.");
+                    exit(1);
+                }
+                image = image.convertToFormat(QImage::Format_RGBA8888);
+                transPrim.texture = std::make_unique<Texture2D>(image.bits(), image.width(), image.height());
+            }
+            transPrim.texture->bind();
+            m_phongShader->setUniform("repeateUV", glm::vec2(material.textureMap.repeatU, material.textureMap.repeatV));
+            m_phongShader->setUniform("useTexture", 1);
+            transPrim.shape->draw();
+            transPrim.texture->unbind();
+
+        } else {
+            m_phongShader->setUniform("useTexture", 0);
+            transPrim.shape->draw();
+        }
     }
 
 }

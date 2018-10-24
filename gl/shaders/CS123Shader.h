@@ -15,7 +15,6 @@ public:
     CS123Shader(const std::string &vertexSource, const std::string &geometrySource, const std::string &fragmentSource);
 
     void applyMaterial(const CS123SceneMaterial material);
-    void applyTexture(CS123SceneFileMap& texture);
     void setLight(const CS123SceneLightData &light);
 };
 

@@ -14,6 +14,8 @@
 
 #include "shapes/openglshape.h"
 #include "glm/glm.hpp"
+#include "gl/textures/Texture2D.h"
+#include "GL/glew.h"
 
 enum class LightType {
     LIGHT_POINT, LIGHT_DIRECTIONAL, LIGHT_SPOT, LIGHT_AREA
@@ -84,11 +86,6 @@ struct CS123SceneCameraData {
     float focalLength; // Only applicable for depth of field
 };
 
-struct CS123Texture {
-    GLuint textureID;
-    std::shared_ptr<QImage> image;
-};
-
 // Data for file maps (ie: texture maps)
 struct CS123SceneFileMap {
     //    CS123SceneFileMap() : texid(0) {}
@@ -97,15 +94,11 @@ struct CS123SceneFileMap {
     float repeatU;
     float repeatV;
 
-    CS123Texture texture;
-
     void clear() {
-        isUsed            = false;
-        repeatU           = 0.0f;
-        repeatV           = 0.0f;
-        filename          = std::string();
-        texture.textureID = 0;
-        texture.image     = nullptr;
+        isUsed   = false;
+        repeatU  = 0.0f;
+        repeatV  = 0.0f;
+        filename = std::string();
     }
 };
 
@@ -191,8 +184,9 @@ struct CS123TransformPrimitive {
     glm::mat4x4 transform;
     CS123ScenePrimitive primitive;
     std::unique_ptr<OpenGLShape> shape;
+    std::unique_ptr<Texture2D> texture;
     CS123TransformPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim)
-        : transform(trans), primitive(prim), shape(nullptr) {
+        : transform(trans), primitive(prim), shape(nullptr), texture(nullptr) {
     }
 };
 
