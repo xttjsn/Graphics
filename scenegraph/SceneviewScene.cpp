@@ -7,6 +7,7 @@
 #include "SupportCanvas3D.h"
 #include "ResourceLoader.h"
 #include "gl/shaders/CS123Shader.h"
+#include "gl/textures/TextureParametersBuilder.h"
 
 #include "shapes/cube.h"
 #include "shapes/cone.h"
@@ -170,45 +171,48 @@ void SceneviewScene::renderGeometry() {
         m_phongShader->applyMaterial(material);
 
         // Handle texture
+
         if (material.textureMap.isUsed && !material.textureMap.filename.empty()) {
-            if (!transPrim.texture) {
-                QImage image(QString(material.textureMap.filename.c_str()));
-                if (image.isNull())  {
-                    fprintf(stderr, "Cannot find texture image.");
-                    exit(1);
-                }
-                switch (image.format()) {
-                    case QImage::Format_ARGB32:
-                        fprintf(stdout, "Image format is ARGB32.");
-                        break;
-                    case QImage::Format_RGB32:
-                        fprintf(stdout, "Image format is RGB32.");
-                        break;
-                    case QImage::Format_RGB888:
-                        fprintf(stdout, "Image format is RGB888.");
-                        break;
-                    case QImage::Format_RGBA8888:
-                        fprintf(stdout, "Image format is RGBA8888");
-                        break;
-                    default:
-                        fprintf(stdout, "Image format is %d", image.format());
-                }
-
-//                image = image.convertToFormat(QImage::Format_RGBA8888);
-                transPrim.texture = std::make_unique<Texture2D>(image.bits(), image.width(), image.height());
-            }
-            transPrim.texture->bind();
-            m_phongShader->setUniform("repeateUV", glm::vec2(material.textureMap.repeatU, material.textureMap.repeatV));
-            m_phongShader->setUniform("useTexture", 1);
-            transPrim.shape->draw();
-            transPrim.texture->unbind();
-
-        } else {
-            m_phongShader->setUniform("useTexture", 0);
-            transPrim.shape->draw();
+            loadMapData(material);
+            tryApplyTexture(material.textureMap);
         }
+
+        transPrim.shape->draw();
     }
 
+}
+
+void SceneviewScene::loadMapData(CS123SceneMaterial& mat) {
+    if (m_textures.find(mat.textureMap.filename) != m_textures.end())
+        return;
+
+    QImage img(mat.textureMap.filename.data());
+    img = QGLWidget::convertToGLFormat(img);
+
+    if (img.isNull())
+        return;
+
+    Texture2D tex(img.bits(), img.width(), img.height());
+    buildTexture(tex);
+    m_textures.emplace(mat.textureMap.filename, std::move(tex));
+}
+
+void SceneviewScene::buildTexture(Texture2D &tex) {
+    TextureParametersBuilder builder;
+    builder.setFilter(TextureParameters::FILTER_METHOD::LINEAR);
+    builder.setWrap(TextureParameters::WRAP_METHOD::REPEAT);
+    TextureParameters params = builder.build();
+    params.applyTo(tex);
+}
+
+void SceneviewScene::tryApplyTexture(CS123SceneFileMap& map) {
+    if (!map.isUsed) {
+        m_phongShader->setUniform("useTexture", 0);
+        return;
+    }
+    m_phongShader->setUniform("useTexture", 1);
+    m_phongShader->setUniform("repeatUV", glm::vec2(map.repeatU, map.repeatV));
+    m_phongShader->setTexture("tex", m_textures.at(map.filename));
 }
 
 void SceneviewScene::settingsChanged() {

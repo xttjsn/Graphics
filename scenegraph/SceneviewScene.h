@@ -56,6 +56,9 @@ private:
     void renderGeometry();
 
     void buildTransformationList();
+    void loadMapData(CS123SceneMaterial& mat);
+    void buildTexture(Texture2D &tex);
+    void tryApplyTexture(CS123SceneFileMap& map);
 
     std::unique_ptr<CS123::GL::CS123Shader> m_phongShader;
     std::unique_ptr<CS123::GL::Shader> m_wireframeShader;

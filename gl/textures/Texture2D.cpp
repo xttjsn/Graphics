@@ -12,9 +12,7 @@ Texture2D::Texture2D(unsigned char *data, int width, int height, GLenum type)
     // Bind the texture by calling bind() and filling it in
     // Generate the texture with glTexImage2D
     bind();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, internalFormat, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, type, data);
     // TODO Don't forget to unbind!
     unbind();
 }

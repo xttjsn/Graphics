@@ -39,6 +39,7 @@ protected:
     std::vector<CS123TransformPrimitive> m_transPrims;
     std::vector<CS123SceneLightData> m_lights;
     CS123SceneGlobalData m_global;
+    std::map<std::string, CS123::GL::Texture2D> m_textures;
 };
 
 #endif // SCENE_H
