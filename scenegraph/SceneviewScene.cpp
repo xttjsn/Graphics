@@ -177,7 +177,24 @@ void SceneviewScene::renderGeometry() {
                     fprintf(stderr, "Cannot find texture image.");
                     exit(1);
                 }
-                image = image.convertToFormat(QImage::Format_RGBA8888);
+                switch (image.format()) {
+                    case QImage::Format_ARGB32:
+                        fprintf(stdout, "Image format is ARGB32.");
+                        break;
+                    case QImage::Format_RGB32:
+                        fprintf(stdout, "Image format is RGB32.");
+                        break;
+                    case QImage::Format_RGB888:
+                        fprintf(stdout, "Image format is RGB888.");
+                        break;
+                    case QImage::Format_RGBA8888:
+                        fprintf(stdout, "Image format is RGBA8888");
+                        break;
+                    default:
+                        fprintf(stdout, "Image format is %d", image.format());
+                }
+
+//                image = image.convertToFormat(QImage::Format_RGBA8888);
                 transPrim.texture = std::make_unique<Texture2D>(image.bits(), image.width(), image.height());
             }
             transPrim.texture->bind();
