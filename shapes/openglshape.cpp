@@ -3,6 +3,7 @@
 #include "gl/datatype/VAO.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
+#include "shapes/shapeutil.h"
 #include <QtGlobal>
 
 using namespace CS123::GL;
@@ -16,6 +17,15 @@ OpenGLVertex OpenGLVertex::rotate(glm::mat4x4 rot) {
     glm::vec4 new_pos  = rot * position;
     glm::vec4 new_norm = rot * normal;
     return OpenGLVertex(new_pos, new_norm, texcoord);
+}
+
+OpenGLVertex OpenGLVertex::sphericalRotate(glm::mat4x4 rot) {
+    // Change all
+    ShapeUtil shapeutil;
+    glm::vec4 new_pos = rot * position;
+    glm::vec4 new_norm = rot * normal;
+    glm::vec2 new_uv = shapeutil.sphericalUV(new_pos);
+    return OpenGLVertex(new_pos, new_norm, new_uv);
 }
 
 OpenGLShape::OpenGLShape(int p1, int p2, float p3) :

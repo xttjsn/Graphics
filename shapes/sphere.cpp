@@ -12,9 +12,9 @@ void Sphere::reCalculateVertices(){
     if (!m_needRecalculate) return;
 
     m_coords.clear();
-    std::vector<glm::vec4> vertices;
-    ShapeUtil shapeutil;
 
+    std::vector<OpenGLVertex> vertices;
+    ShapeUtil shapeutil;
     // Spherical coordinates
     // phi is the azimuthal angle, theta is the polar angle
     // phi ranges from 0 to 2 * PI, stepSize is 2 * PI / max(3, m_p2)
@@ -30,29 +30,24 @@ void Sphere::reCalculateVertices(){
     vertices.reserve((2 + p1) * 2 * p2);
 
     // 1. Build a spherical strip
-    std::vector<glm::vec4> side;
+    std::vector<OpenGLVertex> side;
     glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
     glm::vec4 B = glm::vec4(0, 0, -m_radius, 1);
-    shapeutil.buildSphericalStrip(side, A, B, p1, p2);
+    shapeutil.buildSphericalStripUV(side, A, B, p1, p2);
 
     // 2. Rotate and duplicate the strip
     glm::mat4 rot;
     int sz = side.size();
     for (int i = 0; i < p2; i++) {
         rot = glm::rotate(delta * i, glm::vec3(0, 0, 1));
-        if (i > 0) {
-            vertices.push_back(rot * side[0]);
-            vertices.push_back(rot * side[1]);
-        }
-        for (int j = 0; j < sz; j++) {
-            vertices.push_back(rot * side[j]);
-        }
-        if (i < p2 - 1) {
-            vertices.push_back(rot * side[side.size() - 2]);
-            vertices.push_back(rot * side[side.size() - 1]);
-        }
+        if (i > 0)
+            vertices.push_back(side[0].sphericalRotate(rot));
+        for (int j = 0; j < sz; j++)
+            vertices.push_back(side[j].sphericalRotate(rot));
+        if (i < p2  - 1)
+            vertices.push_back(side[side.size() - 1].sphericalRotate(rot));
     }
 
     // 3. Populate m_coords
-    populateCoordinates(vertices);
+    populateCoordinatesUV(vertices);
 } // Sphere::reCalculateVertices

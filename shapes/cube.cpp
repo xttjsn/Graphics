@@ -69,5 +69,6 @@ void Cube::reCalculateVertices(){
             vertices.push_back(v.rotate(rot));
         }
     }
+
     populateCoordinatesUV(vertices);
 } // Cube::reCalculateVertices

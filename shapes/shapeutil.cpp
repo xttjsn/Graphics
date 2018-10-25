@@ -142,6 +142,57 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
     data.push_back(glm::normalize(B));
 } // ShapeUtil::buildSphericalStrip
 
+void ShapeUtil::buildSphericalStripUV(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks,
+                                    int numStrips){
+    /*      A
+     *     / \
+     *    X---X
+     *   /     \
+     *  X-------X
+     *   \     /
+     *    X---X
+     *     \ /
+     *      B
+     */
+    glm::vec4 center = interpolate(A, B, 0.5);
+
+    data.emplace_back(A, glm::normalize(A), sphericalUV(A - center));
+
+    float phi = 0.0f, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
+          radius = glm::distance(A, B) / 2.0f;
+    float x, y, z;
+    for (int i = 1; i < numStacks; i++) {
+        phi   = 0.0f;
+        theta = i * delta_theta;
+        x     = radius * glm::sin(theta) * glm::cos(phi);
+        y     = radius * glm::sin(theta) * glm::sin(phi);
+        z     = radius * glm::cos(theta);
+        glm::vec4 leftPos = glm::vec4(x, y, z, 1);
+        glm::vec4 leftNorm = glm::normalize(leftPos);
+        glm::vec4 leftD = center - leftPos;
+
+        // https://en.wikipedia.org/wiki/UV_mapping
+        glm::vec2 leftUV = sphericalUV(leftD);
+
+
+        phi = delta_phi;
+        x   = radius * glm::sin(theta) * glm::cos(phi);
+        y   = radius * glm::sin(theta) * glm::sin(phi);
+        z   = radius * glm::cos(theta);
+        glm::vec4 rightPos = glm::vec4(x, y, z, 1);
+        glm::vec4 rightNorm = glm::normalize(rightPos);
+        glm::vec4 rightD = center - rightPos;
+        glm::vec2 rightUV = sphericalUV(rightD);
+
+
+
+        data.emplace_back(leftPos, leftNorm, leftUV);
+        data.emplace_back(rightPos, rightNorm, rightUV);
+    }
+
+    data.emplace_back(B, glm::normalize(B), sphericalUV(B - center));
+} // ShapeUtil::buildSphericalStrip
+
 void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 center, float radius, int numPoints,
                                       float phi){
     float delta_theta = 2 * PI / numPoints, theta = 0.0f, x, y, z;
@@ -362,4 +413,10 @@ glm::vec4 ShapeUtil::average(std::vector<glm::vec4>& vertices){
 
 glm::vec4 ShapeUtil::normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C){
     return glm::normalize(glm::vec4(glm::normalize(glm::cross(glm::vec3(C - A), glm::vec3(B - A))), 0));
+}
+
+glm::vec2 ShapeUtil::sphericalUV(glm::vec4 d) {
+    d = glm::normalize(d);
+    return glm::vec2(0.5 + glm::atan(2 * d.z, 2 * d.x) / (2 * PI),
+                     0.5 - glm::asin(d.y) / PI);
 }

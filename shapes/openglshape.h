@@ -27,6 +27,7 @@ public:
 
     OpenGLVertex(glm::vec4 position, glm::vec4 normal, glm::vec2 texcoord);
     OpenGLVertex rotate(glm::mat4x4 rot);
+    OpenGLVertex sphericalRotate(glm::mat4x4 rot);
 };
 
 class OpenGLShape
