@@ -29,23 +29,21 @@ void Sphere::reCalculateVertices(){
 
     vertices.reserve((2 + p1) * 2 * p2);
 
-    // 1. Build a spherical strip
+    // Build a spherical strip
     std::vector<OpenGLVertex> side;
     glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
     glm::vec4 B = glm::vec4(0, 0, -m_radius, 1);
-    shapeutil.buildSphericalStripUV(side, A, B, p1, p2);
 
-    // 2. Rotate and duplicate the strip
-    glm::mat4 rot;
-    int sz = side.size();
     for (int i = 0; i < p2; i++) {
-        rot = glm::rotate(delta * i, glm::vec3(0, 0, 1));
+        shapeutil.buildSphericalStripUV2(side, A, B, p1, p2, i);
+        int sz = side.size();
         if (i > 0)
-            vertices.push_back(side[0].sphericalRotate(rot));
+            vertices.push_back(side[0]);
         for (int j = 0; j < sz; j++)
-            vertices.push_back(side[j].sphericalRotate(rot));
+            vertices.push_back(side[j]);
         if (i < p2  - 1)
-            vertices.push_back(side[side.size() - 1].sphericalRotate(rot));
+            vertices.push_back(side[side.size() - 1]);
+        side.clear();
     }
 
     // 3. Populate m_coords

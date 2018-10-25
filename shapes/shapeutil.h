@@ -21,7 +21,9 @@ public:
 
     void buildSphericalStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips);
 
-    void buildSphericalStripUV(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips);
+    void buildSphericalStripUV1(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips);
+
+    void buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips, int stripIdx);
 
     void buildCircleOfVertices(std::vector<glm::vec4> &data, glm::vec4 center, float radius, int numPoints, float phi);
 
@@ -46,6 +48,8 @@ public:
     glm::vec4 normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C);
 
     glm::vec2 sphericalUV(glm::vec4 d);
+
+    glm::vec2 sphericalUV2(float i, float j, float n, float m);
 };
 
 #endif // SHAPE2D_H

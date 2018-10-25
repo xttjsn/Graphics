@@ -143,7 +143,8 @@ void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, g
     data.push_back(glm::normalize(B));
 } // ShapeUtil::buildSphericalStrip
 
-void ShapeUtil::buildSphericalStripUV(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks,
+
+void ShapeUtil::buildSphericalStripUV1(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks,
                                     int numStrips){
     /*      A
      *     / \
@@ -170,7 +171,7 @@ void ShapeUtil::buildSphericalStripUV(std::vector<OpenGLVertex>& data, glm::vec4
         z     = radius * glm::cos(theta);
         glm::vec4 leftPos = glm::vec4(x, y, z, 1);
         glm::vec4 leftNorm = glm::normalize(leftPos);
-        glm::vec4 leftD = center - leftPos;
+        glm::vec4 leftD = leftPos - center;
 
         // https://en.wikipedia.org/wiki/UV_mapping
         glm::vec2 leftUV = sphericalUV(leftD);
@@ -182,17 +183,59 @@ void ShapeUtil::buildSphericalStripUV(std::vector<OpenGLVertex>& data, glm::vec4
         z   = radius * glm::cos(theta);
         glm::vec4 rightPos = glm::vec4(x, y, z, 1);
         glm::vec4 rightNorm = glm::normalize(rightPos);
-        glm::vec4 rightD = center - rightPos;
+        glm::vec4 rightD = rightPos - center;
         glm::vec2 rightUV = sphericalUV(rightD);
-
-
 
         data.emplace_back(leftPos, leftNorm, leftUV);
         data.emplace_back(rightPos, rightNorm, rightUV);
     }
 
     data.emplace_back(B, glm::normalize(B), sphericalUV(B - center));
-} // ShapeUtil::buildSphericalStrip
+} // ShapeUtil::buildSphericalStripUV1
+
+void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks,
+                                    int numStrips, int stripIdx){
+    /*      A
+     *     / \
+     *    X---X
+     *   /     \
+     *  X-------X
+     *   \     /
+     *    X---X
+     *     \ /
+     *      B
+     */
+    glm::vec4 center = interpolate(A, B, 0.5);
+
+    data.emplace_back(A, glm::normalize(A), sphericalUV2(0, stripIdx + 0.5, numStacks, numStrips));
+
+    float phi = stripIdx / static_cast<float>(numStrips) * 2 * PI, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
+          radius = glm::distance(A, B) / 2.0f;
+    float x, y, z;
+    for (int i = 1; i < numStacks; i++) {
+        theta = i * delta_theta;
+        x     = radius * glm::sin(theta) * glm::cos(phi);
+        y     = radius * glm::sin(theta) * glm::sin(phi);
+        z     = radius * glm::cos(theta);
+        glm::vec4 leftPos = glm::vec4(x, y, z, 1);
+        glm::vec4 leftNorm = glm::vec4(glm::normalize(glm::vec3(leftPos)), 0);
+        glm::vec2 leftUV = sphericalUV2(i, stripIdx, numStacks, numStrips);
+
+
+        x   = radius * glm::sin(theta) * glm::cos(phi + delta_phi);
+        y   = radius * glm::sin(theta) * glm::sin(phi + delta_phi);
+        z   = radius * glm::cos(theta);
+        glm::vec4 rightPos = glm::vec4(x, y, z, 1);
+        glm::vec4 rightNorm = glm::vec4(glm::normalize(glm::vec3(rightPos)), 0);
+        glm::vec2 rightUV = sphericalUV2(i, stripIdx + 1, numStacks, numStrips);
+
+        data.emplace_back(leftPos, leftNorm, leftUV);
+        data.emplace_back(rightPos, rightNorm, rightUV);
+    }
+
+    data.emplace_back(B, glm::normalize(B), sphericalUV2(numStacks, stripIdx + 0.5, numStacks, numStrips));
+
+}
 
 void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 center, float radius, int numPoints,
                                       float phi){
@@ -416,8 +459,12 @@ glm::vec4 ShapeUtil::normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C){
     return glm::normalize(glm::vec4(glm::normalize(glm::cross(glm::vec3(C - A), glm::vec3(B - A))), 0));
 }
 
-glm::vec2 ShapeUtil::sphericalUV(glm::vec4 d) {
-    d = glm::normalize(d);
-    return glm::vec2(0.5 + std::atan2(d.z, d.x) / (2 * PI),
+glm::vec2 ShapeUtil::sphericalUV(glm::vec4 dist) {
+    glm::vec3 d = glm::normalize(glm::vec3(dist));
+    return glm::vec2(glm::clamp((std::atan2(d.z, d.x) / PI + 1.0f) * 0.5f, 0.0f, 1.0f),
                      0.5 - std::asin(d.y) / PI);
+}
+
+glm::vec2 ShapeUtil::sphericalUV2(float i, float j, float n, float m) {
+    return glm::vec2(j / m, i / n);
 }
