@@ -1,6 +1,7 @@
 #include "shapeutil.h"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <math.h>
 
 #define PI 3.1415926f
 
@@ -417,6 +418,6 @@ glm::vec4 ShapeUtil::normalFromTriangle(glm::vec4 A, glm::vec4 B, glm::vec4 C){
 
 glm::vec2 ShapeUtil::sphericalUV(glm::vec4 d) {
     d = glm::normalize(d);
-    return glm::vec2(0.5 + glm::atan(2 * d.z, 2 * d.x) / (2 * PI),
-                     0.5 - glm::asin(d.y) / PI);
+    return glm::vec2(0.5 + std::atan2(d.z, d.x) / (2 * PI),
+                     0.5 - std::asin(d.y) / PI);
 }
