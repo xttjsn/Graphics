@@ -60,7 +60,6 @@ private:
     void setLights();
     void renderGeometry();
 
-    void buildTransformationList();
     void loadMapData(CS123SceneMaterial& mat);
     void buildTexture(Texture2D &tex);
     void tryApplyTexture(CS123SceneFileMap& map);
