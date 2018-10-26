@@ -8,67 +8,66 @@ Cylinder::Cylinder(int p1, int p2, float p3) :
     reCalculateVertices();
 }
 
-void Cylinder::reCalculateVertices(){
+void Cylinder::reCalculateVertices() {
     if (!m_needRecalculate) return;
 
     m_coords.clear();
 
-    std::vector<glm::vec4> vertices;
+    std::vector<OpenGLVertex> vertices;
 
     ShapeUtil shapeutil;
 
     int p2 = glm::max(m_p2, 3), p1 = m_p1;
 
-    vertices.reserve((1 + 2 * p1 + 2) * p2 * 2 + (2 * (p1 + 2) * p2));
+    vertices.reserve((1 + 2 * p1 + 2) * p2 * 2 + (2 * (p1 + 2) * 2));
 
     // Build bottom circle
-    shapeutil.buildCircle(vertices, p2, p1, m_radius);
-    vertices.erase(vertices.end() - 2, vertices.end());
+    shapeutil.buildCircleUV(vertices, p2, p1, m_radius);
 
-    // Remove the reduant center vetex and norm,
-    // replace it with the last vertex and last norm
-    glm::vec4 last_vert = vertices[vertices.size() - 2];
-    glm::vec4 last_norm = vertices[vertices.size() - 1];
-    vertices.push_back(last_vert);
-    vertices.push_back(last_norm);
+    // Remove the redudant center vertex
+    // Replace it with the last vertex
+    vertices.erase(vertices.end() - 1, vertices.end());
+    vertices.push_back(vertices[vertices.size() - 1]);
 
-    // Build top circle
+    // Build top cicle
     glm::mat4 rot       = glm::rotate(PI, glm::vec3(0, 0, 1));
     int sz              = vertices.size();
     for (int i = 0; i < sz; i++) {
-        vertices.push_back(rot * vertices[i]);
+        vertices.push_back(vertices[i].rotate(rot));
     }
 
-    // Build one side
-    std::vector<glm::vec4> side;
-    float delta = 2 * PI / p2;
-    glm::vec4 A = glm::vec4(0, m_radius, m_radius, 1);
-    glm::vec4 B = glm::vec4(-m_radius * glm::sin(delta), m_radius, m_radius * glm::cos(delta), 1);
-    glm::vec4 C = glm::vec4(0, -m_radius, m_radius, 1);
-    glm::vec4 D = glm::vec4(-m_radius * glm::sin(delta), -m_radius, m_radius * glm::cos(delta), 1);
-    shapeutil.buildQuadStrip(side, B, A, D, C, p1);
+    // Prepare parameters
+    std::vector<OpenGLVertex> side;
+    float theta = 0, delta = 2.0f * PI / p2;
+    glm::vec4 A, B, C, D;
+    glm::mat4 rot_next = glm::rotate(delta, glm::vec3(0, 1, 0));
+    glm::mat4 rot_prev = glm::rotate(-delta, glm::vec3(0, 1, 0));
 
-    // Duplicate for all sides
+    // Build all sides
     for (int i = 0; i < p2; ++i) {
-        rot = glm::rotate(delta * i, glm::vec3(0, 1, 0)); // Rotate around y axis
+        A = glm::vec4(m_radius * glm::sin(theta + i * delta), m_radius, m_radius * glm::cos(theta + i * delta), 1);
+        B = glm::vec4(m_radius * glm::sin(theta + (i + 1) * delta), m_radius, m_radius * glm::cos(theta + (i + 1) * delta), 1);
+        C = glm::vec4(m_radius * glm::sin(theta + i * delta), -m_radius, m_radius * glm::cos(theta + i * delta), 1);
+        D = glm::vec4(m_radius * glm::sin(theta + (i + 1) * delta), -m_radius, m_radius * glm::cos(theta + (i + 1) * delta), 1);
 
-        // Two normals for adjacent sides`
-        glm::vec4 norm_even = glm::vec4(glm::sin(delta * i), 0, glm::cos(delta * i), 0);
-        glm::vec4 norm_odd  = glm::vec4(glm::sin(delta * (i - 1)), 0, glm::cos(delta * (i - 1)), 0);
+        shapeutil.buildQuadStripUV(side, A, B, C, D, p1, p2, i);
 
         // Degenerate triangles
         if (i == 0) {
-            vertices.push_back(rot * side[0]);
-            vertices.push_back(norm_odd);
+            vertices.push_back(side[0].normAvgWithRotation(rot_prev));
         }
+
         int sz = side.size();
-        for (int j = 0; j < sz; j += 4) {
-            vertices.push_back(rot * side[j]); // vertex
-            vertices.push_back(j == sz - 4 ? norm_even : norm_odd);
-            vertices.push_back(rot * side[j + 2]);
-            vertices.push_back(glm::vec4(0, 0, 0, 0)); // No need for extra normal
+        for (int j = 0; j < sz; j++) {
+            if (j >= sz - 2)
+                vertices.push_back(side[j].normAvgWithRotation(rot_next));
+            else
+                vertices.push_back(side[j].normAvgWithRotation(j % 2 == 0 ? rot_prev : rot_next));
         }
+
+        side.clear();
     }
 
-    populateCoordinates(vertices);
-} // Cylinder::reCalculateVertices
+    populateCoordinatesUV(vertices);
+
+}

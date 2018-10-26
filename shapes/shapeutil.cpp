@@ -155,6 +155,29 @@ void ShapeUtil::buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 Apos
     data.emplace_back(Bpos, norm, Buv);
 }
 
+void ShapeUtil::buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
+                      int numStacks, int numSlides, int slide) {
+    /* A ---- B
+     * |      |
+     * |      |
+     * C ---- D
+     */
+    glm::vec4 norm = normalFromTriangle(A, B, C);
+    for (int t = 0; t <= numStacks; t++) {
+        float ratio = t / static_cast<float>(numStacks);
+        glm::vec4 leftPos = interpolate(A, C, ratio);
+        glm::vec2 leftUV = uv(slide, t, numSlides, numStacks);
+        glm::vec4 rightPos = interpolate(B, D, ratio);
+        glm::vec2 rightUV = uv(slide + 1, t, numSlides, numStacks);
+
+        data.emplace_back(leftPos, norm, leftUV);
+        data.emplace_back(rightPos, norm, rightUV);
+    }
+
+    data.emplace_back(D, norm, uv(slide, numStacks, numSlides, numStacks));
+    data.emplace_back(B, norm, uv(slide + 1, numStacks, numSlides, numStacks));
+}
+
 void ShapeUtil::buildSphericalStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, int numStacks,
                                     int numStrips){
     /*      A
