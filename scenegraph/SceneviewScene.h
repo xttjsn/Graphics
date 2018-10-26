@@ -75,7 +75,6 @@ private:
     std::unique_ptr<Sphere> m_sphere;
     std::unique_ptr<Cylinder> m_cylinder;
     std::unique_ptr<Torus> m_torus;
-
 };
 
 #endif // SCENEVIEWSCENE_H

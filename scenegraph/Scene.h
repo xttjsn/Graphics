@@ -36,10 +36,14 @@ protected:
     // Sets the global data for the scene.
     virtual void setGlobal(const CS123SceneGlobalData &global);
 
+    virtual void computeLOD();
+
     std::vector<CS123TransformPrimitive> m_transPrims;
     std::vector<CS123SceneLightData> m_lights;
     CS123SceneGlobalData m_global;
     std::map<std::string, CS123::GL::Texture2D> m_textures;
+
+    float m_lod_coef;
 };
 
 #endif // SCENE_H

@@ -11,6 +11,7 @@ Scene::Scene()
 }
 
 Scene::Scene(Scene& scene)
+    : m_lod_coef(1)
 {
     // We need to set the global constants to one when we duplicate a scene,
     // otherwise the global constants will be double counted (squared)
@@ -45,6 +46,8 @@ void Scene::parse(Scene *sceneToFill, CS123ISceneParser *parser) {
     }
 
     parseNode(sceneToFill, parser->getRootNode(), glm::mat4x4());
+
+    sceneToFill->computeLOD();
 }
 
 void Scene::parseNode(Scene *sceneToFill, CS123SceneNode *node, glm::mat4x4 parentTrans) {
@@ -89,6 +92,20 @@ void Scene::addPrimitive(const CS123ScenePrimitive& scenePrimitive,
     m_transPrims[m_transPrims.size() - 1].primitive.material.cDiffuse *= m_global.kd;
     m_transPrims[m_transPrims.size() - 1].primitive.material.cAmbient *= m_global.ka;
 }
+
+void Scene::computeLOD() {
+    int sz = m_transPrims.size();
+    if (sz < 10)
+        m_lod_coef = 1;
+    else if (sz < 100)
+        m_lod_coef = 0.75;
+    else if (sz < 200)
+        m_lod_coef = 0.5;
+    else if (sz < 500)
+        m_lod_coef = 0.25;
+    else m_lod_coef = 0.1;
+}
+
 
 void Scene::addLight(const CS123SceneLightData& sceneLight) {
     m_lights.push_back(sceneLight);

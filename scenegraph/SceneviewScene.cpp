@@ -170,9 +170,7 @@ void SceneviewScene::renderGeometry() {
             qDebug("Invalid primitive type!");
             exit(-1);
         }
-
     }
-
 }
 
 void SceneviewScene::loadMapData(CS123SceneMaterial& mat) {
@@ -210,9 +208,8 @@ void SceneviewScene::tryApplyTexture(CS123SceneFileMap& map) {
 
 void SceneviewScene::settingsChanged() {
     // TODO: [SCENEVIEW] Fill this in if applicable.
-
-    int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
-    float p3 = settings.shapeParameter3;
+    int p1 = glm::ceil(settings.shapeParameter1 * m_lod_coef), p2 = glm::ceil(settings.shapeParameter2 * m_lod_coef);
+    float p3 = settings.shapeParameter3 * m_lod_coef;
     m_cube = std::make_unique<Cube>(p1, p2, p3);
     m_cone = std::make_unique<Cone>(p1, p2, p3);
     m_torus = std::make_unique<Torus>(p1, p2, p3);
