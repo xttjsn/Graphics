@@ -10,17 +10,11 @@ class ShapeUtil
 public:
     ShapeUtil();
 
-    void buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius);
-
     void buildCircleUV(std::vector<OpenGLVertex> &data, int p1, int p2, float radius);
 
     void buildFanStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, float theta, float delta);
 
-    void buildTriangleStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numStacks);
-
     void buildTriangleStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, int numSlides, int i);
-
-    void buildQuadStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D, int numQuads);
 
     void buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 Apos, glm::vec4 Bpos, glm::vec4 Cpos, glm::vec4 Dpos,
                           glm::vec2 Auv,  glm::vec2 Byuv, glm::vec2 Cuv,  glm::vec2 Duv, int numQuads);
@@ -28,18 +22,11 @@ public:
     void buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
                           int numStacks, int numSlides, int slide);
 
-    void buildSphericalStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips);
-
     void buildSphericalStripUV1(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips);
 
     void buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks, int numStrips, int stripIdx);
 
-    void buildCircleOfVertices(std::vector<glm::vec4> &data, glm::vec4 center, float radius, int numPoints, float phi);
-
     void buildCircleOfVerticesUV(std::vector<OpenGLVertex> &data, glm::vec4 center, float radius, int numPoints, float phi, int numSegs, int seg);
-
-    void buildSegmentFromCircles(std::vector<glm::vec4> &data, std::vector<glm::vec4> &circ1,
-                                 std::vector<glm::vec4> &circ2);
 
     void buildSegmentFromCirclesUV(std::vector<OpenGLVertex> &data, std::vector<OpenGLVertex> &circ1,
                                  std::vector<OpenGLVertex> &circ2);
@@ -63,9 +50,7 @@ public:
 
     glm::vec2 sphericalUV(glm::vec4 d);
 
-    glm::vec2 sphericalUV2(float i, float j, float n, float m);
-
-    glm::vec2 uv(float i, float j, float n, float m);
+    glm::vec2 rectangleUV(float i, float j, float n, float m);
 
     glm::vec2 circularUV(float theta, float ratio);
 };

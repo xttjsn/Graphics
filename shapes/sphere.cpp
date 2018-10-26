@@ -25,7 +25,6 @@ void Sphere::reCalculateVertices(){
     // y = r * sin(theta) * sin(phi)
     // z = r * cos(theta)
     int p1 = glm::max(2, m_p1), p2 = glm::max(3, m_p2);
-    float delta = 2 * PI / p2;
 
     vertices.reserve((2 + p1) * 2 * p2);
 
