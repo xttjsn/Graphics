@@ -36,8 +36,13 @@ public:
 
     void buildCircleOfVertices(std::vector<glm::vec4> &data, glm::vec4 center, float radius, int numPoints, float phi);
 
+    void buildCircleOfVerticesUV(std::vector<OpenGLVertex> &data, glm::vec4 center, float radius, int numPoints, float phi, int numSegs, int seg);
+
     void buildSegmentFromCircles(std::vector<glm::vec4> &data, std::vector<glm::vec4> &circ1,
                                  std::vector<glm::vec4> &circ2);
+
+    void buildSegmentFromCirclesUV(std::vector<OpenGLVertex> &data, std::vector<OpenGLVertex> &circ1,
+                                 std::vector<OpenGLVertex> &circ2);
 
     void buildMobiusStrip(std::vector<glm::vec4> &data, int p1, int p2, bool clockwise);
 

@@ -338,6 +338,24 @@ void ShapeUtil::buildCircleOfVertices(std::vector<glm::vec4>& data, glm::vec4 ce
     }
 }
 
+void ShapeUtil::buildCircleOfVerticesUV(std::vector<OpenGLVertex> &data, glm::vec4 center, float radius, int numPoints, float phi, int numSegs, int seg) {
+    float delta = 2 * PI / numPoints, theta = 0.0f, x, y, z;
+
+    glm::vec4 norm, pos;
+    glm::vec2 UV;
+
+    for (int i = 0; i < numPoints; i++) {
+        theta = i * delta;
+        x     = radius * glm::sin(theta) * glm::cos(phi);
+        y     = radius * glm::sin(theta) * glm::sin(phi);
+        z     = radius * glm::cos(theta);
+        pos = glm::translate(glm::vec3(center)) * glm::vec4(x, y, z, 1);
+        norm = glm::normalize(pos - center);
+        UV = uv(seg, i, numSegs, numPoints);
+        data.emplace_back(pos, norm, UV);
+    }
+}
+
 void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vector<glm::vec4>& circ1,
                                         std::vector<glm::vec4>& circ2){
     if (circ1.size() != circ2.size()) return;
@@ -365,6 +383,27 @@ void ShapeUtil::buildSegmentFromCircles(std::vector<glm::vec4>& data, std::vecto
     glm::vec4 last_norm = data[data.size() - 1];
     data.push_back(last_vert);
     data.push_back(last_norm);
+}
+
+void ShapeUtil::buildSegmentFromCirclesUV(std::vector<OpenGLVertex>& data, std::vector<OpenGLVertex>& circ1,
+                                          std::vector<OpenGLVertex>& circ2) {
+    if (circ1.size() != circ2.size()) return;
+
+    // Degenerate triangles
+    data.push_back(circ1[0]);
+
+    int sz = circ1.size();
+    for (int i = 0; i < sz; i++) {
+        data.push_back(circ1[i]);
+        data.push_back(circ2[i]);
+    }
+
+    // Connect back to start
+    data.push_back(circ1[0]);
+    data.push_back(circ2[0]);
+
+    // Degenerate triangles
+    data.push_back(data[data.size() - 1]);
 }
 
 void ShapeUtil::buildMobiusStrip(std::vector<glm::vec4>& data, int p1, int p2, bool clockwise){
