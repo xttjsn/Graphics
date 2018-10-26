@@ -2,6 +2,11 @@
 #define SCENEVIEWSCENE_H
 
 #include "OpenGLScene.h"
+#include "shapes/cone.h"
+#include "shapes/cube.h"
+#include "shapes/cylinder.h"
+#include "shapes/sphere.h"
+#include "shapes/torus.h"
 
 #include <memory>
 
@@ -64,6 +69,12 @@ private:
     std::unique_ptr<CS123::GL::Shader> m_wireframeShader;
     std::unique_ptr<CS123::GL::Shader> m_normalsShader;
     std::unique_ptr<CS123::GL::Shader> m_normalsArrowShader;
+
+    std::unique_ptr<Cube> m_cube;
+    std::unique_ptr<Cone> m_cone;
+    std::unique_ptr<Sphere> m_sphere;
+    std::unique_ptr<Cylinder> m_cylinder;
+    std::unique_ptr<Torus> m_torus;
 
 };
 

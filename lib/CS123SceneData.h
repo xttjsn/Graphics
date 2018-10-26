@@ -183,10 +183,8 @@ struct CS123SceneNode {
 struct CS123TransformPrimitive {
     glm::mat4x4 transform;
     CS123ScenePrimitive primitive;
-    std::unique_ptr<OpenGLShape> shape;
-    std::unique_ptr<Texture2D> texture;
     CS123TransformPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim)
-        : transform(trans), primitive(prim), shape(nullptr), texture(nullptr) {
+        : transform(trans), primitive(prim) {
     }
 };
 

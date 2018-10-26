@@ -28,6 +28,13 @@ OpenGLVertex OpenGLVertex::sphericalRotate(glm::mat4x4 rot) {
     return OpenGLVertex(new_pos, new_norm, new_uv);
 }
 
+OpenGLVertex OpenGLVertex::normAvgWithRotation(glm::mat4x4 rot) {
+    // Average normal with the one after roration
+    ShapeUtil shapeutil;
+    glm::vec4 new_norm = rot * normal;
+    return OpenGLVertex(position, glm::normalize(shapeutil.interpolate(normal, new_norm, 0.5f)), texcoord);
+}
+
 OpenGLShape::OpenGLShape(int p1, int p2, float p3) :
     m_size(0),
     m_drawMode(VBO::GEOMETRY_LAYOUT::LAYOUT_TRIANGLES),

@@ -33,29 +33,29 @@ SceneviewScene::~SceneviewScene()
 
 void SceneviewScene::loadPhongShader() {
     std::string vertexSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/default.vert");
+                ":/shaders/default.vert");
     std::string fragmentSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/default.frag");
+                ":/shaders/default.frag");
 
     m_phongShader = std::make_unique<CS123Shader>(vertexSource, fragmentSource);
 }
 
 void SceneviewScene::loadWireframeShader() {
     std::string vertexSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/wireframe.vert");
+                ":/shaders/wireframe.vert");
     std::string fragmentSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/wireframe.frag");
+                ":/shaders/wireframe.frag");
 
     m_wireframeShader = std::make_unique<Shader>(vertexSource, fragmentSource);
 }
 
 void SceneviewScene::loadNormalsShader() {
     std::string vertexSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normals.vert");
+                ":/shaders/normals.vert");
     std::string geometrySource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normals.gsh");
+                ":/shaders/normals.gsh");
     std::string fragmentSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normals.frag");
+                ":/shaders/normals.frag");
 
     m_normalsShader = std::make_unique<Shader>(vertexSource,
                                                geometrySource,
@@ -64,11 +64,11 @@ void SceneviewScene::loadNormalsShader() {
 
 void SceneviewScene::loadNormalsArrowShader() {
     std::string vertexSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normalsArrow.vert");
+                ":/shaders/normalsArrow.vert");
     std::string geometrySource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normalsArrow.gsh");
+                ":/shaders/normalsArrow.gsh");
     std::string fragmentSource = ResourceLoader::loadResourceFileToString(
-        ":/shaders/normalsArrow.frag");
+                ":/shaders/normalsArrow.frag");
 
     m_normalsArrowShader = std::make_unique<Shader>(vertexSource,
                                                     geometrySource,
@@ -126,58 +126,51 @@ void SceneviewScene::renderGeometry() {
     //
 
     for (CS123TransformPrimitive &transPrim : m_transPrims) {
-        PrimitiveType type = transPrim.primitive.type;
         glm::mat4x4 transform = transPrim.transform;
         CS123SceneMaterial material = transPrim.primitive.material;
-        int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
-        float p3 = settings.shapeParameter3;
 
-        if (!transPrim.shape) {
-            switch (type) {
-            case PrimitiveType::PRIMITIVE_CUBE:
-                transPrim.shape = std::make_unique<Cube>(p1, p2, p3);
-                break;
-
-            case PrimitiveType::PRIMITIVE_CONE:
-                transPrim.shape = std::make_unique<Cone>(p1, p2, p3);
-                break;
-
-            case PrimitiveType::PRIMITIVE_CYLINDER:
-                transPrim.shape = std::make_unique<Cylinder>(p1, p2, p3);
-                break;
-
-            case PrimitiveType::PRIMITIVE_SPHERE:
-                transPrim.shape = std::make_unique<Sphere>(p1, p2, p3);
-                break;
-
-            case PrimitiveType::PRIMITIVE_TORUS:
-                transPrim.shape = std::make_unique<Torus>(p1, p2, p3);
-                break;
-
-            case PrimitiveType::PRIMITIVE_MESH:
-
-                // Temporarily use cube
-                transPrim.shape = std::make_unique<Cube>(p1, p2, p3);
-                break;
-
-            default:
-                qDebug("Invalid primitive type!");
-                exit(-1);
-            }
-        }
         m_phongShader->setUniform("m", transform);
-        material.cDiffuse *= m_global.kd;
-        material.cAmbient *= m_global.ka;
         m_phongShader->applyMaterial(material);
 
         // Handle texture
-
         if (material.textureMap.isUsed && !material.textureMap.filename.empty()) {
             loadMapData(material);
             tryApplyTexture(material.textureMap);
         }
 
-        transPrim.shape->draw();
+        PrimitiveType type = transPrim.primitive.type;
+
+        switch (type) {
+        case PrimitiveType::PRIMITIVE_CUBE:
+            m_cube->draw();
+            break;
+
+        case PrimitiveType::PRIMITIVE_CONE:
+            m_cone->draw();
+            break;
+
+        case PrimitiveType::PRIMITIVE_CYLINDER:
+            m_cylinder->draw();
+            break;
+
+        case PrimitiveType::PRIMITIVE_SPHERE:
+            m_sphere->draw();
+            break;
+
+        case PrimitiveType::PRIMITIVE_TORUS:
+            m_torus->draw();
+            break;
+
+        case PrimitiveType::PRIMITIVE_MESH:
+            // Temporarily use cube
+            m_cube->draw();
+            break;
+
+        default:
+            qDebug("Invalid primitive type!");
+            exit(-1);
+        }
+
     }
 
 }
@@ -217,9 +210,12 @@ void SceneviewScene::tryApplyTexture(CS123SceneFileMap& map) {
 
 void SceneviewScene::settingsChanged() {
     // TODO: [SCENEVIEW] Fill this in if applicable.
-    // reset every shape unique_ptr
-    for (CS123TransformPrimitive &transPrim : m_transPrims) {
-        if (transPrim.shape)
-            transPrim.shape.reset();
-    }
+
+    int p1 = settings.shapeParameter1, p2 = settings.shapeParameter2;
+    float p3 = settings.shapeParameter3;
+    m_cube = std::make_unique<Cube>(p1, p2, p3);
+    m_cone = std::make_unique<Cone>(p1, p2, p3);
+    m_torus = std::make_unique<Torus>(p1, p2, p3);
+    m_sphere = std::make_unique<Sphere>(p1, p2, p3);
+    m_cylinder = std::make_unique<Cylinder>(p1, p2, p3);
 }

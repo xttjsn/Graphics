@@ -32,7 +32,26 @@ void ShapeUtil::buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float 
     }
 }
 
-void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides){
+void ShapeUtil::buildCircleUV(std::vector<OpenGLVertex> &data, int p1, int p2, float radius) {
+    p1 =  glm::max(p1, 3);
+    float x = 0.0f, y = -radius, z = 0.0f, delta = 2.0 * PI / p1, theta = PI / 2.0f;
+
+    glm::vec4 A, B, C;
+    A = glm::vec4(x, y, z, 1);
+    std::vector<OpenGLVertex> slice;
+
+    for (int i = 0; i < p1; i++) {
+        B = glm::vec4(x + radius * glm::cos(theta + i * delta), y, z + radius * glm::sin(theta + i * delta), 1);
+        C = glm::vec4(x + radius * glm::cos(theta + (i + 1) * delta), y, z + radius * glm::sin(theta + (i + 1) * delta), 1);
+        buildFanStripUV(slice, A, B, C, p2, theta + i * delta, delta);
+        for (int j = 0; j < slice.size(); j++) {
+            data.push_back(slice[j]);
+        }
+        slice.clear();
+    }
+}
+
+void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numStacks){
     /*       A
      *      / \
      *     /   \
@@ -41,9 +60,9 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
     glm::vec4 norm = normalFromTriangle(B, A, C);
     data.push_back(A);
     data.push_back(norm);
-    for (int t = 1; t <= numSlides; ++t) {
-        glm::vec4 right = interpolate(A, B, t / static_cast<float>(numSlides));
-        glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numSlides));
+    for (int t = 1; t <= numStacks; ++t) {
+        glm::vec4 right = interpolate(A, B, t / static_cast<float>(numStacks));
+        glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numStacks));
         data.push_back(right);
         data.push_back(norm);
         data.push_back(left);
@@ -51,6 +70,45 @@ void ShapeUtil::buildTriangleStrip(std::vector<glm::vec4>& data, glm::vec4 A, gl
     }
     data.push_back(A);
     data.push_back(norm);
+}
+
+void ShapeUtil::buildTriangleStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, int numSlides, int i) {
+    /*       A
+     *      / \
+     *     /   \
+     *    B --- C
+     */
+    glm::vec4 norm = normalFromTriangle(A, B, C);
+    data.emplace_back(A, norm, uv(i + 0.5, 0, numSlides, numStacks));
+    for (int t = 1; t <= numStacks; ++t) {
+        glm::vec4 right = interpolate(A, B, t / static_cast<float>(numStacks));
+        glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numStacks));
+        glm::vec2 rightUV = uv(i + 1, t, numSlides, numStacks);
+        glm::vec2 leftUV = uv(i, t, numSlides, numStacks);
+        data.emplace_back(left, norm, leftUV);
+        data.emplace_back(right, norm, rightUV);
+    }
+    data.emplace_back(A, norm, uv(i + 0.5, 0, numSlides, numStacks));
+}
+
+void ShapeUtil::buildFanStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, float theta, float delta) {
+    /*       A
+     *      / \
+     *     /   \
+     *    B --- C
+     */
+    glm::vec4 norm = normalFromTriangle(A, B, C);
+    data.emplace_back(A, norm, circularUV(0, 0));
+    for (int t = 1; t <= numStacks; ++t) {
+        float ratio = t / static_cast<float>(numStacks);
+        glm::vec4 right = interpolate(A, B, ratio);
+        glm::vec4 left  = interpolate(A, C, ratio);
+        glm::vec2 rightUV = circularUV(theta + delta, ratio);
+        glm::vec2 leftUV = circularUV(theta, ratio);
+        data.emplace_back(left, norm, leftUV);
+        data.emplace_back(right, norm, rightUV);
+    }
+    data.emplace_back(A, norm, circularUV(0, 0));
 }
 
 void ShapeUtil::buildQuadStrip(std::vector<glm::vec4>& data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D,
@@ -467,4 +525,12 @@ glm::vec2 ShapeUtil::sphericalUV(glm::vec4 dist) {
 
 glm::vec2 ShapeUtil::sphericalUV2(float i, float j, float n, float m) {
     return glm::vec2(j / m, i / n);
+}
+
+glm::vec2 ShapeUtil::uv(float i, float j, float n, float m) {
+    return glm::vec2(i / n, j / m);
+}
+
+glm::vec2 ShapeUtil::circularUV(float theta, float ratio) {
+    return glm::vec2(0.5 + 0.5 * ratio * glm::cos(theta), 0.5 + 0.5 * ratio * glm::sin(theta));
 }

@@ -86,6 +86,8 @@ void Scene::parseNode(Scene *sceneToFill, CS123SceneNode *node, glm::mat4x4 pare
 void Scene::addPrimitive(const CS123ScenePrimitive& scenePrimitive,
                          const glm::mat4x4        & matrix) {
     m_transPrims.emplace_back(matrix, scenePrimitive);
+    m_transPrims[m_transPrims.size() - 1].primitive.material.cDiffuse *= m_global.kd;
+    m_transPrims[m_transPrims.size() - 1].primitive.material.cAmbient *= m_global.ka;
 }
 
 void Scene::addLight(const CS123SceneLightData& sceneLight) {

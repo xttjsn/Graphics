@@ -12,7 +12,13 @@ public:
 
     void buildCircle(std::vector<glm::vec4> &data, int p1, int p2, float radius);
 
-    void buildTriangleStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numSlides);
+    void buildCircleUV(std::vector<OpenGLVertex> &data, int p1, int p2, float radius);
+
+    void buildFanStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, float theta, float delta);
+
+    void buildTriangleStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, int numStacks);
+
+    void buildTriangleStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, int numSlides, int i);
 
     void buildQuadStrip(std::vector<glm::vec4> &data, glm::vec4 A, glm::vec4 B, glm::vec4 C, glm::vec4 D, int numQuads);
 
@@ -50,6 +56,10 @@ public:
     glm::vec2 sphericalUV(glm::vec4 d);
 
     glm::vec2 sphericalUV2(float i, float j, float n, float m);
+
+    glm::vec2 uv(float i, float j, float n, float m);
+
+    glm::vec2 circularUV(float theta, float ratio);
 };
 
 #endif // SHAPE2D_H
