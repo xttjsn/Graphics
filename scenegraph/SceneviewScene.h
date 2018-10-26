@@ -60,6 +60,7 @@ private:
     void setLights();
     void renderGeometry();
 
+    void resetPrimitivePrototypes();
     void loadMapData(CS123SceneMaterial& mat);
     void buildTexture(Texture2D &tex);
     void tryApplyTexture(CS123SceneFileMap& map);
@@ -74,6 +75,8 @@ private:
     std::unique_ptr<Sphere> m_sphere;
     std::unique_ptr<Cylinder> m_cylinder;
     std::unique_ptr<Torus> m_torus;
+
+    bool m_initialized;
 };
 
 #endif // SCENEVIEWSCENE_H

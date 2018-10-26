@@ -17,7 +17,8 @@
 using namespace CS123::GL;
 
 
-SceneviewScene::SceneviewScene()
+SceneviewScene::SceneviewScene() :
+    m_initialized(false)
 {
     // TODO: [SCENEVIEW] Set up anything you need for your Sceneview scene
     // here...
@@ -138,6 +139,9 @@ void SceneviewScene::renderGeometry() {
             tryApplyTexture(material.textureMap);
         }
 
+        if (!m_cube || !m_cone || !m_cylinder || !m_sphere || !m_torus)
+            resetPrimitivePrototypes();
+
         PrimitiveType type = transPrim.primitive.type;
 
         switch (type) {
@@ -206,8 +210,7 @@ void SceneviewScene::tryApplyTexture(CS123SceneFileMap& map) {
     m_phongShader->setTexture("tex", m_textures.at(map.filename));
 }
 
-void SceneviewScene::settingsChanged() {
-    // TODO: [SCENEVIEW] Fill this in if applicable.
+void SceneviewScene::resetPrimitivePrototypes() {
     int p1 = glm::ceil(settings.shapeParameter1 * m_lod_coef), p2 = glm::ceil(settings.shapeParameter2 * m_lod_coef);
     float p3 = settings.shapeParameter3 * m_lod_coef;
     m_cube = std::make_unique<Cube>(p1, p2, p3);
@@ -215,4 +218,10 @@ void SceneviewScene::settingsChanged() {
     m_torus = std::make_unique<Torus>(p1, p2, p3);
     m_sphere = std::make_unique<Sphere>(p1, p2, p3);
     m_cylinder = std::make_unique<Cylinder>(p1, p2, p3);
+    m_initialized = true;
+}
+
+void SceneviewScene::settingsChanged() {
+    // TODO: [SCENEVIEW] Fill this in if applicable.
+    resetPrimitivePrototypes();
 }
