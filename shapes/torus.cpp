@@ -40,7 +40,7 @@ void Torus::reCalculateVertices() {
         center2 = glm::vec4((radius - p3) * glm::cos(theta + (i + 1) * delta),
                             (radius - p3) * glm::sin(theta + (i + 1) * delta), 0, 1);
         shapeutil.buildCircleOfVerticesUV(circle1, center1, p3, p2, theta + i * delta, p1, i);
-        shapeutil.buildCircleOfVerticesUV(circle2, center2, p3, p2, theta + (i + 1) * delta, p1, i);
+        shapeutil.buildCircleOfVerticesUV(circle2, center2, p3, p2, theta + (i + 1) * delta, p1, i + 1);
         shapeutil.buildSegmentFromCirclesUV(segment, circle1, circle2);
 
         for (int j = 0; j < segment.size(); j++) {

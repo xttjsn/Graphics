@@ -35,16 +35,16 @@ void ShapeUtil::buildTriangleStripUV(std::vector<OpenGLVertex> &data, glm::vec4 
      *    B --- C
      */
     glm::vec4 norm = normalFromTriangle(A, B, C);
-    data.emplace_back(A, norm, rectangleUV(i + 0.5, 0, numSlides, numStacks));
+    data.emplace_back(A, norm, rectangleUV(i + 0.5, numStacks, numSlides, numStacks));
     for (int t = 1; t <= numStacks; ++t) {
         glm::vec4 right = interpolate(A, B, t / static_cast<float>(numStacks));
         glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numStacks));
-        glm::vec2 rightUV = rectangleUV(i + 1, t, numSlides, numStacks);
-        glm::vec2 leftUV = rectangleUV(i, t, numSlides, numStacks);
+        glm::vec2 rightUV = rectangleUV(i, numStacks - t, numSlides, numStacks);
+        glm::vec2 leftUV = rectangleUV(i + 1, numStacks - t, numSlides, numStacks);
         data.emplace_back(left, norm, leftUV);
         data.emplace_back(right, norm, rightUV);
     }
-    data.emplace_back(A, norm, rectangleUV(i + 0.5, 0, numSlides, numStacks));
+    data.emplace_back(A, norm, rectangleUV(i + 0.5, numStacks, numSlides, numStacks));
 }
 
 void ShapeUtil::buildFanStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, float theta, float delta) {
@@ -99,16 +99,16 @@ void ShapeUtil::buildQuadStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, g
     for (int t = 0; t <= numStacks; t++) {
         float ratio = t / static_cast<float>(numStacks);
         glm::vec4 leftPos = interpolate(A, C, ratio);
-        glm::vec2 leftUV = rectangleUV(slide, t, numSlides, numStacks);
+        glm::vec2 leftUV = rectangleUV(slide, numStacks - t, numSlides, numStacks);
         glm::vec4 rightPos = interpolate(B, D, ratio);
-        glm::vec2 rightUV = rectangleUV(slide + 1, t, numSlides, numStacks);
+        glm::vec2 rightUV = rectangleUV(slide + 1, numStacks - t, numSlides, numStacks);
 
         data.emplace_back(leftPos, norm, leftUV);
         data.emplace_back(rightPos, norm, rightUV);
     }
 
-    data.emplace_back(D, norm, rectangleUV(slide, numStacks, numSlides, numStacks));
-    data.emplace_back(B, norm, rectangleUV(slide + 1, numStacks, numSlides, numStacks));
+    data.emplace_back(D, norm, rectangleUV(slide, 0, numSlides, numStacks));
+    data.emplace_back(B, norm, rectangleUV(slide + 1, 0, numSlides, numStacks));
 }
 
 void ShapeUtil::buildSphericalStripUV1(std::vector<OpenGLVertex>& data, glm::vec4 A, glm::vec4 B, int numStacks,
