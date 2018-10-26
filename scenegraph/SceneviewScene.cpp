@@ -134,10 +134,8 @@ void SceneviewScene::renderGeometry() {
         m_phongShader->applyMaterial(material);
 
         // Handle texture
-        if (material.textureMap.isUsed && !material.textureMap.filename.empty()) {
-            loadMapData(material);
-            tryApplyTexture(material.textureMap);
-        }
+        loadMapData(material);
+        tryApplyTexture(material.textureMap);
 
         if (!m_cube || !m_cone || !m_cylinder || !m_sphere || !m_torus)
             resetPrimitivePrototypes();
@@ -178,6 +176,9 @@ void SceneviewScene::renderGeometry() {
 }
 
 void SceneviewScene::loadMapData(CS123SceneMaterial& mat) {
+    if (!mat.textureMap.isUsed || mat.textureMap.filename.empty())
+        return;
+
     if (m_textures.find(mat.textureMap.filename) != m_textures.end())
         return;
 
@@ -201,7 +202,7 @@ void SceneviewScene::buildTexture(Texture2D &tex) {
 }
 
 void SceneviewScene::tryApplyTexture(CS123SceneFileMap& map) {
-    if (!map.isUsed) {
+    if (!map.isUsed || map.filename.empty()) {
         m_phongShader->setUniform("useTexture", 0);
         return;
     }
