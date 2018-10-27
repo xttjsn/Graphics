@@ -174,7 +174,7 @@ void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec
      */
     glm::vec4 center = interpolate(A, B, 0.5);
 
-    data.emplace_back(A, glm::vec4(glm::normalize(glm::vec3(A)), 0), rectangleUV(stripIdx + 0.5, 0, numStrips, numStacks));
+    data.emplace_back(A, glm::vec4(glm::normalize(glm::vec3(A - center)), 0), rectangleUV(stripIdx + 0.5, 0, numStrips, numStacks));
 
     float phi = stripIdx / static_cast<float>(numStrips) * 2 * PI, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
           radius = glm::distance(A, B) / 2.0f;
@@ -185,7 +185,7 @@ void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec
         y     = radius * glm::sin(theta) * glm::sin(phi);
         z     = radius * glm::cos(theta);
         glm::vec4 leftPos = glm::vec4(x, y, z, 1);
-        glm::vec4 leftNorm = glm::vec4(glm::normalize(glm::vec3(leftPos)), 0);
+        glm::vec4 leftNorm = glm::vec4(glm::normalize(glm::vec3(leftPos - center)), 0);
         glm::vec2 leftUV = rectangleUV(stripIdx, i, numStrips, numStacks);
 
 
@@ -193,14 +193,14 @@ void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec
         y   = radius * glm::sin(theta) * glm::sin(phi + delta_phi);
         z   = radius * glm::cos(theta);
         glm::vec4 rightPos = glm::vec4(x, y, z, 1);
-        glm::vec4 rightNorm = glm::vec4(glm::normalize(glm::vec3(rightPos)), 0);
+        glm::vec4 rightNorm = glm::vec4(glm::normalize(glm::vec3(rightPos - center)), 0);
         glm::vec2 rightUV = rectangleUV(stripIdx + 1, i, numStrips, numStacks);
 
         data.emplace_back(leftPos, leftNorm, leftUV);
         data.emplace_back(rightPos, rightNorm, rightUV);
     }
 
-    data.emplace_back(B, glm::vec4(glm::normalize(glm::vec3(B)), 0), rectangleUV(stripIdx + 0.5, numStacks, numStrips, numStacks));
+    data.emplace_back(B, glm::vec4(glm::normalize(glm::vec3(B - center)), 0), rectangleUV(stripIdx + 0.5, numStacks, numStrips, numStacks));
 
 }
 
