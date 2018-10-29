@@ -86,7 +86,47 @@ void SceneviewScene::render(SupportCanvas3D *context) {
     renderGeometry();
     glBindTexture(GL_TEXTURE_2D, 0);
     m_phongShader->unbind();
+
+    if (settings.drawWireframe) {
+        renderWireframePass(context);
+    }
+
+    if (settings.drawNormals) {
+        renderNormalsPass(context);
+    }
 }
+
+void SceneviewScene::renderWireframePass(SupportCanvas3D *context) {
+    m_wireframeShader->bind();
+    setMatrixUniforms(m_wireframeShader.get(), context);
+    renderGeometryAsWireframe();
+    m_wireframeShader->unbind();
+}
+
+void SceneviewScene::renderGeometryAsWireframe() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    renderGeometry();
+}
+
+void SceneviewScene::renderGeometryAsFilledPolygons() {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    renderGeometry();
+}
+
+void SceneviewScene::renderNormalsPass (SupportCanvas3D *context) {
+    // Render the lines.
+    m_normalsShader->bind();
+    setMatrixUniforms(m_normalsShader.get(), context);
+    renderGeometryAsWireframe();
+    m_normalsShader->unbind();
+
+    // Render the arrows.
+    m_normalsArrowShader->bind();
+    setMatrixUniforms(m_normalsArrowShader.get(), context);
+    renderGeometryAsFilledPolygons();
+    m_normalsArrowShader->unbind();
+}
+
 
 void SceneviewScene::setSceneUniforms(SupportCanvas3D *context) {
     Camera *camera = context->getCamera();
@@ -116,8 +156,6 @@ void SceneviewScene::setLights()
 }
 
 void SceneviewScene::renderGeometry() {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
     // TODO: [SCENEVIEW] Fill this in...
     // You shouldn't need to write *any* OpenGL in this class!
     //

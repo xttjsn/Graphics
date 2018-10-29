@@ -59,6 +59,10 @@ private:
     void setMatrixUniforms(CS123::GL::Shader *shader, SupportCanvas3D *context);
     void setLights();
     void renderGeometry();
+    void renderWireframePass(SupportCanvas3D *context);
+    void renderNormalsPass (SupportCanvas3D *context);
+    void renderGeometryAsWireframe();
+    void renderGeometryAsFilledPolygons();
 
     void resetPrimitivePrototypes();
     void loadMapData(CS123SceneMaterial& mat);
