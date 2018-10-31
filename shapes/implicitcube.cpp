@@ -96,10 +96,6 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
     return glm::normalize(m_transform * norm);
 }
 
-glm::vec4 ImplicitCube::diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) {
-
-}
-
 float ImplicitCube::surfaceArea() {
 
 }
