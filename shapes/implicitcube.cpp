@@ -97,9 +97,41 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
 }
 
 float ImplicitCube::surfaceArea() {
+    glm::vec4 v0(-0.5, -0.5, -0.5, 1);
+    glm::vec4 v1(-0.5, -0.5, 0.5, 1);
 
+    v0 = m_transform_inv * v0;
+    v1 = m_transform_inv * v1;
+
+    float dist = glm::distance(v0, v1);
+
+    return dist*dist*6;
 }
 
 BoundingBox ImplicitCube::boundingBox() {
+    std::vector<glm::vec4> extremes = {
+        glm::vec4(-0.5, -0.5, -0.5, 1),
+        glm::vec4(-0.5, -0.5, 0.5, 1),
+        glm::vec4(-0.5, 0.5, -0.5, 1),
+        glm::vec4(-0.5, 0.5, 0.5, 1),
+        glm::vec4(0.5, -0.5, -0.5, 1),
+        glm::vec4(0.5, -0.5, 0.5, 1),
+        glm::vec4(0.5, 0.5, -0.5, 1),
+        glm::vec4(0.5, 0.5, 0.5, 1),
+    };
 
+    float xMin = FLT_MAX, xMax = -FLT_MAX,
+          yMin = FLT_MAX, yMax = -FLT_MAX,
+          zMin = FLT_MAX, zMax = -FLT_MAX;
+    for (glm::vec4& e : extremes) {
+        e = m_transform * e;
+        xMin = glm::min(xMin, e.x);
+        xMax = glm::max(xMax, e.x);
+        yMin = glm::min(yMin, e.y);
+        yMax = glm::max(yMax, e.y);
+        zMin = glm::min(zMin, e.z);
+        zMax = glm::max(zMax, e.z);
+    }
+
+    return BoundingBox(xMin, xMax, yMin, yMax, zMin, zMax);
 }
