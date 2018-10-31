@@ -52,8 +52,8 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
     t_cap = -(0.5 + py) / dy;
     float x_intersect = px + dx * t_cap;
     float z_intersect = pz + dz * t_cap;
-    float radius = x_intersect * x_intersect + z_intersect * z_intersect;
-    if (radius <= 0.25)
+    float radius_sq = x_intersect * x_intersect + z_intersect * z_intersect;
+    if (radius_sq <= 0.25)
         intersectCap = true;
 
     /****************** Cone Body and Cone Cap *****************/
