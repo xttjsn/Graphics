@@ -79,7 +79,13 @@ SOURCES += \
     filters/filterutils.cpp \
     filters/filtergray.cpp \
     ui/marqueecanvas2d.cpp \
-    filters/filterfft.cpp
+    filters/filterfft.cpp \
+    shapes/implicitshape.cpp \
+    shapes/implicitcone.cpp \
+    shapes/implicitcube.cpp \
+    shapes/implicitcylinder.cpp \
+    shapes/implicitsphere.cpp \
+    shapes/implicittorus.cpp
 
 
 HEADERS += \
@@ -144,7 +150,13 @@ HEADERS += \
     filters/filterutils.h \
     filters/filtergray.h \
     ui/marqueecanvas2d.h \
-    filters/filterfft.h
+    filters/filterfft.h \
+    shapes/implicitshape.h \
+    shapes/implicitcone.h \
+    shapes/implicitcube.h \
+    shapes/implicitcylinder.h \
+    shapes/implicitsphere.h \
+    shapes/implicittorus.h
 
 
 
