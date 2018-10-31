@@ -2,8 +2,13 @@
 #define IMPLICITSHAPE_H
 
 #include <glm.hpp>
+#include <glm/gtx/epsilon.hpp>
 #include <vector>
+#include <math.h>
 #include "lib/CS123SceneData.h"
+
+#define EPSILON 1e-4   // The epsilon used in floating point comparison
+#define fequal(a, b) (glm::gtx::epsilon::equalEpsilon((a), (b), EPSILON))
 
 struct Ray
 {
