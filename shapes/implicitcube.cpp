@@ -68,7 +68,32 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
 }
 
 glm::vec4 ImplicitCube::normal(Intersect& intersect) {
+    // Again, assuming that intersect is a valid, don't perform any check
+    if (intersect.miss) return glm::vec4(0, 0, 0, 0);
 
+    glm::vec4 pos = intersect.pos, norm;
+    pos = m_transform_inv * pos;        // Get intersection point in object space
+
+    //TODO: what about extreme points? Do we average the normal?
+
+    if (fequal(pos.x, -0.5))
+        norm = glm::vec4(-1, 0, 0, 0);
+    else if (fequal(pos.x, 0.5))
+        norm = glm::vec4(1, 0, 0, 0);
+    else if (fequal(pos.y, -0.5))
+        norm = glm::vec4(0, -1, 0, 0);
+    else if (fequal(pos.y, 0.5))
+        norm = glm::vec4(0, 1, 0, 0);
+    else if (fequal(pos.z, -0.5))
+        norm = glm::vec4(0, 0, -1, 0);
+    else if (fequal(pos.z, 0.5))
+        norm = glm::vec4(0, 0, 1, 0);
+    else {
+        std::perror("Invalid intersect for Cube.");
+        exit(1);
+    }
+
+    return glm::normalize(m_transform * norm);
 }
 
 glm::vec4 ImplicitCube::diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) {
