@@ -135,5 +135,30 @@ float ImplicitCone::surfaceArea() {
 }
 
 BoundingBox ImplicitCone::boundingBox() {
+    std::vector<glm::vec4> extremes = {
+        glm::vec4(0, 0.5, 0, 1),        // Apex
+        glm::vec4(-0.5, -0.5, 0, 1),    // Left
+        glm::vec4(0, -0.5, -0.5, 1),    // Down
+        glm::vec4(0.5, -0.5, 0, 1),     // Right
+        glm::vec4(0, -0.5, 0.5, 1),     // Up
+        glm::vec4(0.5 * glm::cos(PI / 4), -0.5, 0.5 * glm::sin(PI / 4), 1), // Right Up
+        glm::vec4(0.5 * glm::cos(3 * PI / 4), -0.5, 0.5 * glm::sin(3 * PI / 4), 1), // Left Up
+        glm::vec4(0.5 * glm::cos(5 * PI / 4), -0.5, 0.5 * glm::sin(5 * PI / 4), 1), // Left Down
+        glm::vec4(0.5 * glm::cos(7 * PI / 4), -0.5, 0.5 * glm::sin(7 * PI / 4), 1), // Right Down
+    };
 
+    float xMin = FLT_MAX, xMax = -FLT_MAX,
+          yMin = FLT_MAX, yMax = -FLT_MAX,
+          zMin = FLT_MAX, zMax = -FLT_MAX;
+    for (glm::vec4& e : extremes) {
+        e = m_transform * e;
+        xMin = glm::min(xMin, e.x);
+        xMax = glm::max(xMax, e.x);
+        yMin = glm::min(yMin, e.y);
+        yMax = glm::max(yMax, e.y);
+        zMin = glm::min(zMin, e.z);
+        zMax = glm::max(zMax, e.z);
+    }
+
+    return BoundingBox(xMin, xMax, yMin, yMax, zMin, zMax);
 }
