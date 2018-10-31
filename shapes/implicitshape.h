@@ -7,6 +7,7 @@
 #include <math.h>
 #include "lib/CS123SceneData.h"
 
+#define PI 3.14159265f
 #define EPSILON 1e-4   // The epsilon used in floating point comparison
 #define fequal(a, b) (glm::gtx::epsilon::equalEpsilon((a), (b), EPSILON))
 
@@ -60,7 +61,7 @@ public:
 
     virtual Intersect intersect(const Ray& ray) = 0;
     virtual glm::vec4 normal(Intersect& intersect) = 0;
-    virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light) = 0;
+    virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) = 0;
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
     void setTransform(const glm::mat4x4& transform);
