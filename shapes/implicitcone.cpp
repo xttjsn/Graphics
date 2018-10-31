@@ -1,12 +1,13 @@
 #include "implicitcone.h"
+#include <algorithm>
 
 ImplicitCone::ImplicitCone()
 {
 }
 
 Intersect ImplicitCone::intersect(const Ray& ray) {
-    float t, x, y, z, t_body, t_cap;
-    bool intersectBody = false, intersectCap = false;
+    float t, x, y, z, sq;
+    std::vector<float> ts;
     glm::vec4 start_obj = m_transform_inv * ray.start; // The start point in object space
     glm::vec4 delta_obj = m_transform_inv * ray.delta; // The delta vector in object space
     float px = start_obj.x;
@@ -21,58 +22,42 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
     float b = -8 *(dx * px+ dz * pz) + dy - 2 * dy * py;
     float c = (py - 0.5) * (py - 0.5) - 4 * (px * px + pz * pz) * (px * pz + pz * pz);
 
-    float t1 = (-b + glm::sqrt(b * b - 4 * a * c)) / (2 * a);
-    float t2 = (-b - glm::sqrt(b * b - 4 * a * c)) / (2 * a);
-
-    float y1 = py + t1 * dy;
-    float y2 = py + t2 * dy;
-
-    // Both intersections are valid
-    if (-0.5 <= y1 && y1 <= 0.5 && -0.5 <= y2 && y2 <= 0.5) {
-        t_body = glm::min(t1, t2);
-        y = t_body == t1 ? y1 : y2;
-        intersectBody = true;
+    sq = b * b - 4 * a * c;
+    if (fequal(sq, 0)) {
+        t = -b / (2 * a);
+        y = py + dy * t;
+        if (-0.5 <= y && y <= 0.5)
+            ts.push_back(t);
     }
-    // Only y1 is valid
-    else if (-0.5 <= y1 && y1 <= 0.5) {
-        t_body = t1;
-        y = y1;
-        intersectBody = true;
-    }
-    // Only y2 is valid
-    else if (-0.5 <= y2 && y2 <= 0.5) {
-        t_body = t2;
-        y = y2;
-        intersectBody = true;
-    } else {
-        // Does not intersect with body
+    else if (sq > 0) {
+        t = (-b + glm::sqrt(sq)) / (2 * a);
+        y = py + dy * t;
+        if (-0.5 <= y && y <= 0.5)
+            ts.push_back(t);
+
+        t = (-b - glm::sqrt(sq)) / (2 * a);
+        y = py + dy * t;
+        if (-0.5 <= y && y <= 0.5)
+            ts.push_back(t);
     }
 
     /******************* Cone Cap ***********************/
-    t_cap = -(0.5 + py) / dy;
-    float x_intersect = px + dx * t_cap;
-    float z_intersect = pz + dz * t_cap;
-    float radius_sq = x_intersect * x_intersect + z_intersect * z_intersect;
+    t = -(0.5 + py) / dy;
+    x = px + dx * t_cap;
+    z = pz + dz * t_cap;
+    float radius_sq = x * x + z * z;
     if (radius_sq <= 0.25)
-        intersectCap = true;
+        ts.push(t);
 
-    /****************** Cone Body and Cone Cap *****************/
-    if (intersectBody && intersectCap) {
-        t = glm::min(t_body, t_cap);
-    } else if (intersectBody) {
-        t = t_body;
-    } else if (intersectCap) {
-        t = t_cap;
-    } else {
+    /****************** Take the smallest *****************/
+
+    if (ts.empty()) {
         return Intersect(true, glm::vec4(0));
     }
 
-    x = px + dx * t;
-    y = py + dy * t;
-    z = pz + dz * t;
-    glm::vec4 pos(x, y, z, 1);
-    pos = m_transform * pos;
-    return Intersect(false, pos);
+    t = *std::min_element(ts.begin(), ts.end());
+    x = px + dx * t; y = py + dy * t; z = pz + dz * t;
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1));
 }
 
 glm::vec4 ImplicitCone::normal(Intersect& intersect) {
