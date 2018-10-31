@@ -9,12 +9,16 @@ struct Ray
 {
     glm::vec4 start;
     glm::vec4 delta;
+    Ray(const glm::vec4& Astart, const glm::vec4& Adelta)
+        : start(Astart), delta(Adelta) {}
 };
 
 struct Intersect
 {
     bool miss;
     glm::vec4 pos;
+    Intersect(bool Amiss, const glm::vec4& Apos)
+        : miss(Amiss), pos(Apos) {}
 };
 
 struct BoundingBox
@@ -25,6 +29,8 @@ struct BoundingBox
     float yMax;
     float zMin;
     float zMax;
+    BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, float AzMin, float AzMax)
+        : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax) {}
 };
 
 class KDTreeNode
@@ -52,9 +58,12 @@ public:
     virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light) = 0;
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
+    void setTransform(const glm::mat4x4& transform);
+    void setMaterial(const CS123SceneMaterial& material);
 
 protected:
     glm::mat4x4 m_transform;
+    glm::mat4x4 m_transform_inv;
     CS123SceneMaterial m_material;
 };
 
