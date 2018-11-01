@@ -154,8 +154,7 @@ HEADERS += \
     shapes/implicitcone.h \
     shapes/implicitcube.h \
     shapes/implicitcylinder.h \
-    shapes/implicitsphere.h \
-    shapes/implicittorus_copy.h
+    shapes/implicitsphere.h
 
 
 
