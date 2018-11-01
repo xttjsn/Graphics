@@ -4,9 +4,13 @@ ImplicitShape::ImplicitShape()
 {
 }
 
-ImplicitShape::setTransform(const glm::mat4x4 &transform) {
+void ImplicitShape::setTransform(const glm::mat4x4 &transform) {
     m_transform = transform;
     m_transform_inv = glm::inverse(transform);
+}
+
+void ImplicitShape::setMaterial(const CS123SceneMaterial &material) {
+    m_material = material;
 }
 
 glm::vec4 ImplicitShape::diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) {
