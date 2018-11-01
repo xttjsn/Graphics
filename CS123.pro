@@ -84,8 +84,7 @@ SOURCES += \
     shapes/implicitcone.cpp \
     shapes/implicitcube.cpp \
     shapes/implicitcylinder.cpp \
-    shapes/implicitsphere.cpp \
-    shapes/implicittorus.cpp
+    shapes/implicitsphere.cpp
 
 
 HEADERS += \
@@ -156,7 +155,7 @@ HEADERS += \
     shapes/implicitcube.h \
     shapes/implicitcylinder.h \
     shapes/implicitsphere.h \
-    shapes/implicittorus.h
+    shapes/implicittorus_copy.h
 
 
 
