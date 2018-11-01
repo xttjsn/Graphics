@@ -44,13 +44,68 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
 }
 
 glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
+    if (intersect.miss) return glm::vec4(0);
 
+    glm::vec4 pos = intersect.pos, norm;
+    pos = m_transform_inv * pos;        // Get intersection point in object space
+
+    norm = glm::vec4(glm::normalize(glm::vec3(pos)), 0);
+    norm = glm::normalize(m_transform * norm);  // Convert back to world space
+    return norm;
 }
 
 float ImplicitSphere::surfaceArea() {
+    // Sphere might be transformed into an ellipsoid, so we have to figure out the radius
+    // in all axes.
+    // Then we use the approximation:
+    // Area = 4 * PI * ((a^p * b^p + a^p * c^p + b^p * c^p) / 3)^(1/p),
+    // Where p = 1.6075
+    // Source: https://en.wikipedia.org/wiki/Ellipsoid
 
+    glm::vec4 top(0, 0.5, 0, 1);
+    glm::vec4 right(0.5, 0, 0, 1);
+    glm::vec4 front(0, 0, 0.5, 1);
+    glm::vec4 center(0, 0, 0, 1);
+
+    top = m_transform * top;
+    right = m_transform * right;
+    front = m_transform * front;
+    center = m_transform * center;
+
+    float a = glm::distance(center, right);
+    float b = glm::distance(center, top);
+    float c = glm::distance(center, front);
+    const float p = 1.6075;
+
+    float a_p = glm::pow(a, p);
+    float b_p = glm::pow(b, p);
+    float c_p = glm::pow(c, p);
+    float area = 4 * PI * glm::pow((a_p * b_p + a_p * c_p + b_p * c_p) / 3, 1 / p);
+    return area;
 }
 
 BoundingBox ImplicitSphere::boundingBox() {
+    std::vector<glm::vec4> extremes = {
+        glm::vec4(0, 0.5, 0, 1),        // Top
+        glm::vec4(0, -0.5, 0, 1),       // Bottom
+        glm::vec4(0.5, 0, 0, 1),        // Right
+        glm::vec4(-0.5, 0, 0, 1),       // Left
+        glm::vec4(0, 0, 0.5, 1),        // Front
+        glm::vec4(0, 0, -0.5, 1),       // Back
+    };
 
+    float xMin = FLT_MAX, xMax = -FLT_MAX,
+          yMin = FLT_MAX, yMax = -FLT_MAX,
+          zMin = FLT_MAX, zMax = -FLT_MAX;
+    for (glm::vec4& e : extremes) {
+        e = m_transform * e;
+        xMin = glm::min(xMin, e.x);
+        xMax = glm::max(xMax, e.x);
+        yMin = glm::min(yMin, e.y);
+        yMax = glm::max(yMax, e.y);
+        zMin = glm::min(zMin, e.z);
+        zMax = glm::max(zMax, e.z);
+    }
+
+    return BoundingBox(xMin, xMax, yMin, yMax, zMin, zMax);
 }
