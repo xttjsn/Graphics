@@ -19,7 +19,8 @@ RayScene::RayScene(Scene &scene) :
     // all your memory properly to prevent memory leaks).  As a result, you
     // may need to re-allocate some things here.
     loadTextures();
-    loadKDTree();
+    loadShapes();
+//    loadKDTree();
 }
 
 RayScene::~RayScene()
@@ -30,6 +31,14 @@ void RayScene::loadTextures() {
     for (CS123TransformPrimitive &transPrim : m_transPrims) {
         loadMapData(transPrim.primitive.material);
     }
+}
+
+void RayScene::loadShapes() {
+    m_cone = std::make_unique<ImplicitCone>();
+    m_cube = std::make_unique<ImplicitCube>();
+    m_sphere = std::make_unique<ImplicitSphere>();
+    m_cylinder = std::make_unique<ImplicitCylinder>();
+    m_torus = std::make_unique<ImplicitTorus>();
 }
 
 void RayScene::loadMapData(CS123SceneMaterial& mat) {
@@ -248,11 +257,20 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
 
     // Try to find an intersection using acceleration data structure
     Intersect intersect;
-    kdTreeIntersect(&m_kd_root, ray, intersect);
+//    kdTreeIntersect(&m_kd_root, ray, intersect);
+    naiveIntersect(ray, intersect);
 
     if (intersect.miss) {
+        // DEBUG
+        bgra = BGRA(0, 255, 0, 255);
+        // END_DEBUG
         return;
     }
+
+    // DEBUG
+    bgra = BGRA(255, 0, 0, 255);
+    return;
+    // END_DEBUG
 
     CS123TransformPrimitive* transprim = intersect.transprim;
     ImplicitShape* shape = getShapePointer(transprim->primitive.type);
@@ -366,6 +384,27 @@ glm::vec4 RayScene::getFilmPixelPosition(int row, int col, int width, int height
                      static_cast<float>(height - 2 * row)/ static_cast<float>(height),
                      -1,
                      1);
+}
+
+void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
+    ImplicitShape* shape;
+    Intersect itsct;
+    std::vector<Intersect> itscts;
+
+    for (CS123TransformPrimitive& transprim : m_transPrims) {
+        shape = getShapePointer(transprim.primitive.type);
+        shape->setTransform(transprim.transform);
+        itsct = shape->intersect(ray);
+        if (!itsct.miss) {
+            itscts.push_back(itsct);
+        }
+        returnShapePointer(transprim.primitive.type, shape);
+    }
+
+    if (itscts.empty())
+        intersect = Intersect();
+    else
+        intersect = *std::min_element(itscts.begin(), itscts.end(), itsctComp());
 }
 
 void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect) {

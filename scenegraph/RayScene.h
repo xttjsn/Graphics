@@ -31,12 +31,14 @@ public:
 protected:
 
     void loadTextures();
+    void loadShapes();
     void loadMapData(CS123SceneMaterial& mat);
     void loadKDTree();
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
     void rayTrace(Camera* camera, int row, int col, int width, int height, BGRA& bgra);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
+    void naiveIntersect(Ray& ray, Intersect& intersect);
 
     ImplicitShape* getShapePointer(PrimitiveType type);
     void returnShapePointer(PrimitiveType type, ImplicitShape* shape);
