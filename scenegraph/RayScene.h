@@ -38,7 +38,7 @@ protected:
     void rayTrace(Camera* camera, int row, int col, int width, int height, BGRA& bgra);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
 
-    ImplicitShape* RayScene::getShapePointer(PrimitiveType type);
+    ImplicitShape* getShapePointer(PrimitiveType type);
     void returnShapePointer(PrimitiveType type, ImplicitShape* shape);
     glm::vec4 getFilmPixelPosition(int row, int col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);

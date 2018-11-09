@@ -22,7 +22,7 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
     float c = px * px + py * py + pz * pz - 0.25;
 
     sq = b * b - 4 * a * c;
-    if (fequal(sq, 0)) {  // Single solution
+    if (fequal(sq, 0.f)) {  // Single solution
         t = -b / (2 * a);
         ts.push_back(t);
     }
@@ -35,7 +35,7 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
     }
 
     if (ts.empty()) {
-        return Intersect(true, glm::vec4(0));
+        return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
     t = *std::min_element(ts.begin(), ts.end());

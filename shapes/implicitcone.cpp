@@ -18,12 +18,12 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
     float dz = delta_obj.z;
 
     /******************* Cone Body *********************/
-    float a = dy * dy - 4 * (dx * dx + dz * dz);
-    float b = -8 *(dx * px+ dz * pz) + dy - 2 * dy * py;
-    float c = (py - 0.5) * (py - 0.5) - 4 * (px * px + pz * pz) * (px * pz + pz * pz);
+    float a = dx * dx + dz * dz - 0.25 * dy * dy;
+    float b = 2 * px * dx + 2 * pz * dz - 0.5 * py * dy + 0.25 * dy;
+    float c = px * px + pz * pz - 0.25 * py * py + 0.25 * py - 0.0625;
 
     sq = b * b - 4 * a * c;
-    if (fequal(sq, 0)) {
+    if (fequal(sq, 0.f)) {
         t = -b / (2 * a);
         y = py + dy * t;
         if (-0.5 <= y && y <= 0.5)
@@ -43,16 +43,16 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
 
     /******************* Cone Cap ***********************/
     t = -(0.5 + py) / dy;
-    x = px + dx * t_cap;
-    z = pz + dz * t_cap;
+    x = px + dx * t;
+    z = pz + dz * t;
     float radius_sq = x * x + z * z;
     if (radius_sq <= 0.25)
-        ts.push(t);
+        ts.push_back(t);
 
     /****************** Take the smallest *****************/
 
     if (ts.empty()) {
-        return Intersect(true, glm::vec4(0));
+        return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
     t = *std::min_element(ts.begin(), ts.end());
@@ -69,7 +69,7 @@ glm::vec4 ImplicitCone::normal(Intersect& intersect) {
     glm::vec4 pos = intersect.pos, norm;
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
-    if (fequal(pos, -0.5)) {
+    if (fequal(pos.y, -0.5f)) {
         // Intersect lies on cone cap
         norm = glm::vec4(0, -1, 0, 0);  // Pointing downwards
     } else {

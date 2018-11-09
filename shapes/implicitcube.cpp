@@ -59,7 +59,7 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
         ts.push_back(t);
 
     if (ts.empty()) {
-        return Intersect(true, glm::vec4(0));
+        return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
     t = *std::min_element(ts.begin(), ts.end());
@@ -76,17 +76,17 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
 
     //TODO: what about extreme points? Do we average the normal?
 
-    if (fequal(pos.x, -0.5))
+    if (fequal(pos.x, -0.5f))
         norm = glm::vec4(-1, 0, 0, 0);
-    else if (fequal(pos.x, 0.5))
+    else if (fequal(pos.x, 0.5f))
         norm = glm::vec4(1, 0, 0, 0);
-    else if (fequal(pos.y, -0.5))
+    else if (fequal(pos.y, -0.5f))
         norm = glm::vec4(0, -1, 0, 0);
-    else if (fequal(pos.y, 0.5))
+    else if (fequal(pos.y, 0.5f))
         norm = glm::vec4(0, 1, 0, 0);
-    else if (fequal(pos.z, -0.5))
+    else if (fequal(pos.z, -0.5f))
         norm = glm::vec4(0, 0, -1, 0);
-    else if (fequal(pos.z, 0.5))
+    else if (fequal(pos.z, 0.5f))
         norm = glm::vec4(0, 0, 1, 0);
     else {
         std::perror("Invalid intersect for Cube.");

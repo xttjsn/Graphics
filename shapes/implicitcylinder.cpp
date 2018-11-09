@@ -55,7 +55,7 @@ Intersect ImplicitCylinder::intersect(const Ray& ray) {
         ts.push_back(t);
 
     if (ts.empty()) {
-        return Intersect(true, glm::vec4(0));
+        return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
     t = *std::min_element(ts.begin(), ts.end());
@@ -69,13 +69,13 @@ glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {
     glm::vec4 pos = intersect.pos, norm;
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
-    if (fequal(pos.y, -0.5))            // Bottom cap
+    if (fequal(pos.y, -0.5f))            // Bottom cap
         norm = glm::vec4(0, -1, 0, 0);
-    else if (fequal(pos.y, 0.5))        // Top cap
+    else if (fequal(pos.y, 0.5f))        // Top cap
         norm = glm::vec4(0, 1, 0, 0);
     else {
         // Intersect lies on cylinder body
-        float x = pos.x, y = pos.y, z = pos.z;
+        float x = pos.x, z = pos.z;
         float phi = glm::tanh(z / x);
         norm = glm::normalize(glm::vec4(glm::cos(phi + PI / 2.0), 0, glm::sin(phi + PI / 2.0), 0));
     }

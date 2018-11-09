@@ -7,6 +7,7 @@ class ImplicitCube : public ImplicitShape
 {
 public:
     ImplicitCube();
+    ~ImplicitCube() {}
 
     Intersect intersect(const Ray& ray) override;
     glm::vec4 normal(Intersect& intersect) override;

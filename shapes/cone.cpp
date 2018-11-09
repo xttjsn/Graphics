@@ -35,7 +35,7 @@ void Cone::reCalculateVertices() {
         C = glm::vec4(m_radius * glm::cos(theta + (i + 1) * delta), -m_radius, m_radius * glm::sin(theta + (i + 1) * delta), 1);
         shapeutil.buildTriangleStripUV(side, A, C, B, p1, p2, i);
 
-        for (int j = 0; j < side.size(); j++) {
+        for (unsigned int j = 0; j < side.size(); j++) {
             if (j == 0 || j == side.size() - 1)
                 vertices.push_back(side[j]);
             else if (j % 2 == 0)

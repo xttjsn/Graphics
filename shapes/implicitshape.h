@@ -7,26 +7,34 @@
 #include <math.h>
 #include "lib/CS123SceneData.h"
 
-#define PI 3.14159265f
-#define EPSILON 1e-4   // The epsilon used in floating point comparison
-#define fequal(a, b) (glm::gtx::epsilon::equalEpsilon((a), (b), EPSILON))
+#define EPSILON 1e-4f   // The epsilon used in floating point comparison
+#define fequal(a, b) (glm::epsilonEqual((a), (b), EPSILON))
 
 struct Ray
 {
     glm::vec4 start;
     glm::vec4 delta;
+    Ray() : start(glm::vec4(0)), delta(glm::vec4(0)) {}
     Ray(const glm::vec4& Astart, const glm::vec4& Adelta)
-        : start(Astart), delta(Adelta), t(0) {}
+        : start(Astart), delta(Adelta) {}
 };
 
 struct Intersect
 {
-    float t;
     bool miss;
     glm::vec4 pos;
+    float t;
     CS123TransformPrimitive* transprim;
+    Intersect() : miss(true), pos(glm::vec4(0)), t(FLT_MAX) {}
     Intersect(const bool Amiss, const glm::vec4& Apos, float At)
         : miss(Amiss), pos(Apos), t(At), transprim(nullptr) {}
+};
+
+struct itsctComp
+{
+    inline bool operator() (const Intersect& left, const Intersect& right) {
+        return left.t < right.t;
+    }
 };
 
 struct BoundingBox
@@ -39,6 +47,8 @@ struct BoundingBox
     float zMin;
     float zMax;
     CS123TransformPrimitive* transprim;
+    BoundingBox()
+        : xMin(FLT_MAX), xMax(FLT_MIN), yMin(FLT_MAX), yMax(FLT_MIN), zMin(FLT_MAX), zMax(FLT_MIN), transprim(nullptr) {}
     BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, float AzMin, float AzMax)
         : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax), transprim(nullptr) {}
     BoundingBox(const BoundingBox& that);
@@ -73,10 +83,11 @@ class ImplicitShape
 {
 public:
     ImplicitShape();
+    virtual ~ImplicitShape() {}
 
     virtual Intersect intersect(const Ray& ray) = 0;
     virtual glm::vec4 normal(Intersect& intersect) = 0;
-    virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) = 0;
+    virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global);
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
     void setTransform(const glm::mat4x4& transform);
