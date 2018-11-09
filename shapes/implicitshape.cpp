@@ -1,8 +1,14 @@
 #include "implicitshape.h"
 
+BoundingBox::BoundingBox(const BoundingBox& that)
+    : xMin(that.xMin), xMax(that.xMax),
+      yMin(that.yMin), yMax(that.yMax),
+      zMin(that.zMin), zMax(that.zMax), transprim(that.transprim) {}
+
+
 ImplicitShape::ImplicitShape()
-{
-}
+{}
+
 
 void ImplicitShape::setTransform(const glm::mat4x4 &transform) {
     m_transform = transform;

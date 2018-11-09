@@ -40,7 +40,7 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
 
     t = *std::min_element(ts.begin(), ts.end());
     x = px + dx * t; y = py + dy * t; z = pz + dz * t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1));
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), t);
 }
 
 glm::vec4 ImplicitSphere::normal(Intersect& intersect) {

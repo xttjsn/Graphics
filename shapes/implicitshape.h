@@ -16,42 +16,57 @@ struct Ray
     glm::vec4 start;
     glm::vec4 delta;
     Ray(const glm::vec4& Astart, const glm::vec4& Adelta)
-        : start(Astart), delta(Adelta) {}
+        : start(Astart), delta(Adelta), t(0) {}
 };
 
 struct Intersect
 {
+    float t;
     bool miss;
     glm::vec4 pos;
-    Intersect(bool Amiss, const glm::vec4& Apos)
-        : miss(Amiss), pos(Apos) {}
+    CS123TransformPrimitive* transprim;
+    Intersect(const bool Amiss, const glm::vec4& Apos, float At)
+        : miss(Amiss), pos(Apos), t(At), transprim(nullptr) {}
 };
 
 struct BoundingBox
 {
+    int id = 0;
     float xMin;
     float xMax;
     float yMin;
     float yMax;
     float zMin;
     float zMax;
+    CS123TransformPrimitive* transprim;
     BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, float AzMin, float AzMax)
-        : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax) {}
+        : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax), transprim(nullptr) {}
+    BoundingBox(const BoundingBox& that);
+};
+
+struct KDTreePrimitive
+{
+    float surface;
+    BoundingBox bbox;
+    CS123TransformPrimitive* transprim; // KDTreePrimitive do not own this pointer
 };
 
 class KDTreeNode
 {
 public:
     KDTreeNode();
-
-    void split();
-
-    bool leaf;
-    KDTreeNode left;
-    KDTreeNode right;
-
+    ~KDTreeNode();
+    KDTreeNode* left;
+    KDTreeNode* right;
     BoundingBox bbox;
-    std::vector<CS123ScenePrimitive> primitives;
+    float surface;
+    std::vector<KDTreePrimitive> primitives;
+};
+
+enum Axis {
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z
 };
 
 class ImplicitShape
@@ -71,6 +86,27 @@ protected:
     glm::mat4x4 m_transform;
     glm::mat4x4 m_transform_inv;
     CS123SceneMaterial m_material;
+};
+
+struct less_than_x_key
+{
+    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
+        return (bbox1->bbox.xMin < bbox2->bbox.xMin);
+    }
+};
+
+struct less_than_y_key
+{
+    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
+        return (bbox1->bbox.yMin < bbox2->bbox.yMin);
+    }
+};
+
+struct less_than_z_key
+{
+    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
+        return (bbox1->bbox.zMin < bbox2->bbox.zMin);
+    }
 };
 
 #endif // IMPLICITSHAPE_H

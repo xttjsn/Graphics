@@ -5,13 +5,12 @@
 #include "glm/gtx/transform.hpp"
 #include "qdebug.h"
 
-
 Scene::Scene()
+    : m_lod_coef(1)
 {
 }
 
 Scene::Scene(Scene& scene)
-    : m_lod_coef(1)
 {
     // We need to set the global constants to one when we duplicate a scene,
     // otherwise the global constants will be double counted (squared)
@@ -22,6 +21,9 @@ Scene::Scene(Scene& scene)
     // TODO [INTERSECT]
     // Make sure to copy over the lights and the scenegraph from the old scene,
     // as well as any other member variables your new scene will need.
+    m_transPrims = scene.m_transPrims;
+    m_lights = scene.m_lights;
+    m_lod_coef = scene.m_lod_coef;
 }
 
 Scene::~Scene()
