@@ -24,25 +24,25 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
 
     // x = -0.5
     t = (-0.5 - px) / dx;
-    y = py + dy * t; z = pz * dz * t;
+    y = py + dy * t; z = pz + dz * t;
     if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5)
         ts.push_back(t);
 
     // x = 0.5
     t = (0.5 - px) / dx;
-    y = py + dy * t; z = pz * dz * t;
+    y = py + dy * t; z = pz + dz * t;
     if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5)
         ts.push_back(t);
 
     // y = -0.5
     t = (-0.5 - py) / dy;
-    x = px + dx * t; z = pz * dz * t;
+    x = px + dx * t; z = pz + dz * t;
     if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5)
         ts.push_back(t);
 
     // y = 0.5
     t = (0.5 - py) / dy;
-    x = px + dx * t; z = pz * dz * t;
+    x = px + dx * t; z = pz + dz * t;
     if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5)
         ts.push_back(t);
 
@@ -75,25 +75,26 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
     //TODO: what about extreme points? Do we average the normal?
+    float epsilon = 1e-5;
 
-    if (fequal(pos.x, -0.5f))
+    if (std::fabs(pos.x - (-0.5f)) < epsilon)
         norm = glm::vec4(-1, 0, 0, 0);
-    else if (fequal(pos.x, 0.5f))
+    else if (std::fabs(pos.x - (0.5f)) < epsilon)
         norm = glm::vec4(1, 0, 0, 0);
-    else if (fequal(pos.y, -0.5f))
+    else if (std::fabs(pos.y - (0.5f)) < epsilon)
         norm = glm::vec4(0, -1, 0, 0);
-    else if (fequal(pos.y, 0.5f))
+    else if (std::fabs(pos.y - (0.5f)) < epsilon)
         norm = glm::vec4(0, 1, 0, 0);
-    else if (fequal(pos.z, -0.5f))
+    else if (std::fabs(pos.z - (0.5f)) < epsilon)
         norm = glm::vec4(0, 0, -1, 0);
-    else if (fequal(pos.z, 0.5f))
+    else if (std::fabs(pos.z - (0.5f)) < epsilon)
         norm = glm::vec4(0, 0, 1, 0);
     else {
         std::perror("Invalid intersect for Cube.");
         exit(1);
     }
 
-    return glm::normalize(m_transform * norm);
+    return glm::normalize(glm::transpose(m_transform_inv) * norm);
 }
 
 float ImplicitCube::surfaceArea() {

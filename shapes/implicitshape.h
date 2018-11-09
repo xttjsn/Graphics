@@ -7,7 +7,7 @@
 #include <math.h>
 #include "lib/CS123SceneData.h"
 
-#define EPSILON 1e-6f   // The epsilon used in floating point comparison
+#define EPSILON 1e-9f   // The epsilon used in floating point comparison
 #define fequal(a, b) (glm::epsilonEqual((a), (b), EPSILON))
 
 struct Ray

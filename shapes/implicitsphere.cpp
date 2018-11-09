@@ -50,7 +50,7 @@ glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
     norm = glm::vec4(glm::normalize(glm::vec3(pos)), 0);
-    norm = glm::normalize(m_transform * norm);  // Convert back to world space
+    norm = glm::normalize(glm::transpose(m_transform_inv) * norm);  // Convert back to world space
     return norm;
 }
 

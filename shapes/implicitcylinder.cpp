@@ -80,7 +80,7 @@ glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {
         norm = glm::normalize(glm::vec4(glm::cos(phi + PI / 2.0), 0, glm::sin(phi + PI / 2.0), 0));
     }
 
-    norm = glm::normalize(m_transform * norm);  // Convert back to world space
+    norm = glm::normalize(glm::transpose(m_transform_inv) * norm);  // Convert back to world space
     return norm;
 }
 

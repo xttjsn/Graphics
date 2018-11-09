@@ -75,13 +75,11 @@ glm::vec4 ImplicitCone::normal(Intersect& intersect) {
     } else {
         // Intersect lies on cone body
         float x = pos.x, y = pos.y, z = pos.z;
-        float phi = glm::tanh(z / x);
-        glm::vec3 vApexToPos = glm::vec3(x, y - 0.5, z);
-        glm::vec3 vPosTagent = glm::vec3(glm::cos(phi + PI / 2.0), 0, glm::sin(phi + PI / 2.0));
-        norm = glm::vec4(glm::normalize(glm::cross(vApexToPos, vPosTagent)), 0);
+        glm::vec3 V = glm::normalize(glm::vec3(x, 0, z));
+        norm = glm::vec4(V.x * 2, 0.5, V.z * 2, 0);
     }
 
-    norm = glm::normalize(m_transform * norm);  // Convert back to world space
+    norm = glm::transpose(m_transform_inv) * norm;  // Convert back to world space
     return norm;
 }
 

@@ -262,14 +262,14 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
 
     if (intersect.miss) {
         // DEBUG
-        bgra = BGRA(0, 255, 0, 255);
+//        bgra = BGRA(0, 255, 0, 255);
         // END_DEBUG
         return;
     }
 
     // DEBUG
-    bgra = BGRA(255, 0, 0, 255);
-    return;
+//    bgra = BGRA(255, 0, 0, 255);
+//    return;
     // END_DEBUG
 
     CS123TransformPrimitive* transprim = intersect.transprim;
@@ -396,6 +396,7 @@ void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
         shape->setTransform(transprim.transform);
         itsct = shape->intersect(ray);
         if (!itsct.miss) {
+            itsct.transprim = &transprim;
             itscts.push_back(itsct);
         }
         returnShapePointer(transprim.primitive.type, shape);
