@@ -56,8 +56,8 @@ class KDTreeNode
 public:
     KDTreeNode();
     ~KDTreeNode();
-    KDTreeNode* left;
-    KDTreeNode* right;
+    KDTreeNode* left;   // Parent owns left
+    KDTreeNode* right;  // Parent owns right
     BoundingBox bbox;
     float surface;
     std::vector<KDTreePrimitive> primitives;
@@ -90,22 +90,22 @@ protected:
 
 struct less_than_x_key
 {
-    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
-        return (bbox1->bbox.xMin < bbox2->bbox.xMin);
+    inline bool operator() (const KDTreePrimitive& prim1, const KDTreePrimitive& prim2) {
+        return (prim1.bbox.xMin < prim2.bbox.xMin);
     }
 };
 
 struct less_than_y_key
 {
-    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
-        return (bbox1->bbox.yMin < bbox2->bbox.yMin);
+    inline bool operator() (const KDTreePrimitive& prim1, const KDTreePrimitive& prim2) {
+        return (prim1.bbox.yMin < prim2.bbox.yMin);
     }
 };
 
 struct less_than_z_key
 {
-    inline bool operator() (const BBoxSurface* bbox1, const BBoxSurface* bbox2) {
-        return (bbox1->bbox.zMin < bbox2->bbox.zMin);
+    inline bool operator() (const KDTreePrimitive& prim1, const KDTreePrimitive& prim2) {
+        return (prim1.bbox.zMin < prim2.bbox.zMin);
     }
 };
 

@@ -32,6 +32,16 @@ protected:
 
     void loadTextures();
     void loadMapData(CS123SceneMaterial& mat);
+    void loadKDTree();
+    void split(KDTreeNode* root);
+    void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
+    void rayTrace(Camera* camera, int row, int col, int width, int height, BGRA& bgra);
+    void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
+
+    ImplicitShape* RayScene::getShapePointer(PrimitiveType type);
+    void returnShapePointer(PrimitiveType type, ImplicitShape* shape);
+    glm::vec4 getFilmPixelPosition(int row, int col, int width, int height);
+    glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
     std::unique_ptr<ImplicitCone> m_cone;
     std::unique_ptr<ImplicitCube> m_cube;

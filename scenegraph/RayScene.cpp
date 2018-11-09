@@ -231,8 +231,7 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
     // Generate ray in camera space, and then transform it into world space
     glm::vec4 filmPixelPos = getFilmPixelPosition(row, col, width, height);
     filmPixelPos = viewInv * scaleInv * filmPixelPos;
-    ray.start    = glm::vec4(0, 0, 0, 1);
-    ray.start    = viewInv * ray.start;
+    ray.start    = viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
     // Try to find an intersection using acceleration data structure
@@ -350,7 +349,7 @@ glm::vec4 RayScene::getFilmPixelPosition(int row, int col, int width, int height
 void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect) {
     // Treat each bounding box as an ImplicitCube, compute the intersectons with both of them, and take the smaller one (if any)
     ImplicitCube cubeLeft, cubeRight;
-    KDTreeNode *left = root.left, *right = root.right;
+    KDTreeNode *left = root->left, *right = root->right;
 
     if (left && right)  {
         // If the current root is not a leaf node
@@ -411,4 +410,11 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
             intersect = *std::min_element(itscts.begin(), itscts.end(), itsctComp());
         }
     }
+}
+
+glm::mat4x4 RayScene::boundingBoxToTransform(BoundingBox& bbox) {
+    float xc = (bbox.xMax + bbox.xMin) / 2, yc = (bbox.yMax + bbox.yMin) / 2, zc = (bbox.zMax + bbox.zMin) / 2;
+    float xs = bbox.xMax - xMin, ys = bbox.yMax - bbox.yMin, zs = bbox.zMax - bbox.zMin;
+    glm::mat4x4 mat = glm::scale(glm::vec3(xs, ys, zs)) * glm::translate(glm::vec3(xc, yc, zc));
+    return mat;
 }

@@ -5,6 +5,15 @@ BoundingBox::BoundingBox(const BoundingBox& that)
       yMin(that.yMin), yMax(that.yMax),
       zMin(that.zMin), zMax(that.zMax), transprim(that.transprim) {}
 
+KDTreeNode::KDTreeNode() {
+}
+
+KDTreeNode::~KDTreeNode() {
+    if (left)
+        delete left;
+    if (right)
+        delete right;
+}
 
 ImplicitShape::ImplicitShape()
 {}
