@@ -9,6 +9,7 @@
 #include "gl/shaders/CS123Shader.h"
 #include "gl/textures/TextureParametersBuilder.h"
 #include <glm/gtx/transform.hpp>
+#include <QThreadPool>
 
 RayScene::RayScene(Scene &scene) :
     Scene(scene)
@@ -73,9 +74,10 @@ void RayScene::loadKDTree() {
     KDTreePrimitive kdprim;
     for (CS123TransformPrimitive& transprim : m_transPrims) {
         shape = getShapePointer(transprim.primitive.type);
-        shape->setTransform(transprim.transform);
+        shape->setTransform(transprim.transform, transprim.transformInv);
         surface = shape->surfaceArea();
         bbox    = shape->boundingBox();
+        returnShapePointer(transprim.primitive.type, shape);
         xMin    = std::min(xMin, bbox.xMin);
         xMax    = std::max(xMax, bbox.xMax);
         yMin    = std::min(yMin, bbox.yMin);
@@ -230,30 +232,36 @@ void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& s
 
 void RayScene::render(SupportCanvas2D* canvas, Camera* camera, int width, int height) {
     BGRA* data = canvas->data();
-
+    loadCameraMatrices(camera);
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
-            BGRA bgra;
-            rayTrace(camera, r, c, width, height, bgra);
-            *(data + r * width + c) = bgra;
+            RayTraceRunnable* task = new RayTraceRunnable(this, r, c, width, height, data);
+            QThreadPool::globalInstance()->start(task);
+//            rayTrace(r, c, width, height, bgra);
+//            *(data + r * width + c) = bgra;
         }
     }
 }
 
-void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height, BGRA& bgra) {
+void RayScene::loadCameraMatrices(Camera* camera) {
+    m_view = camera->getViewMatrix();
+    m_scale = camera->getScaleMatrix();
+    m_viewInv = glm::inverse(m_view);
+    m_scaleInv = glm::inverse(m_scale);
+
+}
+
+void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
     Ray ray;
 
     // Get camera related matrices
     glm::mat4x4 model;
-    glm::mat4x4 view     = camera->getViewMatrix();
-    glm::mat4x4 scale    = camera->getScaleMatrix();
-    glm::mat4x4 viewInv  = glm::inverse(view);
-    glm::mat4x4 scaleInv = glm::inverse(scale);
+    glm::mat4x4 modelInv;
 
     // Generate ray in camera space, and then transform it into world space
     glm::vec4 filmPixelPos = getFilmPixelPosition(row, col, width, height);
-    filmPixelPos = viewInv * scaleInv * filmPixelPos;
-    ray.start    = viewInv * glm::vec4(0, 0, 0, 1);
+    filmPixelPos = m_viewInv * m_scaleInv * filmPixelPos;
+    ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
     // Try to find an intersection using acceleration data structure
@@ -263,20 +271,15 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
 
     if (intersect.miss) {
         // DEBUG
-//        bgra = BGRA(0, 255, 0, 255);
-        // END_DEBUG
         return;
     }
 
-    // DEBUG
-//    bgra = BGRA(255, 0, 0, 255);
-//    return;
-    // END_DEBUG
 
     CS123TransformPrimitive* transprim = intersect.transprim;
     ImplicitShape* shape               = getShapePointer(transprim->primitive.type);
     model                              = transprim->transform;
-    shape->setTransform(transprim->transform);
+    modelInv                           = transprim->transformInv;
+    shape->setTransform(transprim->transform, transprim->transformInv);
 
     // Compute illumination
     glm::vec4 final (0), ambient, diffuse;
@@ -284,8 +287,8 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
     diffuse = transprim->primitive.material.cDiffuse;
 
     glm::vec4 normal = shape->normal(intersect);
-    glm::vec4 position_cameraSpace = view * intersect.pos;
-    glm::vec4 normal_cameraSpace = glm::vec4(glm::normalize(glm::mat3(glm::transpose(glm::inverse(view * model))) * glm::vec3(normal)), 0);
+    glm::vec4 position_cameraSpace = intersect.pos;
+    glm::vec4 normal_cameraSpace = glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     final = ambient;
     glm::vec4 lightColor;
@@ -295,10 +298,10 @@ void RayScene::rayTrace(Camera* camera, int row, int col, int width, int height,
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
         case LightType::LIGHT_POINT:
-            vertexToLight = glm::normalize(view * glm::vec4(glm::vec3(light.pos), 1) - position_cameraSpace);
+            vertexToLight = glm::normalize(glm::vec4(glm::vec3(light.pos), 1) - position_cameraSpace);
             break;
         case LightType::LIGHT_DIRECTIONAL:
-            vertexToLight = glm::normalize(view * glm::vec4(-glm::vec3(light.dir), 0));
+            vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
             break;
         case LightType::LIGHT_SPOT:
             perror("Unsupported light type.");
@@ -327,22 +330,27 @@ ImplicitShape* RayScene::getShapePointer(PrimitiveType type) {
     ImplicitShape* shape;
     switch (type) {
     case PrimitiveType::PRIMITIVE_CUBE:
+        m_cubemtx.lock();
         shape = m_cube.release();
         break;
 
     case PrimitiveType::PRIMITIVE_CONE:
+        m_conemtx.lock();
         shape = m_cone.release();
         break;
 
     case PrimitiveType::PRIMITIVE_CYLINDER:
+        m_cylindermtx.lock();
         shape = m_cylinder.release();
         break;
 
     case PrimitiveType::PRIMITIVE_TORUS:
+        m_torusmtx.lock();
         shape = m_torus.release();
         break;
 
     case PrimitiveType::PRIMITIVE_SPHERE:
+        m_spheremtx.lock();
         shape = m_sphere.release();
         break;
 
@@ -358,22 +366,27 @@ void RayScene::returnShapePointer(PrimitiveType type, ImplicitShape* shape) {
     switch (type) {
     case PrimitiveType::PRIMITIVE_CUBE:
         m_cube.reset(static_cast<ImplicitCube*>(shape));
+        m_cubemtx.unlock();
         break;
 
     case PrimitiveType::PRIMITIVE_CONE:
         m_cone.reset(static_cast<ImplicitCone*>(shape));
+        m_conemtx.unlock();
         break;
 
     case PrimitiveType::PRIMITIVE_CYLINDER:
         m_cylinder.reset(static_cast<ImplicitCylinder*>(shape));
+        m_cylindermtx.unlock();
         break;
 
     case PrimitiveType::PRIMITIVE_TORUS:
         m_torus.reset(static_cast<ImplicitTorus*>(shape));
+        m_torusmtx.unlock();
         break;
 
     case PrimitiveType::PRIMITIVE_SPHERE:
         m_sphere.reset(static_cast<ImplicitSphere*>(shape));
+        m_spheremtx.unlock();
         break;
 
     default:
@@ -396,7 +409,7 @@ void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
 
     for (CS123TransformPrimitive& transprim : m_transPrims) {
         shape = getShapePointer(transprim.primitive.type);
-        shape->setTransform(transprim.transform);
+        shape->setTransform(transprim.transform, transprim.transformInv);
         itsct = shape->intersect(ray);
         if (!itsct.miss) {
             itsct.transprim = &transprim;
@@ -418,11 +431,13 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
 
     if (left && right)  {
         // If the current root is not a leaf node
-        glm::mat4x4 leftTransform  = boundingBoxToTransform(left->bbox);
-        glm::mat4x4 rightTransform = boundingBoxToTransform(right->bbox);
+        glm::mat4x4 leftTransform = left->bbox.transform;
+        glm::mat4x4 leftTransformInv = left->bbox.transformInv;
+        glm::mat4x4 rightTransform = right->bbox.transform;
+        glm::mat4x4 rightTransformInv = right->bbox.transformInv;
 
-        cubeLeft.setTransform(leftTransform);
-        cubeRight.setTransform(rightTransform);
+        cubeLeft.setTransform(leftTransform, leftTransformInv);
+        cubeRight.setTransform(rightTransform, rightTransformInv);
 
         Intersect lIntersect = cubeLeft.intersect(ray);
         Intersect rIntersect = cubeRight.intersect(ray);
@@ -460,7 +475,7 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
         for (KDTreePrimitive& kdprim : root->primitives) {
             transprim = kdprim.transprim;
             shape     = getShapePointer(transprim->primitive.type);
-            shape->setTransform(transprim->transform);
+            shape->setTransform(transprim->transform, transprim->transformInv);
             itsct           = shape->intersect(ray);
             itsct.transprim = transprim;
             returnShapePointer(transprim->primitive.type, shape);

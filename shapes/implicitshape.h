@@ -49,10 +49,10 @@ struct BoundingBox
     float zMin;
     float zMax;
     CS123TransformPrimitive* transprim;
-    BoundingBox()
-        : xMin(FLT_MAX), xMax(FLT_MIN), yMin(FLT_MAX), yMax(FLT_MIN), zMin(FLT_MAX), zMax(FLT_MIN), transprim(nullptr) {}
-    BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, float AzMin, float AzMax)
-        : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax), transprim(nullptr) {}
+    glm::mat4x4 transform;
+    glm::mat4x4 transformInv;
+    BoundingBox();
+    BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, float AzMin, float AzMax);
     BoundingBox(const BoundingBox& that);
 };
 
@@ -92,7 +92,7 @@ public:
     virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global);
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
-    void setTransform(const glm::mat4x4& transform);
+    void setTransform(const glm::mat4x4& transform, const glm::mat4x4& transformInv);
     void setMaterial(const CS123SceneMaterial& material);
 
 protected:

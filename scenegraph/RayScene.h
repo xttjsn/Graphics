@@ -8,7 +8,9 @@
 #include "shapes/implicitsphere.h"
 #include "shapes/implicittorus.h"
 #include "SupportCanvas2D.h"
+#include "threads/raytracethread.h"
 #include <vector>
+#include <QMutex>
 
 struct tsIntersectComp {
     inline bool operator() (Intersect a, Intersect b) {
@@ -33,10 +35,11 @@ protected:
     void loadTextures();
     void loadShapes();
     void loadMapData(CS123SceneMaterial& mat);
+    void loadCameraMatrices(Camera* camera);
     void loadKDTree();
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
-    void rayTrace(Camera* camera, int row, int col, int width, int height, BGRA& bgra);
+    void rayTrace(int row, int col, int width, int height, BGRA& bgra);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
 
@@ -51,7 +54,20 @@ protected:
     std::unique_ptr<ImplicitSphere> m_sphere;
     std::unique_ptr<ImplicitTorus> m_torus;
 
+    QMutex m_conemtx;
+    QMutex m_cubemtx;
+    QMutex m_cylindermtx;
+    QMutex m_spheremtx;
+    QMutex m_torusmtx;
+
+    glm::mat4x4 m_view;
+    glm::mat4x4 m_scale;
+    glm::mat4x4 m_viewInv;
+    glm::mat4x4 m_scaleInv;
+
     KDTreeNode    m_kd_root;
+
+friend class RayTraceRunnable;
 };
 
 #endif // RAYSCENE_H

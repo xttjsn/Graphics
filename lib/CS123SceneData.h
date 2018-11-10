@@ -182,9 +182,10 @@ struct CS123SceneNode {
 
 struct CS123TransformPrimitive {
     glm::mat4x4 transform;
+    glm::mat4x4 transformInv;
     CS123ScenePrimitive primitive;
     CS123TransformPrimitive(glm::mat4x4 trans, CS123ScenePrimitive prim)
-        : transform(trans), primitive(prim) {
+        : transform(trans), transformInv(glm::inverse(transform)), primitive(prim) {
     }
 };
 

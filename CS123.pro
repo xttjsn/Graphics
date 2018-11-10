@@ -85,7 +85,8 @@ SOURCES += \
     shapes/implicitcube.cpp \
     shapes/implicitcylinder.cpp \
     shapes/implicitsphere.cpp \
-    shapes/implicittorus.cpp
+    shapes/implicittorus.cpp \
+    scenegraph/threads/raytracethread.cpp
 
 
 HEADERS += \
@@ -156,7 +157,8 @@ HEADERS += \
     shapes/implicitcube.h \
     shapes/implicitcylinder.h \
     shapes/implicitsphere.h \
-    shapes/implicittorus.h
+    shapes/implicittorus.h \
+    scenegraph/threads/raytracethread.h
 
 
 
