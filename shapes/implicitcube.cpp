@@ -11,7 +11,7 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
     // z = \pm 0.5, pz + dz * t = \pm 0.5, t = (\pm 0.5 - pz) / dz
 
     float t, x, y, z;
-    std::vector<float> ts;
+    float best_t = FLT_MAX;
 
     glm::vec4 start_obj = m_transform_inv * ray.start; // The start point in object space
     glm::vec4 delta_obj = m_transform_inv * ray.delta; // The delta vector in object space
@@ -25,46 +25,45 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
     // x = -0.5
     t = (-0.5 - px) / dx;
     y = py + dy * t; z = pz + dz * t;
-    if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
     // x = 0.5
     t = (0.5 - px) / dx;
     y = py + dy * t; z = pz + dz * t;
-    if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= y && y <= 0.5 && -0.5 <= z && z <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
     // y = -0.5
     t = (-0.5 - py) / dy;
     x = px + dx * t; z = pz + dz * t;
-    if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
     // y = 0.5
     t = (0.5 - py) / dy;
     x = px + dx * t; z = pz + dz * t;
-    if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= x && x <= 0.5 && -0.5 <= z && z <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
     // z = -0.5
     t = (-0.5 - pz) / dz;
     x = px + dx * t; y = py + dy * t;
-    if (-0.5 <= x && x <= 0.5 && -0.5 <= y && y <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= x && x <= 0.5 && -0.5 <= y && y <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
     // z = 0.5
     t = (0.5 - pz) / dz;
     x = px + dx * t; y = py + dy * t;
-    if (-0.5 <= x && x <= 0.5 && -0.5 <= y && y <= 0.5)
-        ts.push_back(t);
+    if (-0.5 <= x && x <= 0.5 && -0.5 <= y && y <= 0.5 && t > 0)
+        best_t = std::min(t, best_t);
 
-    if (ts.empty()) {
+    if (fequal2(best_t, FLT_MAX)) {
         return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
-    t = *std::min_element(ts.begin(), ts.end());
-    x = px + dx * t; y = py + dy * t; z = pz + dz * t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), t);
+    x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitCube::normal(Intersect& intersect) {

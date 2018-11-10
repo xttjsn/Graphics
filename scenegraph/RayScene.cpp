@@ -235,10 +235,11 @@ void RayScene::render(SupportCanvas2D* canvas, Camera* camera, int width, int he
     loadCameraMatrices(camera);
     for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
-            RayTraceRunnable* task = new RayTraceRunnable(this, r, c, width, height, data);
-            QThreadPool::globalInstance()->start(task);
-//            rayTrace(r, c, width, height, bgra);
-//            *(data + r * width + c) = bgra;
+//            RayTraceRunnable* task = new RayTraceRunnable(this, r, c, width, height, data);
+//            QThreadPool::globalInstance()->start(task);
+            BGRA bgra;
+            rayTrace(r, c, width, height, bgra);
+            *(data + r * width + c) = bgra;
         }
     }
 }
@@ -280,13 +281,14 @@ void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
     model                              = transprim->transform;
     modelInv                           = transprim->transformInv;
     shape->setTransform(transprim->transform, transprim->transformInv);
+    glm::vec4 normal                   = shape->normal(intersect);
+    returnShapePointer(transprim->primitive.type, shape);
 
     // Compute illumination
     glm::vec4 final (0), ambient, diffuse;
     ambient = transprim->primitive.material.cAmbient;
     diffuse = transprim->primitive.material.cDiffuse;
 
-    glm::vec4 normal = shape->normal(intersect);
     glm::vec4 position_cameraSpace = intersect.pos;
     glm::vec4 normal_cameraSpace = glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
@@ -322,8 +324,6 @@ void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
     bgra.g = glm::clamp(final.g, 0.f, 1.f) * 255;
     bgra.b = glm::clamp(final.b, 0.f, 1.f) * 255;
     bgra.a = 255;
-
-    returnShapePointer(transprim->primitive.type, shape);
 }
 
 ImplicitShape* RayScene::getShapePointer(PrimitiveType type) {
@@ -404,24 +404,22 @@ glm::vec4 RayScene::getFilmPixelPosition(int row, int col, int width, int height
 
 void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
     ImplicitShape* shape;
-    Intersect itsct;
-    std::vector<Intersect> itscts;
+    Intersect bestItsct, itsct;
 
     for (CS123TransformPrimitive& transprim : m_transPrims) {
         shape = getShapePointer(transprim.primitive.type);
         shape->setTransform(transprim.transform, transprim.transformInv);
         itsct = shape->intersect(ray);
-        if (!itsct.miss) {
-            itsct.transprim = &transprim;
-            itscts.push_back(itsct);
-        }
         returnShapePointer(transprim.primitive.type, shape);
+        if (!itsct.miss) {
+            if (itsct.t < bestItsct.t) {
+                bestItsct = itsct;
+                bestItsct.transprim = &transprim;
+            }
+        }
     }
 
-    if (itscts.empty())
-        intersect = Intersect();
-    else
-        intersect = *std::min_element(itscts.begin(), itscts.end(), itsctComp());
+    intersect = bestItsct;
 }
 
 void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect) {

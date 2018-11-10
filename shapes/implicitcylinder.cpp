@@ -12,8 +12,8 @@ Intersect ImplicitCylinder::intersect(const Ray& ray) {
     // y = py + dy * t;
     // Check if y lies in between -0.5 and 0.5
 
-    std::vector<float> ts;
     float t, x, y, z, radius_sq;
+    float best_t = FLT_MAX;
     glm::vec4 start_obj = m_transform_inv * ray.start; // The start point in object space
     glm::vec4 delta_obj = m_transform_inv * ray.delta; // The delta vector in object space
     float px = start_obj.x;
@@ -32,35 +32,34 @@ Intersect ImplicitCylinder::intersect(const Ray& ray) {
     float t2 = (-b - glm::sqrt(b * b - 4 * a * c)) / (2 * a);
 
     y = py + dy * t1;
-    if (-0.5 <= y && y <= 0.5)
-        ts.push_back(t1);
+    if (-0.5 <= y && y <= 0.5 && t1 > 0)
+        best_t = std::min(best_t, t1);
 
     y = py + dy * t2;
-    if (-0.5 <= y && y <= 0.5)
-        ts.push_back(t2);
+    if (-0.5 <= y && y <= 0.5 && t1 > 0)
+        best_t = std::min(best_t, t2);
 
     /************** Cylinder Cap ******************/
     t = -(0.5 + py) / dy;
     x = px + dx * t;
     z = pz + dz * t;
     radius_sq = x * x + z * z;
-    if (radius_sq <= 0.25)
-        ts.push_back(t);
+    if (radius_sq <= 0.25 && t > 0)
+        best_t = std::min(best_t, t);
 
     t = (0.5 - py) / dy;
     x = px + dx * t;
     z = pz + dz * t;
     radius_sq = x * x + z * z;
-    if (radius_sq <= 0.25)
-        ts.push_back(t);
+    if (radius_sq <= 0.25 && t > 0)
+        best_t = std::min(best_t, t);
 
-    if (ts.empty()) {
+    if (fequal2(best_t, FLT_MAX)) {
         return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
-    t = *std::min_element(ts.begin(), ts.end());
-    x = px + dx * t; y = py + dy * t; z = pz + dz * t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), t);
+    x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {

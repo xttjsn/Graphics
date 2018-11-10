@@ -7,7 +7,7 @@ ImplicitSphere::ImplicitSphere()
 
 Intersect ImplicitSphere::intersect(const Ray& ray) {
     float t, x, y, z, sq;
-    std::vector<float> ts;
+    float best_t = FLT_MAX;
     glm::vec4 start_obj = m_transform_inv * ray.start; // The start point in object space
     glm::vec4 delta_obj = m_transform_inv * ray.delta; // The delta vector in object space
     float px = start_obj.x;
@@ -24,23 +24,25 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
     sq = b * b - 4 * a * c;
     if (fequal(sq, 0.f)) {  // Single solution
         t = -b / (2 * a);
-        ts.push_back(t);
+        if (t > 0)
+            best_t = std::min(best_t, t);
     }
     else if (sq > 0) { // Double solution
         t = (-b + glm::sqrt(sq)) / (2 * a);
-        ts.push_back(t);
+        if (t > 0)
+            best_t = std::min(best_t, t);
 
         t = (-b - glm::sqrt(sq)) / (2 * a);
-        ts.push_back(t);
+        if (t > 0)
+            best_t = std::min(best_t, t);
     }
 
-    if (ts.empty()) {
+    if (fequal2(best_t, FLT_MAX)) {
         return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
-    t = *std::min_element(ts.begin(), ts.end());
-    x = px + dx * t; y = py + dy * t; z = pz + dz * t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), t);
+    x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
