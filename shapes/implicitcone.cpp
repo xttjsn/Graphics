@@ -1,5 +1,6 @@
 #include "implicitcone.h"
 #include <algorithm>
+#include <math.h>
 
 ImplicitCone::ImplicitCone()
 {
@@ -69,17 +70,17 @@ glm::vec4 ImplicitCone::normal(Intersect& intersect) {
     glm::vec4 pos = intersect.pos, norm;
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
-    if (fequal(pos.y, -0.5f)) {
+    if (fequal2(pos.y, -0.5f)) {
         // Intersect lies on cone cap
         norm = glm::vec4(0, -1, 0, 0);  // Pointing downwards
     } else {
         // Intersect lies on cone body
-        float x = pos.x, y = pos.y, z = pos.z;
-        glm::vec3 V = glm::normalize(glm::vec3(x, 0, z));
-        norm = glm::vec4(V.x * 2, 0.5, V.z * 2, 0);
+        float x = pos.x, z = pos.z;
+        float theta = std::atan2(0.5f, 1.0f);
+        float phi = std::atan2(z, x);
+        norm = glm::vec4(glm::cos(theta) * glm::cos(phi), glm::sin(theta), glm::cos(theta) * glm::sin(phi), 0);
     }
 
-    norm = glm::transpose(m_transform_inv) * norm;  // Convert back to world space
     return norm;
 }
 

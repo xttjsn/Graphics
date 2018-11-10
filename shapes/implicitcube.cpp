@@ -75,26 +75,25 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
     //TODO: what about extreme points? Do we average the normal?
-    float epsilon = 1e-5;
 
-    if (std::fabs(pos.x - (-0.5f)) < epsilon)
+    if (fequal2(pos.x, -0.5f))
         norm = glm::vec4(-1, 0, 0, 0);
-    else if (std::fabs(pos.x - (0.5f)) < epsilon)
+    else if (fequal2(pos.x, 0.5f))
         norm = glm::vec4(1, 0, 0, 0);
-    else if (std::fabs(pos.y - (0.5f)) < epsilon)
+    else if (fequal2(pos.y, -0.5f))
         norm = glm::vec4(0, -1, 0, 0);
-    else if (std::fabs(pos.y - (0.5f)) < epsilon)
+    else if (fequal2(pos.y, 0.5f))
         norm = glm::vec4(0, 1, 0, 0);
-    else if (std::fabs(pos.z - (0.5f)) < epsilon)
+    else if (fequal2(pos.z, -0.5f))
         norm = glm::vec4(0, 0, -1, 0);
-    else if (std::fabs(pos.z - (0.5f)) < epsilon)
+    else if (fequal2(pos.z, 0.5f))
         norm = glm::vec4(0, 0, 1, 0);
     else {
         std::perror("Invalid intersect for Cube.");
         exit(1);
     }
 
-    return glm::normalize(glm::transpose(m_transform_inv) * norm);
+    return norm;
 }
 
 float ImplicitCube::surfaceArea() {

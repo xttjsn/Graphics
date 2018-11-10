@@ -69,18 +69,17 @@ glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {
     glm::vec4 pos = intersect.pos, norm;
     pos = m_transform_inv * pos;        // Get intersection point in object space
 
-    if (fequal(pos.y, -0.5f))            // Bottom cap
+    if (fequal2(pos.y, -0.5f))            // Bottom cap
         norm = glm::vec4(0, -1, 0, 0);
-    else if (fequal(pos.y, 0.5f))        // Top cap
+    else if (fequal2(pos.y, 0.5f))        // Top cap
         norm = glm::vec4(0, 1, 0, 0);
     else {
         // Intersect lies on cylinder body
         float x = pos.x, z = pos.z;
-        float phi = glm::tanh(z / x);
-        norm = glm::normalize(glm::vec4(glm::cos(phi + PI / 2.0), 0, glm::sin(phi + PI / 2.0), 0));
+        float phi = std::atan2(z, x);
+        norm = glm::normalize(glm::vec4(glm::cos(phi), 0, glm::sin(phi), 0));
     }
 
-    norm = glm::normalize(glm::transpose(m_transform_inv) * norm);  // Convert back to world space
     return norm;
 }
 
