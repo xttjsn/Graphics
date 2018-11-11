@@ -275,7 +275,6 @@ void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
         return;
     }
 
-
     CS123TransformPrimitive* transprim = intersect.transprim;
     ImplicitShape* shape               = getShapePointer(transprim->primitive.type);
     model                              = transprim->transform;

@@ -21,6 +21,7 @@ Scene::Scene(Scene& scene)
     // TODO [INTERSECT]
     // Make sure to copy over the lights and the scenegraph from the old scene,
     // as well as any other member variables your new scene will need.
+
     m_transPrims = scene.m_transPrims;
     m_lights = scene.m_lights;
     m_lod_coef = scene.m_lod_coef;

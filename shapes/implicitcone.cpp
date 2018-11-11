@@ -9,43 +9,31 @@ ImplicitCone::ImplicitCone()
 Intersect ImplicitCone::intersect(const Ray& ray) {
     float t, x, y, z, sq;
     float best_t = FLT_MAX;
-    glm::vec4 start_obj = m_transform_inv * ray.start; // The start point in object space
-    glm::vec4 delta_obj = m_transform_inv * ray.delta; // The delta vector in object space
-    float px = start_obj.x;
-    float py = start_obj.y;
-    float pz = start_obj.z;
-    float dx = delta_obj.x;
-    float dy = delta_obj.y;
-    float dz = delta_obj.z;
+    glm::vec4 p = m_transform_inv * ray.start; // The start point in object space
+    glm::vec4 d = m_transform_inv * ray.delta; // The delta vector in object space
 
-    /******************* Cone Body *********************/
-    float a = dx * dx + dz * dz - 0.25 * dy * dy;
-    float b = 2 * px * dx + 2 * pz * dz - 0.5 * py * dy + 0.25 * dy;
-    float c = px * px + pz * pz - 0.25 * py * py + 0.25 * py - 0.0625;
+    /******************* Cone Bod.y *********************/
+    float a = d.x * d.x + d.z * d.z - 0.25 * d.y * d.y;
+    float b = 2 * p.x * d.x + 2 * p.z * d.z - 0.5 * p.y * d.y + 0.25 * d.y;
+    float c = p.x * p.x + p.z * p.z - 0.25 * p.y * p.y + 0.25 * p.y - 0.0625;
 
     sq = b * b - 4 * a * c;
-    if (fequal(sq, 0.f)) {
-        t = -b / (2 * a);
-        y = py + dy * t;
-        if (-0.5 <= y && y <= 0.5 && t > 0)
-            best_t = std::min(best_t, t);
-    }
-    else if (sq > 0) {
+    if (sq > 0) {
         t = (-b + glm::sqrt(sq)) / (2 * a);
-        y = py + dy * t;
+        y = p.y + d.y * t;
         if (-0.5 <= y && y <= 0.5 && t > 0)
             best_t = std::min(best_t, t);
 
         t = (-b - glm::sqrt(sq)) / (2 * a);
-        y = py + dy * t;
+        y = p.y + d.y * t;
         if (-0.5 <= y && y <= 0.5 && t > 0)
             best_t = std::min(best_t, t);
     }
 
     /******************* Cone Cap ***********************/
-    t = -(0.5 + py) / dy;
-    x = px + dx * t;
-    z = pz + dz * t;
+    t = -(0.5 + p.y) / d.y;
+    x = p.x + d.x * t;
+    z = p.z + d.z * t;
     float radius_sq = x * x + z * z;
     if (radius_sq <= 0.25 && t > 0)
         best_t = std::min(best_t, t);
@@ -56,7 +44,7 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
         return Intersect(true, glm::vec4(0), FLT_MAX);
     }
 
-    x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
+    x = p.x + d.x * best_t; y = p.y + d.y * best_t; z = p.z + d.z * best_t;
     return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
