@@ -24,6 +24,29 @@ void RayTraceThread::run() {
         }
     }
 
+    float change, maxChange = 1.5;
+    BGRA LU, RU, LD, RD;
+    for (int row = m_row; row < std::min(m_height, m_row + m_sz) - 1; row++)  {
+        for (int col = m_col; col < std::min(m_width, m_col + m_sz) - 1; col++) {
+            LU = *(m_data + row * m_width + col);
+            RU = *(m_data + row * m_width + col + 1);
+            LD = *(m_data + (row + 1) * m_width + col);
+            RD = *(m_data + (row + 1) * m_width + col + 1);
+            change = bgraDifference(LU, RU, LD, RD);
+
+//            printf("bgraDifference = %f\n", change);
+            float step = 0.5;
+            if (change > maxChange) {
+                m_rayscene->rayTrace(row - step, col - step, m_width, m_height, LU);
+                m_rayscene->rayTrace(row - step, col + step, m_width, m_height, RU);
+                m_rayscene->rayTrace(row + step, col - step, m_width, m_height, LD);
+                m_rayscene->rayTrace(row + step, col + step, m_width, m_height, RD);
+                averageBGRA(LU, RU, LD, RD, bgra);
+                *(m_data + row * m_width + col) = bgra;
+            }
+        }
+    }
+
     emit rayTraceFinish();
 }
 
@@ -63,8 +86,30 @@ void RayTraceMaster::run() {
 
 void RayTraceMaster::ThreadFinished() {
     m_nActiveThrds--;
-    while (m_nActiveThrds < m_nMaxThrds && m_nextThr < m_nThrds) {
+    while (m_nActiveThrds  < m_nMaxThrds && m_nextThr < m_nThrds) {
         m_thrds[m_nextThr++]->start();
         m_nActiveThrds++;
     }
+}
+
+float RayTraceThread::bgraDifference(const BGRA& A, const BGRA& B, const BGRA& C, const BGRA& D) {
+    float diff = 0;
+    diff += std::fabs(A.r - B.r) + std::fabs(A.r - C.r) + std::fabs(A.r - D.r) +
+            std::fabs(B.r - C.r) + std::fabs(B.r - D.r) +
+            std::fabs(C.r - D.r) +
+            std::fabs(A.g - B.g) + std::fabs(A.g - C.g) + std::fabs(A.g - D.g) +
+            std::fabs(B.g - C.g) + std::fabs(B.g - D.g) +
+            std::fabs(C.g - D.g) +
+            std::fabs(A.b - B.b) + std::fabs(A.b - C.b) + std::fabs(A.b - D.b) +
+            std::fabs(B.b - C.b) + std::fabs(B.b - D.b) +
+            std::fabs(C.b - D.b);
+    diff /= 18.f;
+    return diff;
+}
+
+void RayTraceThread::averageBGRA(const BGRA& A, const BGRA& B, const BGRA& C, const BGRA& D, BGRA& res) {
+    res.r = std::round((static_cast<int>(A.r) + static_cast<int>(B.r) + static_cast<int>(C.r) + static_cast<int>(D.r)) / 4.f);
+    res.g = std::round((static_cast<int>(A.g) + static_cast<int>(B.g) + static_cast<int>(C.g) + static_cast<int>(D.g)) / 4.f);
+    res.b = std::round((static_cast<int>(A.b) + static_cast<int>(B.b) + static_cast<int>(C.b) + static_cast<int>(D.b)) / 4.f);
+    res.a = 255;
 }

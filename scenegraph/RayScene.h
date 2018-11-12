@@ -39,13 +39,13 @@ protected:
     void loadKDTree();
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
-    void rayTrace(int row, int col, int width, int height, BGRA& bgra);
+    void rayTrace(float row, float col, int width, int height, BGRA& bgra);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
 
     ImplicitShape* getShapePointer(PrimitiveType type);
     void returnShapePointer(PrimitiveType type, ImplicitShape* shape);
-    glm::vec4 getFilmPixelPosition(int row, int col, int width, int height);
+    glm::vec4 getFilmPixelPosition(float row, float col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
     std::unique_ptr<ImplicitCone> m_cone;

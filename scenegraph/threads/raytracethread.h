@@ -24,6 +24,8 @@ public slots:
 protected:
     void run();
 
+private:
+
     RayScene *m_rayscene;
     int m_row, m_col, m_width, m_height, m_subSize;
     int m_nThrds, m_nextThr, m_nActiveThrds, m_nMaxThrds;
@@ -46,6 +48,9 @@ protected:
     void run();
 
 private:
+    float bgraDifference(const BGRA& A, const BGRA& B, const BGRA& C, const BGRA& D);
+    void averageBGRA(const BGRA& A, const BGRA& B, const BGRA& C, const BGRA& D, BGRA& res);
+
     RayScene *m_rayscene;
     int m_row, m_col, m_sz, m_width, m_height;
     BGRA* m_data;

@@ -247,7 +247,7 @@ void RayScene::loadCameraMatrices(Camera* camera) {
 
 }
 
-void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
+void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra) {
     Ray ray;
 
     // Get camera related matrices
@@ -389,7 +389,7 @@ void RayScene::returnShapePointer(PrimitiveType type, ImplicitShape* shape) {
     }
 }
 
-glm::vec4 RayScene::getFilmPixelPosition(int row, int col, int width, int height) {
+glm::vec4 RayScene::getFilmPixelPosition(float row, float col, int width, int height) {
     return glm::vec4(static_cast<float>(2 * col - width) / static_cast<float>(width),
                      static_cast<float>(height - 2 * row)/ static_cast<float>(height),
                      -1,
