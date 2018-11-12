@@ -22,8 +22,10 @@ For multi-threading, I used the QThread class provided by QT. Each thread is res
 
 Currently all threads are started concurrently, but it might causes excessive context switching for large canvas. An improvement would be to run a fixed number of threads at any given time so as to minimize this effect.
 
+I also added adaptive supersampling (sampling the nearest 4 corners).
+
 Known Bugs:
-I haven't implemented the torus and supersampling.
+I haven't implemented the torus.
 
 
 
