@@ -26,6 +26,7 @@ RayScene::RayScene(Scene &scene) :
 
 RayScene::~RayScene()
 {
+    delete m_master;
 }
 
 void RayScene::loadTextures() {
@@ -233,15 +234,18 @@ void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& s
 void RayScene::render(SupportCanvas2D* canvas, Camera* camera, int width, int height) {
     BGRA* data = canvas->data();
     loadCameraMatrices(camera);
-    for (int r = 0; r < height; r++) {
-        for (int c = 0; c < width; c++) {
+
+    m_master = new RayTraceMaster(this, width, height, data);
+    m_master->start();
+//    for (int r = 0; r < height; r++) {
+//        for (int c = 0; c < width; c++) {
 //            RayTraceRunnable* task = new RayTraceRunnable(this, r, c, width, height, data);
 //            QThreadPool::globalInstance()->start(task);
-            BGRA bgra;
-            rayTrace(r, c, width, height, bgra);
-            *(data + r * width + c) = bgra;
-        }
-    }
+//            BGRA bgra;
+//            rayTrace(r, c, width, height, bgra);
+//            *(data + r * width + c) = bgra;
+//        }
+//    }
 }
 
 void RayScene::loadCameraMatrices(Camera* camera) {

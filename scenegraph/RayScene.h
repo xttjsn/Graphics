@@ -67,7 +67,9 @@ protected:
 
     KDTreeNode    m_kd_root;
 
-friend class RayTraceRunnable;
+    RayTraceMaster *m_master;
+
+friend class RayTraceThread;
 };
 
 #endif // RAYSCENE_H
