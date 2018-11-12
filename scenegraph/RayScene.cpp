@@ -21,7 +21,7 @@ RayScene::RayScene(Scene &scene) :
     // may need to re-allocate some things here.
     loadTextures();
     loadShapes();
-//    loadKDTree();
+    loadKDTree();
 }
 
 RayScene::~RayScene()
@@ -237,15 +237,6 @@ void RayScene::render(SupportCanvas2D* canvas, Camera* camera, int width, int he
 
     m_master = new RayTraceMaster(this, width, height, data);
     m_master->start();
-//    for (int r = 0; r < height; r++) {
-//        for (int c = 0; c < width; c++) {
-//            RayTraceRunnable* task = new RayTraceRunnable(this, r, c, width, height, data);
-//            QThreadPool::globalInstance()->start(task);
-//            BGRA bgra;
-//            rayTrace(r, c, width, height, bgra);
-//            *(data + r * width + c) = bgra;
-//        }
-//    }
 }
 
 void RayScene::loadCameraMatrices(Camera* camera) {
@@ -271,8 +262,8 @@ void RayScene::rayTrace(int row, int col, int width, int height, BGRA& bgra) {
 
     // Try to find an intersection using acceleration data structure
     Intersect intersect;
-//    kdTreeIntersect(&m_kd_root, ray, intersect);
-    naiveIntersect(ray, intersect);
+    kdTreeIntersect(&m_kd_root, ray, intersect);
+//    naiveIntersect(ray, intersect);
 
     if (intersect.miss) {
         // DEBUG
