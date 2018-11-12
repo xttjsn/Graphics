@@ -24,7 +24,7 @@ void RayTraceThread::run() {
         }
     }
 
-    float change, maxChange = 1.5;
+    float change, maxChange = 0.2;
     BGRA LU, RU, LD, RD;
     for (int row = m_row; row < std::min(m_height, m_row + m_sz) - 1; row++)  {
         for (int col = m_col; col < std::min(m_width, m_col + m_sz) - 1; col++) {
@@ -34,7 +34,6 @@ void RayTraceThread::run() {
             RD = *(m_data + (row + 1) * m_width + col + 1);
             change = bgraDifference(LU, RU, LD, RD);
 
-//            printf("bgraDifference = %f\n", change);
             float step = 0.5;
             if (change > maxChange) {
                 m_rayscene->rayTrace(row - step, col - step, m_width, m_height, LU);
