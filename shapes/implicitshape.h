@@ -90,6 +90,7 @@ public:
     virtual Intersect intersect(const Ray& ray) = 0;
     virtual glm::vec4 normal(Intersect& intersect) = 0;
     virtual glm::vec4 diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global);
+    virtual glm::vec2 getUV(Intersect& intersect, float repeatU, float repeatV) = 0;
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
     void setTransform(const glm::mat4x4& transform, const glm::mat4x4& transformInv);
