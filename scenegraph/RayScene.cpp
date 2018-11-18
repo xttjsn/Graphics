@@ -48,21 +48,16 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
     if (m_textures.find(mat.textureMap.filename) != m_textures.end())
         return;
 
+    if (m_texture_images.find(mat.textureMap.filename) != m_textures.end())
+        return;
+
     QImage img(mat.textureMap.filename.data());
     img = QGLWidget::convertToGLFormat(img);
 
     if (img.isNull())
         return;
 
-    Texture2D tex(img.bits(), img.width(), img.height());
-
-    TextureParametersBuilder builder;
-    builder.setFilter(TextureParameters::FILTER_METHOD::LINEAR);
-    builder.setWrap(TextureParameters::WRAP_METHOD::REPEAT);
-    TextureParameters params = builder.build();
-    params.applyTo(tex);
-
-    m_textures.emplace(mat.textureMap.filename, std::move(tex));
+    m_textures_images.emplace(mat.textureMap.filename, img);
 }
 
 void RayScene::loadKDTree(){
@@ -284,7 +279,8 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
 
     glm::vec4 final (0), ambient, diffuse, specular;
     ambient  = transprim->primitive.material.cAmbient;
-    diffuse  = transprim->primitive.material.cDiffuse;
+    // diffuse  = transprim->primitive.material.cDiffuse;
+    diffuse = getDiffuse(intersect);
     specular = transprim->primitive.material.cSpecular;
     float shininess = transprim->primitive.material.shininess;
 
@@ -334,6 +330,38 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     bgra.a = 255;
     return bgra;
 } // RayScene::calcLight
+
+glm::vec4 getDiffuse(Intersect& intersect) {
+
+    CS123TransformPrimitive * transprim = intersect.transprim;
+
+    // No texture
+    if (!transprim->primitive.material.textureMap.isUsed || transprim->primitive.material.textureMap.filename.empty())
+        return transprim->primitive.material.cDiffuse;
+
+    // Get UV
+    ImplicitShape *shape;
+    glm::vec4 diffuse;
+    QImage texture;
+    glm::vec2 uv;
+    float blend;
+    BGRA pixel;
+    int w, h;
+
+    shape = getShapePointer(transprim->primitive.type);
+    shape->setTransform(transprim->transform, transprim->transformInv);
+    uv = shape->getUV(intersect,
+                      transprim->primitive.material.textureMap.repeatU,
+                      transprim->primitive.material.textureMap.repeatV);
+    returnShapePointer(transprim->primitive.type, shape);
+
+    texture = m_texture_images[transprim->primitive.material.textureMap.filename];
+    w = texture.width();
+    h = texture.height();
+    pixel = texture.pixel(glm::round(uv.x * w), glm::round(uv.y * h));
+
+    blend = transprim->primitive.material.blend;
+}
 
 ImplicitShape * RayScene::getShapePointer(PrimitiveType type){
     ImplicitShape * shape;

@@ -10,7 +10,9 @@
 #include "SupportCanvas2D.h"
 #include "threads/raytracethread.h"
 #include <vector>
+#include <map>
 #include <QMutex>
+#include <QImage>
 
 struct tsIntersectComp {
     inline bool operator() (Intersect a, Intersect b) {
@@ -71,6 +73,8 @@ protected:
     KDTreeNode    m_kd_root;
 
     RayTraceMaster *m_master;
+
+    std::map<std::string, QImage> m_texture_images;
 
 friend class RayTraceThread;
 };
