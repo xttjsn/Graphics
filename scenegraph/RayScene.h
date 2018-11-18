@@ -48,6 +48,9 @@ protected:
     glm::vec4 getFilmPixelPosition(float row, float col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
+    glm::vec4 calcNormal(Intersect& intersect);
+    BGRA calcLight(Intersect& intersect, glm::vec4 normal);
+
     std::unique_ptr<ImplicitCone> m_cone;
     std::unique_ptr<ImplicitCube> m_cube;
     std::unique_ptr<ImplicitCylinder> m_cylinder;

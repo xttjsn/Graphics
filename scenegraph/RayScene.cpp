@@ -12,8 +12,7 @@
 #include <QThreadPool>
 
 RayScene::RayScene(Scene &scene) :
-    Scene(scene)
-{
+    Scene(scene){
     // TODO [INTERSECT]
     // Remember that any pointers or OpenGL objects (e.g. texture IDs) will
     // be deleted when the old scene is deleted (assuming you are managing
@@ -24,18 +23,17 @@ RayScene::RayScene(Scene &scene) :
     loadKDTree();
 }
 
-RayScene::~RayScene()
-{
+RayScene::~RayScene(){
     delete m_master;
 }
 
-void RayScene::loadTextures() {
+void RayScene::loadTextures(){
     for (CS123TransformPrimitive &transPrim : m_transPrims) {
         loadMapData(transPrim.primitive.material);
     }
 }
 
-void RayScene::loadShapes() {
+void RayScene::loadShapes(){
     m_cone     = std::make_unique<ImplicitCone>();
     m_cube     = std::make_unique<ImplicitCube>();
     m_sphere   = std::make_unique<ImplicitSphere>();
@@ -43,7 +41,7 @@ void RayScene::loadShapes() {
     m_torus    = std::make_unique<ImplicitTorus>();
 }
 
-void RayScene::loadMapData(CS123SceneMaterial& mat) {
+void RayScene::loadMapData(CS123SceneMaterial& mat){
     if (!mat.textureMap.isUsed || mat.textureMap.filename.empty())
         return;
 
@@ -67,24 +65,24 @@ void RayScene::loadMapData(CS123SceneMaterial& mat) {
     m_textures.emplace(mat.textureMap.filename, std::move(tex));
 }
 
-void RayScene::loadKDTree() {
-
+void RayScene::loadKDTree(){
     float surface, xMin = FLT_MAX, xMax = FLT_MIN, yMin = FLT_MAX, yMax = FLT_MIN, zMin = FLT_MAX, zMax = FLT_MIN;
     BoundingBox bbox;
-    ImplicitShape* shape;
+    ImplicitShape * shape;
     KDTreePrimitive kdprim;
+
     for (CS123TransformPrimitive& transprim : m_transPrims) {
         shape = getShapePointer(transprim.primitive.type);
         shape->setTransform(transprim.transform, transprim.transformInv);
         surface = shape->surfaceArea();
         bbox    = shape->boundingBox();
         returnShapePointer(transprim.primitive.type, shape);
-        xMin    = std::min(xMin, bbox.xMin);
-        xMax    = std::max(xMax, bbox.xMax);
-        yMin    = std::min(yMin, bbox.yMin);
-        yMax    = std::max(yMax, bbox.yMax);
-        zMin    = std::min(zMin, bbox.zMin);
-        zMax    = std::max(zMax, bbox.zMax);
+        xMin = std::min(xMin, bbox.xMin);
+        xMax = std::max(xMax, bbox.xMax);
+        yMin = std::min(yMin, bbox.yMin);
+        yMax = std::max(yMax, bbox.yMax);
+        zMin = std::min(zMin, bbox.zMin);
+        zMax = std::max(zMax, bbox.zMax);
 
         kdprim.bbox      = bbox;
         kdprim.surface   = surface;
@@ -96,9 +94,9 @@ void RayScene::loadKDTree() {
     split(&m_kd_root);
 }
 
-void RayScene::split(KDTreeNode* root) {
-
-    float costNotSplit = root->primitives.size(), costX = FLT_MAX, costY = FLT_MAX, costZ = FLT_MAX, splitX, splitY, splitZ;
+void RayScene::split(KDTreeNode * root){
+    float costNotSplit = root->primitives.size(), costX = FLT_MAX, costY = FLT_MAX, costZ = FLT_MAX, splitX, splitY,
+      splitZ;
     float surfaceLX, surfaceRX, surfaceLY, surfaceRY, surfaceLZ, surfaceRZ;
 
     trySplit(root, costX, splitX, surfaceLX, surfaceRX, AXIS_X);
@@ -116,11 +114,11 @@ void RayScene::split(KDTreeNode* root) {
         root->left->surface  = surfaceLX;
         root->right->surface = surfaceRX;
         root->left->bbox     = BoundingBox(root->bbox.xMin, splitX,
-                                           root->bbox.yMin, root->bbox.yMax,
-                                           root->bbox.zMin, root->bbox.zMax);
+            root->bbox.yMin, root->bbox.yMax,
+            root->bbox.zMin, root->bbox.zMax);
         root->right->bbox = BoundingBox(splitX, root->bbox.xMax,
-                                        root->bbox.yMin, root->bbox.yMax,
-                                        root->bbox.zMin, root->bbox.zMax);
+            root->bbox.yMin, root->bbox.yMax,
+            root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
             if (prim.bbox.xMin < splitX)
@@ -128,17 +126,16 @@ void RayScene::split(KDTreeNode* root) {
             else
                 root->right->primitives.push_back(prim);
         }
-    }
-    else if (costY < costX && costY < costZ) {
+    } else if (costY < costX && costY < costZ) {
         // Split along Y-axis
         root->left->surface  = surfaceLY;
         root->right->surface = surfaceRY;
         root->left->bbox     = BoundingBox(root->bbox.xMin, root->bbox.xMax,
-                                           root->bbox.yMin, splitY,
-                                           root->bbox.zMin, root->bbox.zMax);
+            root->bbox.yMin, splitY,
+            root->bbox.zMin, root->bbox.zMax);
         root->right->bbox = BoundingBox(root->bbox.xMin, root->bbox.xMax,
-                                        splitY, root->bbox.yMax,
-                                        root->bbox.zMin, root->bbox.zMax);
+            splitY, root->bbox.yMax,
+            root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
             if (prim.bbox.yMin < splitY)
@@ -151,11 +148,11 @@ void RayScene::split(KDTreeNode* root) {
         root->left->surface  = surfaceLZ;
         root->right->surface = surfaceRZ;
         root->left->bbox     = BoundingBox(root->bbox.xMin, root->bbox.xMax,
-                                           root->bbox.yMin, root->bbox.yMax,
-                                           root->bbox.zMin, splitZ);
+            root->bbox.yMin, root->bbox.yMax,
+            root->bbox.zMin, splitZ);
         root->right->bbox = BoundingBox(root->bbox.xMin, root->bbox.xMax,
-                                        root->bbox.yMin, root->bbox.yMax,
-                                        splitZ, root->bbox.zMax);
+            root->bbox.yMin, root->bbox.yMax,
+            splitZ, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
             if (prim.bbox.zMin < splitZ)
@@ -170,10 +167,9 @@ void RayScene::split(KDTreeNode* root) {
 
     split(root->left);
     split(root->right);
-}
+} // RayScene::split
 
-void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis) {
-
+void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis){
     float cost;
     float surfaceLeft = 0, surfaceRight = root->surface;
     float surfaceLeftBase = 0, surfaceRightBase = root->surface;
@@ -181,19 +177,18 @@ void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& s
     int countLeft = 0, countRight = root->primitives.size();
 
     switch (axis) {
-    case AXIS_X:
-        std::sort(root->primitives.begin(), root->primitives.end(), less_than_x_key());
-        break;
-    case AXIS_Y:
-        std::sort(root->primitives.begin(), root->primitives.end(), less_than_y_key());
-        break;
-    case AXIS_Z:
-        std::sort(root->primitives.begin(), root->primitives.end(), less_than_z_key());
-        break;
+        case AXIS_X:
+            std::sort(root->primitives.begin(), root->primitives.end(), less_than_x_key());
+            break;
+        case AXIS_Y:
+            std::sort(root->primitives.begin(), root->primitives.end(), less_than_y_key());
+            break;
+        case AXIS_Z:
+            std::sort(root->primitives.begin(), root->primitives.end(), less_than_z_key());
+            break;
     }
 
     for (unsigned int i = 0; i < root->primitives.size() - 1; i++) {
-
         surfaceLeftBase  += root->primitives[i].surface;
         surfaceRightBase -= root->primitives[i].surface;
 
@@ -203,13 +198,14 @@ void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& s
         // Handle intersected objects
         for (unsigned int j = i + 1; j < root->primitives.size() - 1; j++) {
             bool within = axis == AXIS_X ? root->primitives[j].bbox.xMin <= root->primitives[i].bbox.xMax :
-                          (axis == AXIS_Y ? root->primitives[j].bbox.yMin <= root->primitives[i].bbox.yMax :
-                           root->primitives[j].bbox.zMin <= root->primitives[i].bbox.zMax);
+              (axis == AXIS_Y ? root->primitives[j].bbox.yMin <= root->primitives[i].bbox.yMax :
+              root->primitives[j].bbox.zMin <= root->primitives[i].bbox.zMax);
             if (within) {
                 surfaceLeft += root->primitives[j].surface;
                 countLeft++;
-            } else
+            } else {
                 break;
+            }
         }
 
         surfaceRight = surfaceRightBase;
@@ -222,39 +218,34 @@ void RayScene::trySplit(KDTreeNode* root, float& mincost, float& split, float& s
         if (cost < mincost) {
             mincost = cost;
             split   = axis == AXIS_X ? root->primitives[i].bbox.xMax :
-                      (axis == AXIS_Y ? root->primitives[i].bbox.yMax :
-                       root->primitives[i].bbox.zMax);
+              (axis == AXIS_Y ? root->primitives[i].bbox.yMax :
+              root->primitives[i].bbox.zMax);
             surfaceL = surfaceLeft;
             surfaceR = surfaceRight;
         }
     }
+} // RayScene::trySplit
 
-}
+void RayScene::render(SupportCanvas2D * canvas, Camera * camera, int width, int height){
+    BGRA * data = canvas->data();
 
-void RayScene::render(SupportCanvas2D* canvas, Camera* camera, int width, int height) {
-    BGRA* data = canvas->data();
     loadCameraMatrices(camera);
 
     m_master = new RayTraceMaster(this, width, height, data);
     m_master->start();
 }
 
-void RayScene::loadCameraMatrices(Camera* camera) {
-    m_view = camera->getViewMatrix();
-    m_scale = camera->getScaleMatrix();
-    m_viewInv = glm::inverse(m_view);
+void RayScene::loadCameraMatrices(Camera * camera){
+    m_view     = camera->getViewMatrix();
+    m_scale    = camera->getScaleMatrix();
+    m_viewInv  = glm::inverse(m_view);
     m_scaleInv = glm::inverse(m_scale);
-
 }
 
-void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra) {
+void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra){
+    // Generate ray in camera space, and then transform it into world space
     Ray ray;
 
-    // Get camera related matrices
-    glm::mat4x4 model;
-    glm::mat4x4 modelInv;
-
-    // Generate ray in camera space, and then transform it into world space
     glm::vec4 filmPixelPos = getFilmPixelPosition(row, col, width, height);
     filmPixelPos = m_viewInv * m_scaleInv * filmPixelPos;
     ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
@@ -263,141 +254,166 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
     // Try to find an intersection using acceleration data structure
     Intersect intersect;
     kdTreeIntersect(&m_kd_root, ray, intersect);
-//    naiveIntersect(ray, intersect);
+    //    naiveIntersect(ray, intersect);
 
     if (intersect.miss) {
         // DEBUG
         return;
     }
 
-    CS123TransformPrimitive* transprim = intersect.transprim;
-    ImplicitShape* shape               = getShapePointer(transprim->primitive.type);
-    model                              = transprim->transform;
-    modelInv                           = transprim->transformInv;
-    shape->setTransform(transprim->transform, transprim->transformInv);
-    glm::vec4 normal                   = shape->normal(intersect);
-    returnShapePointer(transprim->primitive.type, shape);
+    // Get normal
+    glm::vec4 normal = calcNormal(intersect);
 
     // Compute illumination
-    glm::vec4 final (0), ambient, diffuse;
-    ambient = transprim->primitive.material.cAmbient;
-    diffuse = transprim->primitive.material.cDiffuse;
+    bgra = calcLight(intersect, normal);
+} // RayScene::rayTrace
 
-    glm::vec4 position_cameraSpace = intersect.pos;
-    glm::vec4 normal_cameraSpace = glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
+glm::vec4 RayScene::calcNormal(Intersect& intersect){
+    CS123TransformPrimitive * transprim = intersect.transprim;
+    ImplicitShape * shape = getShapePointer(transprim->primitive.type);
+
+    glm::mat4x4 model    = transprim->transform;
+    glm::mat4x4 modelInv = transprim->transformInv;
+    shape->setTransform(transprim->transform, transprim->transformInv);
+    glm::vec4 normal = shape->normal(intersect);
+    returnShapePointer(transprim->primitive.type, shape);
+}
+
+BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
+    CS123TransformPrimitive * transprim = intersect.transprim;
+
+    glm::vec4 final (0), ambient, diffuse, specular;
+    ambient  = transprim->primitive.material.cAmbient;
+    diffuse  = transprim->primitive.material.cDiffuse;
+    specular = transprim->primitive.material.cSpecular;
+    float shininess = transprim->primitive.material.shininess;
+
+    glm::vec4 position_worldSpace = intersect.pos;
+    glm::mat4x4 modelInv        = transprim->transformInv;
+    glm::vec4 normal_worldSpace =
+      glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     final = ambient;
     glm::vec4 lightColor;
     glm::vec4 vertexToLight;
-    float diffuseIntensity;
+    glm::vec4 vertexToEye = glm::normalize(m_viewInv * glm::vec4(glm::vec3(-(m_view * intersect.pos)), 0));
+    glm::vec4 lightReflect;
+    float diffuseIntensity, specularIntensity;
 
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
-        case LightType::LIGHT_POINT:
-            vertexToLight = glm::normalize(glm::vec4(glm::vec3(light.pos), 1) - position_cameraSpace);
-            break;
-        case LightType::LIGHT_DIRECTIONAL:
-            vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
-            break;
-        case LightType::LIGHT_SPOT:
-            perror("Unsupported light type.");
-            exit(1);
-            break;
-        case LightType::LIGHT_AREA:
-            perror("Unsupported light type.");
-            exit(1);
-            break;
+            case LightType::LIGHT_POINT:
+                vertexToLight = glm::normalize(glm::vec4(glm::vec3(light.pos), 1) - position_worldSpace);
+                break;
+            case LightType::LIGHT_DIRECTIONAL:
+                vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
+                break;
+            case LightType::LIGHT_SPOT:
+                perror("Unsupported light type.");
+                exit(1);
+                break;
+            case LightType::LIGHT_AREA:
+                perror("Unsupported light type.");
+                exit(1);
+                break;
         }
 
-        lightColor = light.color;
-        diffuseIntensity = glm::max(0.f, glm::dot(vertexToLight, normal_cameraSpace));
+        lightColor       = light.color;
+        diffuseIntensity = glm::max(0.f, glm::dot(vertexToLight, normal_worldSpace));
         final += glm::max(glm::vec4(0), lightColor * diffuse * diffuseIntensity);
+
+        lightReflect      = glm::normalize(glm::reflect(-vertexToLight, normal_worldSpace));
+        specularIntensity = glm::pow(glm::max(0.0f, glm::dot(vertexToEye, lightReflect)), shininess);
+        final += glm::max(glm::vec4(0), lightColor * specular * specularIntensity);
     }
 
+    BGRA bgra;
     bgra.r = glm::clamp(final.r, 0.f, 1.f) * 255;
     bgra.g = glm::clamp(final.g, 0.f, 1.f) * 255;
     bgra.b = glm::clamp(final.b, 0.f, 1.f) * 255;
     bgra.a = 255;
-}
+    return bgra;
+} // RayScene::calcLight
 
-ImplicitShape* RayScene::getShapePointer(PrimitiveType type) {
-    ImplicitShape* shape;
+ImplicitShape * RayScene::getShapePointer(PrimitiveType type){
+    ImplicitShape * shape;
+
     switch (type) {
-    case PrimitiveType::PRIMITIVE_CUBE:
-        m_cubemtx.lock();
-        shape = m_cube.release();
-        break;
+        case PrimitiveType::PRIMITIVE_CUBE:
+            m_cubemtx.lock();
+            shape = m_cube.release();
+            break;
 
-    case PrimitiveType::PRIMITIVE_CONE:
-        m_conemtx.lock();
-        shape = m_cone.release();
-        break;
+        case PrimitiveType::PRIMITIVE_CONE:
+            m_conemtx.lock();
+            shape = m_cone.release();
+            break;
 
-    case PrimitiveType::PRIMITIVE_CYLINDER:
-        m_cylindermtx.lock();
-        shape = m_cylinder.release();
-        break;
+        case PrimitiveType::PRIMITIVE_CYLINDER:
+            m_cylindermtx.lock();
+            shape = m_cylinder.release();
+            break;
 
-    case PrimitiveType::PRIMITIVE_TORUS:
-        m_torusmtx.lock();
-        shape = m_torus.release();
-        break;
+        case PrimitiveType::PRIMITIVE_TORUS:
+            m_torusmtx.lock();
+            shape = m_torus.release();
+            break;
 
-    case PrimitiveType::PRIMITIVE_SPHERE:
-        m_spheremtx.lock();
-        shape = m_sphere.release();
-        break;
+        case PrimitiveType::PRIMITIVE_SPHERE:
+            m_spheremtx.lock();
+            shape = m_sphere.release();
+            break;
 
-    default:
-        perror("Unsupported shape.");
-        exit(1);
+        default:
+            perror("Unsupported shape.");
+            exit(1);
     }
 
     return shape;
-}
+} // RayScene::getShapePointer
 
-void RayScene::returnShapePointer(PrimitiveType type, ImplicitShape* shape) {
+void RayScene::returnShapePointer(PrimitiveType type, ImplicitShape * shape){
     switch (type) {
-    case PrimitiveType::PRIMITIVE_CUBE:
-        m_cube.reset(static_cast<ImplicitCube*>(shape));
-        m_cubemtx.unlock();
-        break;
+        case PrimitiveType::PRIMITIVE_CUBE:
+            m_cube.reset(static_cast<ImplicitCube *>(shape));
+            m_cubemtx.unlock();
+            break;
 
-    case PrimitiveType::PRIMITIVE_CONE:
-        m_cone.reset(static_cast<ImplicitCone*>(shape));
-        m_conemtx.unlock();
-        break;
+        case PrimitiveType::PRIMITIVE_CONE:
+            m_cone.reset(static_cast<ImplicitCone *>(shape));
+            m_conemtx.unlock();
+            break;
 
-    case PrimitiveType::PRIMITIVE_CYLINDER:
-        m_cylinder.reset(static_cast<ImplicitCylinder*>(shape));
-        m_cylindermtx.unlock();
-        break;
+        case PrimitiveType::PRIMITIVE_CYLINDER:
+            m_cylinder.reset(static_cast<ImplicitCylinder *>(shape));
+            m_cylindermtx.unlock();
+            break;
 
-    case PrimitiveType::PRIMITIVE_TORUS:
-        m_torus.reset(static_cast<ImplicitTorus*>(shape));
-        m_torusmtx.unlock();
-        break;
+        case PrimitiveType::PRIMITIVE_TORUS:
+            m_torus.reset(static_cast<ImplicitTorus *>(shape));
+            m_torusmtx.unlock();
+            break;
 
-    case PrimitiveType::PRIMITIVE_SPHERE:
-        m_sphere.reset(static_cast<ImplicitSphere*>(shape));
-        m_spheremtx.unlock();
-        break;
+        case PrimitiveType::PRIMITIVE_SPHERE:
+            m_sphere.reset(static_cast<ImplicitSphere *>(shape));
+            m_spheremtx.unlock();
+            break;
 
-    default:
-        perror("Unsupported shape.");
-        exit(1);
+        default:
+            perror("Unsupported shape.");
+            exit(1);
     }
 }
 
-glm::vec4 RayScene::getFilmPixelPosition(float row, float col, int width, int height) {
+glm::vec4 RayScene::getFilmPixelPosition(float row, float col, int width, int height){
     return glm::vec4(static_cast<float>(2 * col - width) / static_cast<float>(width),
-                     static_cast<float>(height - 2 * row)/ static_cast<float>(height),
-                     -1,
-                     1);
+             static_cast<float>(height - 2 * row) / static_cast<float>(height),
+             -1,
+             1);
 }
 
-void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
-    ImplicitShape* shape;
+void RayScene::naiveIntersect(Ray& ray, Intersect& intersect){
+    ImplicitShape * shape;
     Intersect bestItsct, itsct;
 
     for (CS123TransformPrimitive& transprim : m_transPrims) {
@@ -416,16 +432,16 @@ void RayScene::naiveIntersect(Ray& ray, Intersect& intersect) {
     intersect = bestItsct;
 }
 
-void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect) {
+void RayScene::kdTreeIntersect(KDTreeNode * root, Ray& ray, Intersect& intersect){
     // Treat each bounding box as an ImplicitCube, compute the intersectons with both of them, and take the smaller one (if any)
     ImplicitCube cubeLeft, cubeRight;
-    KDTreeNode *left = root->left, *right = root->right;
+    KDTreeNode * left = root->left, * right = root->right;
 
-    if (left && right)  {
+    if (left && right) {
         // If the current root is not a leaf node
-        glm::mat4x4 leftTransform = left->bbox.transform;
-        glm::mat4x4 leftTransformInv = left->bbox.transformInv;
-        glm::mat4x4 rightTransform = right->bbox.transform;
+        glm::mat4x4 leftTransform     = left->bbox.transform;
+        glm::mat4x4 leftTransformInv  = left->bbox.transformInv;
+        glm::mat4x4 rightTransform    = right->bbox.transform;
         glm::mat4x4 rightTransformInv = right->bbox.transformInv;
 
         cubeLeft.setTransform(leftTransform, leftTransformInv);
@@ -437,12 +453,10 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
         if (lIntersect.miss && rIntersect.miss) {
             // Miss both children
             return;
-        }
-        else if (lIntersect.miss) {
+        } else if (lIntersect.miss) {
             // Only intersect with right children's bounding box
             kdTreeIntersect(right, ray, intersect);
-        }
-        else if (rIntersect.miss) {
+        } else if (rIntersect.miss) {
             // Only intersect with left children's bounding box
             kdTreeIntersect(left, ray, intersect);
         } else {
@@ -451,7 +465,6 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
                 kdTreeIntersect(left, ray, intersect);
                 if (intersect.miss)
                     kdTreeIntersect(right, ray, intersect);
-
             } else {
                 kdTreeIntersect(right, ray, intersect);
                 if (intersect.miss)
@@ -461,14 +474,14 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
     } else {
         // If it is a leaf node
         Intersect itsct;
-        ImplicitShape* shape;
-        CS123TransformPrimitive* transprim;
+        ImplicitShape * shape;
+        CS123TransformPrimitive * transprim;
         std::vector<Intersect> itscts;
         for (KDTreePrimitive& kdprim : root->primitives) {
             transprim = kdprim.transprim;
             shape     = getShapePointer(transprim->primitive.type);
             shape->setTransform(transprim->transform, transprim->transformInv);
-            itsct           = shape->intersect(ray);
+            itsct = shape->intersect(ray);
             itsct.transprim = transprim;
             returnShapePointer(transprim->primitive.type, shape);
 
@@ -482,11 +495,12 @@ void RayScene::kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect)
             intersect = *std::min_element(itscts.begin(), itscts.end(), itsctComp());
         }
     }
-}
+} // RayScene::kdTreeIntersect
 
-glm::mat4x4 RayScene::boundingBoxToTransform(BoundingBox& bbox) {
+glm::mat4x4 RayScene::boundingBoxToTransform(BoundingBox& bbox){
     float xc = (bbox.xMax + bbox.xMin) / 2, yc = (bbox.yMax + bbox.yMin) / 2, zc = (bbox.zMax + bbox.zMin) / 2;
     float xs = bbox.xMax - bbox.xMin, ys = bbox.yMax - bbox.yMin, zs = bbox.zMax - bbox.zMin;
+
     glm::mat4x4 mat = glm::scale(glm::vec3(xs, ys, zs)) * glm::translate(glm::vec3(xc, yc, zc));
     return mat;
 }
