@@ -82,6 +82,38 @@ glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {
     return norm;
 }
 
+glm::vec2 getUV(Intersect& intersect, float repeatU, float repeatV) {
+    if (intersect.miss) return glm::vec2(0);
+
+    float u, v;
+    glm::vec2 uv;
+    pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+
+    if (fequal2(pos.y, -0.5f)) {
+        // Bottom cap
+        u = pos.x + 0.5f;
+        v = 1.0f - (pos.z + 0.5f);
+    }
+    else if (fequal2(pos.y, 0.5f)) {
+        // Top cap
+        u = pos.x + 0.5f;
+        v = pos.z + 0.5f;
+    }
+    else {
+        // Intersect lies on cylinder body
+        float x = pos.x, z = pos.z;
+        float phi = std::atan2(z, x);
+        norm = glm::normalize(glm::vec4(glm::cos(phi), 0, glm::sin(phi), 0));
+
+        u = phi / (2.f * PI);
+        v = pos.y + 0.5f;
+    }
+
+    uv = glm::vec2(glm::fract(u * repeatU), glm::fract(v * repeatV));
+
+    return uv;
+}
+
 float ImplicitCylinder::surfaceArea() {
     // Area = 2 * PI * r * h + 2 * PI * r^2
     glm::vec4 top(0, 0.5, 0, 1);
