@@ -55,6 +55,18 @@ glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
     return norm;
 }
 
+glm::vec2 ImplicitSphere::getUV(Intersect& intersect, float repeatU, float repeatV) {
+    if (intersect.miss) return glm::vec2(0);
+
+    glm::vec2 uv;
+    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+
+    float theta = glm::acos(pos.y / 0.5);
+    float phi = glm::atan2(pos.z, pos.x);
+    uv = glm::vec2(phi / 2.0f * PI, 1.0f - theta / PI);
+    return uv;
+}
+
 float ImplicitSphere::surfaceArea() {
     // Sphere might be transformed into an ellipsoid, so we have to figure out the radius
     // in all axes.

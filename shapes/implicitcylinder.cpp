@@ -82,7 +82,7 @@ glm::vec4 ImplicitCylinder::normal(Intersect& intersect) {
     return norm;
 }
 
-glm::vec2 getUV(Intersect& intersect, float repeatU, float repeatV) {
+glm::vec2 ImplicitCylinder::getUV(Intersect& intersect, float repeatU, float repeatV) {
     if (intersect.miss) return glm::vec2(0);
 
     float u, v;
@@ -101,16 +101,13 @@ glm::vec2 getUV(Intersect& intersect, float repeatU, float repeatV) {
     }
     else {
         // Intersect lies on cylinder body
-        float x = pos.x, z = pos.z;
-        float phi = std::atan2(z, x);
-        norm = glm::normalize(glm::vec4(glm::cos(phi), 0, glm::sin(phi), 0));
+        float phi = std::atan2(pos.z, pos.x);
 
         u = phi / (2.f * PI);
-        v = pos.y + 0.5f;
+        v = 1.0f - (pos.y + 0.5f);
     }
 
     uv = glm::vec2(glm::fract(u * repeatU), glm::fract(v * repeatV));
-
     return uv;
 }
 

@@ -71,6 +71,30 @@ glm::vec4 ImplicitCone::normal(Intersect& intersect) {
     return norm;
 }
 
+glm::vec2 ImplicitCone::getUV(Intersect& intersect, float repeatU, float repeatV) {
+
+    if (intersect.miss) return glm::vec2(0);
+
+    float u, v;
+    glm::vec2 uv(0);
+    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+
+    if (fequal2(pos.y, -0.5f)) {
+        // Intersect lies on cone cap
+        u = pos.x + 0.5f;
+        v = 1.0f - (pos.z + 0.5f);
+    } else {
+        // Intersect lies on cone body
+        float phi = std::atan2(pos.z, pos.x);
+
+        u = phi / (2.f * PI);
+        v = 1.0f - (pos.y + 0.5f);
+    }
+
+    uv = glm::vec2(glm::fract(u * repeatU), glm::fract(v * repeatV));
+    return uv;
+}
+
 float ImplicitCone::surfaceArea() {
     // Area = PI * r * (r + sqrt(h^2 + r^2))
     glm::vec4 center(0, -0.5, 0, 1);
