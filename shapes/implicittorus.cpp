@@ -12,6 +12,10 @@ glm::vec4 ImplicitTorus::normal(Intersect& intersect) {
     return glm::vec4();
 }
 
+glm::vec2 ImplicitTorus::getUV(Intersect& intersect, float repeatU, float repeatV) {
+    return glm::vec2(0);
+}
+
 float ImplicitTorus::surfaceArea() {
     return 0;
 }

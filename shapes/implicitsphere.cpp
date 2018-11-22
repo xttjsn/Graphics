@@ -62,7 +62,7 @@ glm::vec2 ImplicitSphere::getUV(Intersect& intersect, float repeatU, float repea
     glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
 
     float theta = glm::acos(pos.y / 0.5);
-    float phi = glm::atan2(pos.z, pos.x);
+    float phi = std::atan2(pos.z, pos.x);
     uv = glm::vec2(phi / 2.0f * PI, 1.0f - theta / PI);
     return uv;
 }
@@ -99,12 +99,16 @@ float ImplicitSphere::surfaceArea() {
 
 BoundingBox ImplicitSphere::boundingBox() {
     std::vector<glm::vec4> extremes = {
-        glm::vec4(0, 0.5, 0, 1),        // Top
-        glm::vec4(0, -0.5, 0, 1),       // Bottom
-        glm::vec4(0.5, 0, 0, 1),        // Right
-        glm::vec4(-0.5, 0, 0, 1),       // Left
-        glm::vec4(0, 0, 0.5, 1),        // Front
-        glm::vec4(0, 0, -0.5, 1),       // Back
+        // Bottom Extremes
+        glm::vec4(-0.5, -0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, -0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, -0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, -0.5, 0.5, 1),      // Right Up
+        // Top Extremes
+        glm::vec4(-0.5, 0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, 0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, 0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, 0.5, 0.5, 1),      // Right Up
     };
 
     float xMin = FLT_MAX, xMax = -FLT_MAX,

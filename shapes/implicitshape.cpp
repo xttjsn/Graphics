@@ -10,7 +10,7 @@ BoundingBox::BoundingBox(float AxMin, float AxMax, float AyMin, float AyMax, flo
         : xMin(AxMin), xMax(AxMax), yMin(AyMin), yMax(AyMax), zMin(AzMin), zMax(AzMax), transprim(nullptr) {
     float xc = (xMax + xMin) / 2, yc = (yMax + yMin) / 2, zc = (zMax + zMin) / 2;
     float xs = xMax - xMin, ys = yMax - yMin, zs = zMax - zMin;
-    transform = glm::scale(glm::vec3(xs, ys, zs)) * glm::translate(glm::vec3(xc, yc, zc));
+    transform = glm::translate(glm::vec3(xc, yc, zc)) * glm::scale(glm::vec3(xs, ys, zs));
     transformInv = glm::inverse(transform);
 }
 

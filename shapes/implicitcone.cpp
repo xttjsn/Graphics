@@ -112,15 +112,16 @@ float ImplicitCone::surfaceArea() {
 
 BoundingBox ImplicitCone::boundingBox() {
     std::vector<glm::vec4> extremes = {
-        glm::vec4(0, 0.5, 0, 1),        // Apex
-        glm::vec4(-0.5, -0.5, 0, 1),    // Left
-        glm::vec4(0, -0.5, -0.5, 1),    // Down
-        glm::vec4(0.5, -0.5, 0, 1),     // Right
-        glm::vec4(0, -0.5, 0.5, 1),     // Up
-        glm::vec4(0.5 * glm::cos(PI / 4), -0.5, 0.5 * glm::sin(PI / 4), 1), // Right Up
-        glm::vec4(0.5 * glm::cos(3 * PI / 4), -0.5, 0.5 * glm::sin(3 * PI / 4), 1), // Left Up
-        glm::vec4(0.5 * glm::cos(5 * PI / 4), -0.5, 0.5 * glm::sin(5 * PI / 4), 1), // Left Down
-        glm::vec4(0.5 * glm::cos(7 * PI / 4), -0.5, 0.5 * glm::sin(7 * PI / 4), 1), // Right Down
+        // Bottom Extremes
+        glm::vec4(-0.5, -0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, -0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, -0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, -0.5, 0.5, 1),      // Right Up
+        // Top Extremes
+        glm::vec4(-0.5, 0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, 0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, 0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, 0.5, 0.5, 1),      // Right Up
     };
 
     float xMin = FLT_MAX, xMax = -FLT_MAX,

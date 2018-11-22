@@ -52,6 +52,7 @@ protected:
 
     glm::vec4 calcNormal(Intersect& intersect);
     BGRA calcLight(Intersect& intersect, glm::vec4 normal);
+    glm::vec4 getDiffuse(Intersect& intersect);
 
     std::unique_ptr<ImplicitCone> m_cone;
     std::unique_ptr<ImplicitCube> m_cube;

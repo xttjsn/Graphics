@@ -48,7 +48,7 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
     if (m_textures.find(mat.textureMap.filename) != m_textures.end())
         return;
 
-    if (m_texture_images.find(mat.textureMap.filename) != m_textures.end())
+    if (m_texture_images.find(mat.textureMap.filename) != m_texture_images.end())
         return;
 
     QImage img(mat.textureMap.filename.data());
@@ -57,11 +57,11 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
     if (img.isNull())
         return;
 
-    m_textures_images.emplace(mat.textureMap.filename, img);
+    m_texture_images.emplace(mat.textureMap.filename, img);
 }
 
 void RayScene::loadKDTree(){
-    float surface, xMin = FLT_MAX, xMax = FLT_MIN, yMin = FLT_MAX, yMax = FLT_MIN, zMin = FLT_MAX, zMax = FLT_MIN;
+    float acc_surface = 0, surface, xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX, zMax = -FLT_MAX;
     BoundingBox bbox;
     ImplicitShape * shape;
     KDTreePrimitive kdprim;
@@ -70,6 +70,7 @@ void RayScene::loadKDTree(){
         shape = getShapePointer(transprim.primitive.type);
         shape->setTransform(transprim.transform, transprim.transformInv);
         surface = shape->surfaceArea();
+        acc_surface += surface;
         bbox    = shape->boundingBox();
         returnShapePointer(transprim.primitive.type, shape);
         xMin = std::min(xMin, bbox.xMin);
@@ -85,6 +86,7 @@ void RayScene::loadKDTree(){
         m_kd_root.primitives.push_back(kdprim);
     }
     m_kd_root.bbox = BoundingBox(xMin, xMax, yMin, yMax, zMin, zMax);
+    m_kd_root.surface = acc_surface;
 
     split(&m_kd_root);
 }
@@ -116,12 +118,12 @@ void RayScene::split(KDTreeNode * root){
             root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.xMin < splitX)
+            if (prim.bbox.xMin <= splitX)
                 root->left->primitives.push_back(prim);
-            else
+            if (prim.bbox.xMax > splitX)
                 root->right->primitives.push_back(prim);
         }
-    } else if (costY < costX && costY < costZ) {
+    } else if (costY <= costX && costY < costZ) {
         // Split along Y-axis
         root->left->surface  = surfaceLY;
         root->right->surface = surfaceRY;
@@ -133,9 +135,9 @@ void RayScene::split(KDTreeNode * root){
             root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.yMin < splitY)
+            if (prim.bbox.yMin <= splitY)
                 root->left->primitives.push_back(prim);
-            else
+            if (prim.bbox.yMax > splitY)
                 root->right->primitives.push_back(prim);
         }
     } else {
@@ -150,9 +152,9 @@ void RayScene::split(KDTreeNode * root){
             splitZ, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.zMin < splitZ)
+            if (prim.bbox.zMin <= splitZ)
                 root->left->primitives.push_back(prim);
-            else
+            if (prim.bbox.zMax > splitZ)
                 root->right->primitives.push_back(prim);
         }
     }
@@ -191,7 +193,7 @@ void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, float& 
         countLeft++;
 
         // Handle intersected objects
-        for (unsigned int j = i + 1; j < root->primitives.size() - 1; j++) {
+        for (unsigned int j = i + 1; j < root->primitives.size(); j++) {
             bool within = axis == AXIS_X ? root->primitives[j].bbox.xMin <= root->primitives[i].bbox.xMax :
               (axis == AXIS_Y ? root->primitives[j].bbox.yMin <= root->primitives[i].bbox.yMax :
               root->primitives[j].bbox.zMin <= root->primitives[i].bbox.zMax);
@@ -272,6 +274,7 @@ glm::vec4 RayScene::calcNormal(Intersect& intersect){
     shape->setTransform(transprim->transform, transprim->transformInv);
     glm::vec4 normal = shape->normal(intersect);
     returnShapePointer(transprim->primitive.type, shape);
+    return normal;
 }
 
 BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
@@ -331,7 +334,7 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     return bgra;
 } // RayScene::calcLight
 
-glm::vec4 getDiffuse(Intersect& intersect) {
+glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
 
     CS123TransformPrimitive * transprim = intersect.transprim;
 
@@ -345,7 +348,8 @@ glm::vec4 getDiffuse(Intersect& intersect) {
     QImage texture;
     glm::vec2 uv;
     float blend;
-    BGRA pixel;
+    QRgb pixel;
+    BGRA bgra;
     int w, h;
 
     shape = getShapePointer(transprim->primitive.type);
@@ -359,8 +363,11 @@ glm::vec4 getDiffuse(Intersect& intersect) {
     w = texture.width();
     h = texture.height();
     pixel = texture.pixel(glm::round(uv.x * w), glm::round(uv.y * h));
-
+    bgra = *reinterpret_cast<BGRA*>(&pixel);
+    diffuse = glm::vec4(bgra.r / 255.f, bgra.g / 255.f, bgra.b / 255.f, 1.0f);
     blend = transprim->primitive.material.blend;
+    diffuse = glm::mix(transprim->primitive.material.cDiffuse, diffuse, blend);
+    return diffuse;
 }
 
 ImplicitShape * RayScene::getShapePointer(PrimitiveType type){
@@ -489,22 +496,23 @@ void RayScene::kdTreeIntersect(KDTreeNode * root, Ray& ray, Intersect& intersect
             kdTreeIntersect(left, ray, intersect);
         } else {
             // Intersect with both children
-            if (lIntersect.t < rIntersect.t) {
-                kdTreeIntersect(left, ray, intersect);
-                if (intersect.miss)
-                    kdTreeIntersect(right, ray, intersect);
-            } else {
-                kdTreeIntersect(right, ray, intersect);
-                if (intersect.miss)
-                    kdTreeIntersect(left, ray, intersect);
-            }
+            Intersect lInt, rInt;
+            kdTreeIntersect(left, ray, lInt);
+            kdTreeIntersect(right, ray, rInt);
+            if (lInt.miss && rInt.miss)
+                return;
+            else if (lInt.miss)
+                intersect = rInt;
+            else if (rInt.miss)
+                intersect = lInt;
+            else
+                intersect = lInt.t < rInt.t ? lInt : rInt;
         }
     } else {
         // If it is a leaf node
         Intersect itsct;
         ImplicitShape * shape;
         CS123TransformPrimitive * transprim;
-        std::vector<Intersect> itscts;
         for (KDTreePrimitive& kdprim : root->primitives) {
             transprim = kdprim.transprim;
             shape     = getShapePointer(transprim->primitive.type);
@@ -514,13 +522,8 @@ void RayScene::kdTreeIntersect(KDTreeNode * root, Ray& ray, Intersect& intersect
             returnShapePointer(transprim->primitive.type, shape);
 
             if (!itsct.miss) {
-                itscts.push_back(itsct);
+                intersect = intersect.miss ? itsct : (intersect.t > itsct.t ? itsct : intersect);
             }
-        }
-
-        // Early stop
-        if (!itscts.empty()) {
-            intersect = *std::min_element(itscts.begin(), itscts.end(), itsctComp());
         }
     }
 } // RayScene::kdTreeIntersect

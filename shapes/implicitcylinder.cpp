@@ -87,7 +87,7 @@ glm::vec2 ImplicitCylinder::getUV(Intersect& intersect, float repeatU, float rep
 
     float u, v;
     glm::vec2 uv;
-    pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
 
     if (fequal2(pos.y, -0.5f)) {
         // Bottom cap
@@ -131,23 +131,15 @@ float ImplicitCylinder::surfaceArea() {
 BoundingBox ImplicitCylinder::boundingBox() {
     std::vector<glm::vec4> extremes = {
         // Bottom Cap Extremes
-        glm::vec4(-0.5, -0.5, 0, 1),    // Left
-        glm::vec4(0, -0.5, -0.5, 1),    // Down
-        glm::vec4(0.5, -0.5, 0, 1),     // Right
-        glm::vec4(0, -0.5, 0.5, 1),     // Up
-        glm::vec4(0.5 * glm::cos(PI / 4), -0.5, 0.5 * glm::sin(PI / 4), 1), // Right Up
-        glm::vec4(0.5 * glm::cos(3 * PI / 4), -0.5, 0.5 * glm::sin(3 * PI / 4), 1), // Left Up
-        glm::vec4(0.5 * glm::cos(5 * PI / 4), -0.5, 0.5 * glm::sin(5 * PI / 4), 1), // Left Down
-        glm::vec4(0.5 * glm::cos(7 * PI / 4), -0.5, 0.5 * glm::sin(7 * PI / 4), 1), // Right Down
+        glm::vec4(-0.5, -0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, -0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, -0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, -0.5, 0.5, 1),      // Right Up
         // Top Cap Extremes
-        glm::vec4(-0.5, 0.5, 0, 1),    // Left
-        glm::vec4(0, 0.5, -0.5, 1),    // Down
-        glm::vec4(0.5, 0.5, 0, 1),     // Right
-        glm::vec4(0, 0.5, 0.5, 1),     // Up
-        glm::vec4(0.5 * glm::cos(PI / 4), 0.5, 0.5 * glm::sin(PI / 4), 1), // Right Up
-        glm::vec4(0.5 * glm::cos(3 * PI / 4), 0.5, 0.5 * glm::sin(3 * PI / 4), 1), // Left Up
-        glm::vec4(0.5 * glm::cos(5 * PI / 4), 0.5, 0.5 * glm::sin(5 * PI / 4), 1), // Left Down
-        glm::vec4(0.5 * glm::cos(7 * PI / 4), 0.5, 0.5 * glm::sin(7 * PI / 4), 1), // Right Down
+        glm::vec4(-0.5, 0.5, -0.5, 1),    // Left Down
+        glm::vec4(-0.5, 0.5, 0.5, 1),     // Left Up
+        glm::vec4(0.5, 0.5, -0.5, 1),     // Right Down
+        glm::vec4(0.5, 0.5, 0.5, 1),      // Right Up
     };
 
     float xMin = FLT_MAX, xMax = -FLT_MAX,

@@ -99,7 +99,7 @@ glm::vec2 ImplicitCube::getUV(Intersect& intersect, float repeatU, float repeatV
 
     float u, v;
     glm::vec2 uv;
-    pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
 
     if (fequal2(pos.x, -0.5f)) {
         u = pos.z + 0.5f;
@@ -151,10 +151,10 @@ BoundingBox ImplicitCube::boundingBox() {
     std::vector<glm::vec4> extremes = {
         glm::vec4(-0.5, -0.5, -0.5, 1),
         glm::vec4(-0.5, -0.5, 0.5, 1),
-        glm::vec4(-0.5, 0.5, -0.5, 1),
-        glm::vec4(-0.5, 0.5, 0.5, 1),
         glm::vec4(0.5, -0.5, -0.5, 1),
         glm::vec4(0.5, -0.5, 0.5, 1),
+        glm::vec4(-0.5, 0.5, -0.5, 1),
+        glm::vec4(-0.5, 0.5, 0.5, 1),
         glm::vec4(0.5, 0.5, -0.5, 1),
         glm::vec4(0.5, 0.5, 0.5, 1),
     };
