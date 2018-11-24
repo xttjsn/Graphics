@@ -180,7 +180,7 @@ void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec
      */
     glm::vec4 center = interpolate(A, B, 0.5);
 
-    data.emplace_back(A, glm::vec4(glm::normalize(glm::vec3(A - center)), 0), rectangleUV(stripIdx + 0.5, 0, numStrips, numStacks));
+    data.emplace_back(A, glm::vec4(glm::normalize(glm::vec3(A - center)), 0), rectangleUV((stripIdx + 0.5), numStacks, numStrips, numStacks));
 
     float phi = stripIdx / static_cast<float>(numStrips) * 2 * PI, theta = 0.0f, delta_phi = 2 * PI / numStrips, delta_theta = PI / numStacks,
           radius = glm::distance(A, B) / 2.0f;
@@ -188,26 +188,24 @@ void ShapeUtil::buildSphericalStripUV2(std::vector<OpenGLVertex>& data, glm::vec
     for (int i = 1; i < numStacks; i++) {
         theta = i * delta_theta;
         x     = radius * glm::sin(theta) * glm::cos(phi);
-        y     = radius * glm::sin(theta) * glm::sin(phi);
-        z     = radius * glm::cos(theta);
+        z     = radius * glm::sin(theta) * glm::sin(phi);
+        y     = radius * glm::cos(theta);
         glm::vec4 leftPos = glm::vec4(x, y, z, 1);
         glm::vec4 leftNorm = glm::vec4(glm::normalize(glm::vec3(leftPos - center)), 0);
-        glm::vec2 leftUV = rectangleUV(stripIdx, i, numStrips, numStacks);
-
+        glm::vec2 leftUV = rectangleUV(stripIdx, numStacks - i, numStrips, numStacks);
 
         x   = radius * glm::sin(theta) * glm::cos(phi + delta_phi);
-        y   = radius * glm::sin(theta) * glm::sin(phi + delta_phi);
-        z   = radius * glm::cos(theta);
+        z   = radius * glm::sin(theta) * glm::sin(phi + delta_phi);
+        y   = radius * glm::cos(theta);
         glm::vec4 rightPos = glm::vec4(x, y, z, 1);
         glm::vec4 rightNorm = glm::vec4(glm::normalize(glm::vec3(rightPos - center)), 0);
-        glm::vec2 rightUV = rectangleUV(stripIdx + 1, i, numStrips, numStacks);
+        glm::vec2 rightUV = rectangleUV((stripIdx + 1), numStacks - i, numStrips, numStacks);
 
-        data.emplace_back(leftPos, leftNorm, leftUV);
         data.emplace_back(rightPos, rightNorm, rightUV);
+        data.emplace_back(leftPos, leftNorm, leftUV);
     }
 
-    data.emplace_back(B, glm::vec4(glm::normalize(glm::vec3(B - center)), 0), rectangleUV(stripIdx + 0.5, numStacks, numStrips, numStacks));
-
+    data.emplace_back(B, glm::vec4(glm::normalize(glm::vec3(B - center)), 0), rectangleUV((stripIdx + 0.5), 0, numStrips, numStacks));
 }
 
 void ShapeUtil::buildCircleOfVerticesUV(std::vector<OpenGLVertex> &data, glm::vec4 center, float radius, int numPoints, float phi, int numSegs, int seg) {
