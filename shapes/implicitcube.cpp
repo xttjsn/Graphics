@@ -103,27 +103,27 @@ glm::vec2 ImplicitCube::getUV(Intersect& intersect, float repeatU, float repeatV
 
     if (fequal2(pos.x, -0.5f)) {
         u = pos.z + 0.5f;
-        v = 1.0f - (pos.y + 0.5f);
+        v = pos.y + 0.5f;
     }
     else if (fequal2(pos.x, 0.5f)) {
         u = 1.0f - (pos.z + 0.5f);
-        v = 1.0f - (pos.y + 0.5f);
+        v = pos.y + 0.5f;
     }
     else if (fequal2(pos.y, -0.5f)) {
         u = pos.x + 0.5f;
-        v = 1.0f - (pos.z + 0.5f);
+        v = pos.z + 0.5f;
     }
     else if (fequal2(pos.y, 0.5f)) {
         u = pos.x + 0.5f;
-        v = pos.z + 0.5f;
+        v = 1.0f - (pos.z + 0.5f);
     }
     else if (fequal2(pos.z, -0.5f)) {
-        u = pos.x + 0.5f;
-        v = 1.0f - (pos.y + 0.5f);
+        u = 1.0f - (pos.x + 0.5f);
+        v = pos.y + 0.5f;
     }
     else if (fequal2(pos.z, 0.5f)) {
-        u = 1.0f - (pos.x + 0.5f);
-        v = 1.0f - (pos.y + 0.5f);
+        u = pos.x + 0.5f;
+        v = pos.y + 0.5f;
     }
     else {
         std::perror("Invalid intersect for Cube.");
