@@ -106,7 +106,7 @@ void RayScene::split(KDTreeNode * root){
     root->left  = new KDTreeNode();
     root->right = new KDTreeNode();
 
-    if (costX < costY && costX < costZ) {
+    if (costX <= costY && costX <= costZ) {
         // Split along X-axis
         root->left->surface  = surfaceLX;
         root->right->surface = surfaceRX;
@@ -123,7 +123,7 @@ void RayScene::split(KDTreeNode * root){
             if (prim.bbox.xMax > splitX)
                 root->right->primitives.push_back(prim);
         }
-    } else if (costY <= costX && costY < costZ) {
+    } else if (costY <= costX && costY <= costZ) {
         // Split along Y-axis
         root->left->surface  = surfaceLY;
         root->right->surface = surfaceRY;
