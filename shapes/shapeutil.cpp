@@ -35,16 +35,22 @@ void ShapeUtil::buildTriangleStripUV(std::vector<OpenGLVertex> &data, glm::vec4 
      *    B --- C
      */
     glm::vec4 norm = normalFromTriangle(A, B, C);
-    data.emplace_back(A, norm, rectangleUV(numSlides - (i + 0.5), numStacks, numSlides, numStacks));
+    glm::vec2 topUV = rectangleUV((i + 0.5), numStacks, numSlides, numStacks);
+    topUV.x = 1.0f - topUV.x;
+    data.emplace_back(A, norm, topUV);
     for (int t = 1; t <= numStacks; ++t) {
         glm::vec4 right = interpolate(A, B, t / static_cast<float>(numStacks));
         glm::vec4 left  = interpolate(A, C, t / static_cast<float>(numStacks));
-        glm::vec2 rightUV = rectangleUV(numSlides - i, numStacks - t, numSlides, numStacks);
-        glm::vec2 leftUV = rectangleUV(numSlides - (i + 1), numStacks - t, numSlides, numStacks);
+        glm::vec2 rightUV = rectangleUV(i, numStacks - t, numSlides, numStacks);
+        glm::vec2 leftUV = rectangleUV((i + 1), numStacks - t, numSlides, numStacks);
+        rightUV.x = 1.0f - rightUV.x;
+        leftUV.x = 1.0f - leftUV.x;
         data.emplace_back(left, norm, leftUV);
         data.emplace_back(right, norm, rightUV);
     }
-    data.emplace_back(A, norm, rectangleUV(numSlides - (i + 0.5), numStacks, numSlides, numStacks));
+    glm::vec2 bottomUV = rectangleUV((i + 0.5), numStacks, numSlides, numStacks);
+    bottomUV.x = 1.0f - bottomUV.x;
+    data.emplace_back(A, norm, bottomUV);
 }
 
 void ShapeUtil::buildFanStripUV(std::vector<OpenGLVertex> &data, glm::vec4 A, glm::vec4 C, glm::vec4 B, int numStacks, float theta, float delta) {
