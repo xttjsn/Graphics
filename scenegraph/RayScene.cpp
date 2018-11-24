@@ -52,7 +52,6 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
         return;
 
     QImage img(mat.textureMap.filename.data());
-    img = QGLWidget::convertToGLFormat(img);
 
     if (img.isNull())
         return;
