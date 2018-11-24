@@ -58,12 +58,16 @@ glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
 glm::vec2 ImplicitSphere::getUV(Intersect& intersect, float repeatU, float repeatV) {
     if (intersect.miss) return glm::vec2(0);
 
+    float u, v;
     glm::vec2 uv;
     glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
 
     float theta = glm::acos(pos.y / 0.5);
     float phi = std::atan2(pos.z, pos.x);
-    uv = glm::vec2(phi / 2.0f * PI, 1.0f - theta / PI);
+
+    u = 1.0f - phi / (2.0f * PI);
+    v = 1.0f - theta / PI;
+    uv = glm::vec2(glm::fract(u * repeatU), glm::fract(v * repeatV));
     return uv;
 }
 
