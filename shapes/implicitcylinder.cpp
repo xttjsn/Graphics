@@ -92,19 +92,19 @@ glm::vec2 ImplicitCylinder::getUV(Intersect& intersect, float repeatU, float rep
     if (fequal2(pos.y, -0.5f)) {
         // Bottom cap
         u = pos.x + 0.5f;
-        v = 1.0f - (pos.z + 0.5f);
+        v = pos.z + 0.5f;
     }
     else if (fequal2(pos.y, 0.5f)) {
         // Top cap
         u = pos.x + 0.5f;
-        v = pos.z + 0.5f;
+        v = 1.0f - (pos.z + 0.5f);
     }
     else {
         // Intersect lies on cylinder body
         float phi = std::atan2(pos.z, pos.x);
 
-        u = phi / (2.f * PI);
-        v = 1.0f - (pos.y + 0.5f);
+        u = 1.0f - phi / (2.0 * PI);
+        v = pos.y + 0.5f;
     }
 
     uv = glm::vec2(glm::fract(u * repeatU), glm::fract(v * repeatV));
