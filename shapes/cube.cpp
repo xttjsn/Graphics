@@ -22,16 +22,16 @@ void Cube::reCalculateVertices(){
 
     for (int i = 0; i < m_p1; i++) {
         glm::vec4 Apos = glm::vec4(-m_radius, m_radius - i * stepSize, m_radius, 1);
-        glm::vec2 Auv  = glm::vec2(0, i / static_cast<float>(m_p1));
+        glm::vec2 Auv  = glm::vec2(0, 1.0f - i / static_cast<float>(m_p1));
 
         glm::vec4 Bpos = glm::vec4(-m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
-        glm::vec2 Buv  = glm::vec2(0, (i + 1) / static_cast<float>(m_p1));
+        glm::vec2 Buv  = glm::vec2(0, 1.0f - (i + 1) / static_cast<float>(m_p1));
 
         glm::vec4 Cpos = glm::vec4(m_radius, m_radius - i * stepSize, m_radius, 1);
-        glm::vec2 Cuv  = glm::vec2(1, i / static_cast<float>(m_p1));
+        glm::vec2 Cuv  = glm::vec2(1, 1.0f - i / static_cast<float>(m_p1));
 
         glm::vec4 Dpos = glm::vec4(m_radius, m_radius - (i + 1) * stepSize, m_radius, 1);
-        glm::vec2 Duv  = glm::vec2(1, (i + 1) / static_cast<float>(m_p1));
+        glm::vec2 Duv  = glm::vec2(1, 1.0f - (i + 1) / static_cast<float>(m_p1));
 
         shapeutil.buildQuadStripUV(zside0, Apos, Bpos, Cpos, Dpos, Auv, Buv, Cuv, Duv, m_p1);
     }

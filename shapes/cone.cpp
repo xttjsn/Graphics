@@ -24,7 +24,7 @@ void Cone::reCalculateVertices() {
     // 2. Build the side
     std::vector<OpenGLVertex> side;
     std::vector<OpenGLVertex> side_next;
-    float theta = PI / 2.0f, delta = 2 * PI / p2;
+    float theta = 0.0f, delta = 2 * PI / p2;
 
     glm::vec4 A, B, C;
     glm::mat4x4 rot_next = glm::rotate(delta, glm::vec3(0, 1, 0));
