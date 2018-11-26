@@ -8,6 +8,7 @@
 #include "ResourceLoader.h"
 #include "gl/shaders/CS123Shader.h"
 #include "gl/textures/TextureParametersBuilder.h"
+#include "filters/filterutils.h"
 #include <glm/gtx/transform.hpp>
 #include <QThreadPool>
 
@@ -55,6 +56,8 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
 
     if (img.isNull())
         return;
+
+    img = img.mirrored(false, true);
 
     m_texture_images.emplace(mat.textureMap.filename, img);
 }
@@ -238,7 +241,7 @@ void RayScene::loadCameraMatrices(Camera * camera){
     m_scaleInv = glm::inverse(m_scale);
 }
 
-void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra){
+void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra) {
     // Generate ray in camera space, and then transform it into world space
     Ray ray;
 
@@ -247,22 +250,46 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
     ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
-    // Try to find an intersection using acceleration data structure
+    glm::vec4 color = rayTraceImpl(ray, 0);
+
+    bgra.r = FilterUtils::REAL2byte(color.r);
+    bgra.g = FilterUtils::REAL2byte(color.g);
+    bgra.b = FilterUtils::REAL2byte(color.b);
+    bgra.a = 255;
+} // RayScene::rayTrace
+
+glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
+    // Try to find an intersection using kd-tree
     Intersect intersect;
     kdTreeIntersect(&m_kd_root, ray, intersect);
-    //    naiveIntersect(ray, intersect);
 
     if (intersect.miss) {
-        // DEBUG
-        return;
+        return glm::vec4(0);
     }
 
-    // Get normal
-    glm::vec4 normal = calcNormal(intersect);
+    // Get normal in object space
+    glm::vec4 normal 			= calcNormal(intersect);
+    glm::mat4x4 modelInv        = intersect.transprim->transformInv;
+    glm::vec4 normal_worldSpace =
+      glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     // Compute illumination
-    bgra = calcLight(intersect, normal);
-} // RayScene::rayTrace
+    glm::vec4 color = calcLight(intersect, normal);
+
+    // Get reflection coefficient
+    glm::vec4 reflect_coef = intersect.transprim->primitive.material.cReflective;
+
+    if (recursionLevel < MAX_RECURSION) {
+        // Compute the reflected ray
+        Ray ref_ray;
+        ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal_worldSpace));
+        ref_ray.start = intersect.pos + FLT_EPSILON * ref_ray.delta * 1000.f;
+
+        color += rayTraceImpl(ref_ray, recursionLevel + 1) * reflect_coef * m_global.ks;
+    }
+
+    return color;
+}
 
 glm::vec4 RayScene::calcNormal(Intersect& intersect){
     CS123TransformPrimitive * transprim = intersect.transprim;
@@ -276,14 +303,13 @@ glm::vec4 RayScene::calcNormal(Intersect& intersect){
     return normal;
 }
 
-BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
+glm::vec4 RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     CS123TransformPrimitive * transprim = intersect.transprim;
 
     glm::vec4 final (0), ambient, diffuse, specular;
-    ambient  = transprim->primitive.material.cAmbient;
-    // diffuse  = transprim->primitive.material.cDiffuse;
+    ambient  = m_global.ka * transprim->primitive.material.cAmbient;
     diffuse = getDiffuse(intersect);
-    specular = transprim->primitive.material.cSpecular;
+    specular = m_global.ks * transprim->primitive.material.cSpecular;
     float shininess = transprim->primitive.material.shininess;
 
     glm::vec4 position_worldSpace = intersect.pos;
@@ -294,6 +320,8 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     final = ambient;
     glm::vec4 lightColor;
     glm::vec4 vertexToLight;
+    float dist = 0.0f;
+    float attenuation;
     glm::vec4 vertexToEye = glm::normalize(m_viewInv * glm::vec4(glm::vec3(-(m_view * intersect.pos)), 0));
     glm::vec4 lightReflect;
     float diffuseIntensity, specularIntensity;
@@ -301,7 +329,8 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
             case LightType::LIGHT_POINT:
-                vertexToLight = glm::normalize(glm::vec4(glm::vec3(light.pos), 1) - position_worldSpace);
+                vertexToLight = glm::normalize(light.pos - position_worldSpace);
+                dist = glm::distance(light.pos, position_worldSpace);
                 break;
             case LightType::LIGHT_DIRECTIONAL:
                 vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
@@ -316,21 +345,29 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
                 break;
         }
 
+        Ray ray_to_light;
+        ray_to_light.delta = vertexToLight;
+        ray_to_light.start = intersect.pos + FLT_EPSILON * ray_to_light.delta * 1000.f;
+        Intersect ray_light_intersect;
+        kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
+
+        if (!ray_light_intersect.miss)
+            continue;
+
         lightColor       = light.color;
+
+        attenuation      = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
+
         diffuseIntensity = glm::max(0.f, glm::dot(vertexToLight, normal_worldSpace));
-        final += glm::max(glm::vec4(0), lightColor * diffuse * diffuseIntensity);
 
         lightReflect      = glm::normalize(glm::reflect(-vertexToLight, normal_worldSpace));
+
         specularIntensity = glm::pow(glm::max(0.0f, glm::dot(vertexToEye, lightReflect)), shininess);
-        final += glm::max(glm::vec4(0), lightColor * specular * specularIntensity);
+
+        final += attenuation * lightColor * (diffuse * diffuseIntensity + specular * specularIntensity);
     }
 
-    BGRA bgra;
-    bgra.r = glm::clamp(final.r, 0.f, 1.f) * 255;
-    bgra.g = glm::clamp(final.g, 0.f, 1.f) * 255;
-    bgra.b = glm::clamp(final.b, 0.f, 1.f) * 255;
-    bgra.a = 255;
-    return bgra;
+    return final;
 } // RayScene::calcLight
 
 glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
@@ -338,7 +375,9 @@ glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
     CS123TransformPrimitive * transprim = intersect.transprim;
 
     // No texture
-    if (!transprim->primitive.material.textureMap.isUsed || transprim->primitive.material.textureMap.filename.empty())
+    if (!transprim->primitive.material.textureMap.isUsed ||
+         transprim->primitive.material.textureMap.filename.empty() ||
+         m_texture_images.find(transprim->primitive.material.textureMap.filename) == m_texture_images.end())
         return transprim->primitive.material.cDiffuse;
 
     // Get UV
@@ -361,11 +400,11 @@ glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
     texture = m_texture_images[transprim->primitive.material.textureMap.filename];
     w = texture.width();
     h = texture.height();
-    pixel = texture.pixel(glm::round(uv.x * w), glm::round(uv.y * h));
+    pixel = texture.pixel(glm::floor(uv.x * w), glm::floor(uv.y * h));
     bgra = *reinterpret_cast<BGRA*>(&pixel);
     diffuse = glm::vec4(bgra.r / 255.f, bgra.g / 255.f, bgra.b / 255.f, 1.0f);
     blend = transprim->primitive.material.blend;
-    diffuse = glm::mix(transprim->primitive.material.cDiffuse, diffuse, blend);
+    diffuse = glm::mix(m_global.kd * transprim->primitive.material.cDiffuse, diffuse, blend);
     return diffuse;
 }
 

@@ -30,8 +30,8 @@ void Sphere::reCalculateVertices(){
 
     // Build a spherical strip
     std::vector<OpenGLVertex> side;
-    glm::vec4 A = glm::vec4(0, 0, m_radius, 1);
-    glm::vec4 B = glm::vec4(0, 0, -m_radius, 1);
+    glm::vec4 A = glm::vec4(0, m_radius, 0, 1);
+    glm::vec4 B = glm::vec4(0, -m_radius, 0, 1);
 
     for (int i = 0; i < p2; i++) {
         shapeutil.buildSphericalStripUV2(side, A, B, p1, p2, i);
