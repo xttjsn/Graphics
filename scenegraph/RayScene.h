@@ -14,9 +14,9 @@
 #include <QMutex>
 #include <QImage>
 
-const int MAX_RECURSION = 5;
-const float RAY_OFFSET = 0.0001;
-const float MIN_REFLECT = 0.01;
+const int MAX_RECURSION = 2;
+const float RAY_OFFSET = 1e-4;
+const float MIN_REFLECT = 0;
 
 /**
  * @class RayScene
@@ -40,7 +40,7 @@ protected:
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
     void rayTrace(float row, float col, int width, int height, BGRA& bgra);
-    void rayTraceImpl(Ray& ray, BGRA& bgra, glm::vec4 reflectCoef, int recursionLevel);
+    glm::vec4 rayTraceImpl(Ray& ray, int recursionLevel);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
 
@@ -50,7 +50,7 @@ protected:
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
     glm::vec4 calcNormal(Intersect& intersect);
-    BGRA calcLight(Intersect& intersect, glm::vec4 normal);
+    glm::vec4 calcLight(Intersect& intersect, glm::vec4 normal);
     glm::vec4 getDiffuse(Intersect& intersect);
 
     std::unique_ptr<ImplicitCone> m_cone;

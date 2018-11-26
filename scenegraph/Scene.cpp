@@ -14,9 +14,9 @@ Scene::Scene(Scene& scene)
 {
     // We need to set the global constants to one when we duplicate a scene,
     // otherwise the global constants will be double counted (squared)
-    CS123SceneGlobalData global = { 1, 1, 1, 1 };
+//    CS123SceneGlobalData global = { 1, 1, 1, 1 };
 
-    setGlobal(global);
+    setGlobal(scene.m_global);
 
     // TODO [INTERSECT]
     // Make sure to copy over the lights and the scenegraph from the old scene,
@@ -92,9 +92,6 @@ void Scene::parseNode(Scene *sceneToFill, CS123SceneNode *node, glm::mat4x4 pare
 void Scene::addPrimitive(const CS123ScenePrimitive& scenePrimitive,
                          const glm::mat4x4        & matrix) {
     m_transPrims.emplace_back(matrix, scenePrimitive);
-    m_transPrims[m_transPrims.size() - 1].primitive.material.cDiffuse *= m_global.kd;
-    m_transPrims[m_transPrims.size() - 1].primitive.material.cAmbient *= m_global.ka;
-    m_transPrims[m_transPrims.size() - 1].primitive.material.cSpecular *= m_global.ks;
 }
 
 void Scene::computeLOD() {
