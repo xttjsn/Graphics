@@ -250,6 +250,7 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
     ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
+    bgra = BGRA(0, 0, 0, 0);
     rayTraceImpl(ray, bgra, glm::vec4(1), 0);
 } // RayScene::rayTrace
 
@@ -264,8 +265,11 @@ void RayScene::rayTraceImpl(Ray& ray, BGRA& bgra, glm::vec4 reflectCoef, int rec
         return;
     }
 
-    // Get normal
-    glm::vec4 normal = calcNormal(intersect);
+    // Get normal in object space
+    glm::vec4 normal 			= calcNormal(intersect);
+    glm::mat4x4 modelInv        = intersect.transprim->transformInv;
+    glm::vec4 normal_worldSpace =
+      glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     // Compute illumination
     BGRA delta_bgra;
@@ -282,8 +286,8 @@ void RayScene::rayTraceImpl(Ray& ray, BGRA& bgra, glm::vec4 reflectCoef, int rec
     if (recursionLevel < MAX_RECURSION && ((reflectCoef.r + reflectCoef.g + reflectCoef.b) >= MIN_REFLECT)) {
         // Compute the reflected ray
         Ray ref_ray;
-        ref_ray.start = intersect.pos + RAY_OFFSET * normal;
-        ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal));
+        ref_ray.start = intersect.pos + RAY_OFFSET * normal_worldSpace;
+        ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal_worldSpace));
 
         rayTraceImpl(ref_ray, bgra, reflectCoef, recursionLevel + 1);
     }
@@ -319,6 +323,8 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     final = ambient;
     glm::vec4 lightColor;
     glm::vec4 vertexToLight;
+    float dist = 0.0f;
+    float attenuation;
     glm::vec4 vertexToEye = glm::normalize(m_viewInv * glm::vec4(glm::vec3(-(m_view * intersect.pos)), 0));
     glm::vec4 lightReflect;
     float diffuseIntensity, specularIntensity;
@@ -327,6 +333,7 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
         switch (light.type) {
             case LightType::LIGHT_POINT:
                 vertexToLight = glm::normalize(glm::vec4(glm::vec3(light.pos), 1) - position_worldSpace);
+                dist = glm::distance(glm::vec4(glm::vec3(light.pos), 1), position_worldSpace);
                 break;
             case LightType::LIGHT_DIRECTIONAL:
                 vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
@@ -341,13 +348,23 @@ BGRA RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
                 break;
         }
 
+        Ray ray_to_light;
+        ray_to_light.start = intersect.pos + RAY_OFFSET * normal_worldSpace;
+        ray_to_light.delta = vertexToLight;
+        Intersect ray_light_intersect;
+        kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
+
+        if (!ray_light_intersect.miss)
+            continue;
+
         lightColor       = light.color;
+        attenuation      = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
         diffuseIntensity = glm::max(0.f, glm::dot(vertexToLight, normal_worldSpace));
-        final += glm::max(glm::vec4(0), lightColor * diffuse * diffuseIntensity);
+        final += attenuation * glm::max(glm::vec4(0), lightColor * diffuse * diffuseIntensity);
 
         lightReflect      = glm::normalize(glm::reflect(-vertexToLight, normal_worldSpace));
-        specularIntensity = glm::pow(glm::max(0.0f, glm::dot(vertexToEye, lightReflect)), shininess);
-        final += glm::max(glm::vec4(0), lightColor * specular * specularIntensity);
+        specularIntensity = m_global.ks * glm::pow(glm::max(0.0f, glm::dot(vertexToEye, lightReflect)), shininess);
+        final += attenuation * glm::max(glm::vec4(0), lightColor * specular * specularIntensity);
     }
 
     BGRA bgra;
@@ -390,7 +407,7 @@ glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
     h = texture.height();
     pixel = texture.pixel(glm::floor(uv.x * w), glm::floor(uv.y * h));
     bgra = *reinterpret_cast<BGRA*>(&pixel);
-    diffuse = glm::vec4(bgra.r / 255.f, bgra.g / 255.f, bgra.b / 255.f, 1.0f);
+    diffuse = m_global.kd * glm::vec4(bgra.r / 255.f, bgra.g / 255.f, bgra.b / 255.f, 1.0f);
     blend = transprim->primitive.material.blend;
     diffuse = glm::mix(transprim->primitive.material.cDiffuse, diffuse, blend);
     return diffuse;

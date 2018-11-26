@@ -94,6 +94,7 @@ void Scene::addPrimitive(const CS123ScenePrimitive& scenePrimitive,
     m_transPrims.emplace_back(matrix, scenePrimitive);
     m_transPrims[m_transPrims.size() - 1].primitive.material.cDiffuse *= m_global.kd;
     m_transPrims[m_transPrims.size() - 1].primitive.material.cAmbient *= m_global.ka;
+    m_transPrims[m_transPrims.size() - 1].primitive.material.cSpecular *= m_global.ks;
 }
 
 void Scene::computeLOD() {

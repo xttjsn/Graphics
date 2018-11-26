@@ -14,7 +14,7 @@
 #include <QMutex>
 #include <QImage>
 
-const int MAX_RECURSION = 4;
+const int MAX_RECURSION = 5;
 const float RAY_OFFSET = 0.0001;
 const float MIN_REFLECT = 0.01;
 
