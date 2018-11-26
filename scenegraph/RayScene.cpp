@@ -241,7 +241,7 @@ void RayScene::loadCameraMatrices(Camera * camera){
     m_scaleInv = glm::inverse(m_scale);
 }
 
-void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra){
+void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra) {
     // Generate ray in camera space, and then transform it into world space
     Ray ray;
 
@@ -250,7 +250,11 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
     ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
-    // Try to find an intersection using acceleration data structure
+    rayTraceImpl(ray, bgra, glm::vec4(1), 0);
+} // RayScene::rayTrace
+
+void RayScene::rayTraceImpl(Ray& ray, BGRA& bgra, glm::vec4 reflectCoef, int recursionLevel) {
+    // Try to find an intersection using kd-tree
     Intersect intersect;
     kdTreeIntersect(&m_kd_root, ray, intersect);
     //    naiveIntersect(ray, intersect);
@@ -264,8 +268,26 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
     glm::vec4 normal = calcNormal(intersect);
 
     // Compute illumination
-    bgra = calcLight(intersect, normal);
-} // RayScene::rayTrace
+    BGRA delta_bgra;
+    delta_bgra = calcLight(intersect, normal);
+
+    // Add delta
+    bgra.r = glm::clamp(bgra.r + static_cast<int>(glm::round(delta_bgra.r * reflectCoef.r)), 0, 255);
+    bgra.g = glm::clamp(bgra.g + static_cast<int>(glm::round(delta_bgra.g * reflectCoef.g)), 0, 255);
+    bgra.b = glm::clamp(bgra.b + static_cast<int>(glm::round(delta_bgra.b * reflectCoef.b)), 0, 255);
+
+    // Update reflectCoef
+    reflectCoef *= intersect.transprim->primitive.material.cReflective;
+
+    if (recursionLevel < MAX_RECURSION && ((reflectCoef.r + reflectCoef.g + reflectCoef.b) >= MIN_REFLECT)) {
+        // Compute the reflected ray
+        Ray ref_ray;
+        ref_ray.start = intersect.pos + RAY_OFFSET * normal;
+        ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal));
+
+        rayTraceImpl(ref_ray, bgra, reflectCoef, recursionLevel + 1);
+    }
+}
 
 glm::vec4 RayScene::calcNormal(Intersect& intersect){
     CS123TransformPrimitive * transprim = intersect.transprim;

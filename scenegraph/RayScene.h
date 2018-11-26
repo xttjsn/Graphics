@@ -14,11 +14,9 @@
 #include <QMutex>
 #include <QImage>
 
-struct tsIntersectComp {
-    inline bool operator() (Intersect a, Intersect b) {
-        return a.t < b.t;
-    }
-};
+const int MAX_RECURSION = 4;
+const float RAY_OFFSET = 0.0001;
+const float MIN_REFLECT = 0.01;
 
 /**
  * @class RayScene
@@ -42,6 +40,7 @@ protected:
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
     void rayTrace(float row, float col, int width, int height, BGRA& bgra);
+    void rayTraceImpl(Ray& ray, BGRA& bgra, glm::vec4 reflectCoef, int recursionLevel);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
 
