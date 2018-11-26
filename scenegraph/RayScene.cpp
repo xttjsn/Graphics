@@ -52,10 +52,12 @@ void RayScene::loadMapData(CS123SceneMaterial& mat){
         return;
 
     QImage img(mat.textureMap.filename.data());
-    img = QGLWidget::convertToGLFormat(img);
+    img = img.convertToFormat(QImage::Format_RGB32);
 
     if (img.isNull())
         return;
+
+    img = img.mirrored(false, true);
 
     m_texture_images.emplace(mat.textureMap.filename, img);
 }
@@ -339,7 +341,9 @@ glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
     CS123TransformPrimitive * transprim = intersect.transprim;
 
     // No texture
-    if (!transprim->primitive.material.textureMap.isUsed || transprim->primitive.material.textureMap.filename.empty())
+    if (!transprim->primitive.material.textureMap.isUsed ||
+         transprim->primitive.material.textureMap.filename.empty() ||
+         m_texture_images.find(transprim->primitive.material.textureMap.filename) == m_texture_images.end())
         return transprim->primitive.material.cDiffuse;
 
     // Get UV
@@ -362,7 +366,7 @@ glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
     texture = m_texture_images[transprim->primitive.material.textureMap.filename];
     w = texture.width();
     h = texture.height();
-    pixel = texture.pixel(glm::round(uv.x * w), glm::round(uv.y * h));
+    pixel = texture.pixel(glm::floor(uv.x * w), glm::floor(uv.y * h));
     bgra = *reinterpret_cast<BGRA*>(&pixel);
     diffuse = glm::vec4(bgra.r / 255.f, bgra.g / 255.f, bgra.b / 255.f, 1.0f);
     blend = transprim->primitive.material.blend;
