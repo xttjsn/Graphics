@@ -235,12 +235,9 @@ void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, Axis ax
     }
 } // RayScene::trySplit
 
-void RayScene::render(SupportCanvas2D * canvas, Camera * camera, int width, int height){
-    BGRA * data = canvas->data();
-
+void RayScene::render(SupportCanvas2D * canvas, Camera * camera){
     loadCameraMatrices(camera);
-
-    m_master = new RayTraceMaster(this, width, height, data);
+    m_master = new RayTraceMaster(this, canvas);
     m_master->start();
 }
 

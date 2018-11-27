@@ -15,7 +15,7 @@ class RayTraceMaster : public QThread
 
 public:
     RayTraceMaster(QObject *parent = 0);
-    RayTraceMaster(RayScene* rayscene, int width, int height, BGRA* data);
+    RayTraceMaster(RayScene* rayscene, SupportCanvas2D* canvas);
     ~RayTraceMaster();
 
 public slots:
@@ -31,6 +31,7 @@ private:
     int m_nThrds, m_nextThr, m_nActiveThrds, m_nMaxThrds;
     BGRA* m_data;
     std::vector<RayTraceThread*> m_thrds;
+    SupportCanvas2D *m_canvas;
 };
 class RayTraceThread : public QThread
 {
@@ -38,7 +39,7 @@ class RayTraceThread : public QThread
 
 public:
     RayTraceThread(QObject *parent = 0);
-    RayTraceThread(RayScene* rayscene, int row, int col, int sz, int width, int height, BGRA* data);
+    RayTraceThread(RayScene* rayscene, SupportCanvas2D* canvas, int row, int col, int sz);
     ~RayTraceThread();
 
 signals:
@@ -54,6 +55,7 @@ private:
     RayScene *m_rayscene;
     int m_row, m_col, m_sz, m_width, m_height;
     BGRA* m_data;
+    SupportCanvas2D* m_canvas;
 };
 
 #endif // RAYTRACETHREAD_H

@@ -28,7 +28,7 @@ public:
     RayScene(Scene &scene);
     virtual ~RayScene();
 
-    virtual void render(SupportCanvas2D* canvas, Camera* camera, int width, int height);
+    virtual void render(SupportCanvas2D* canvas, Camera* camera);
 
 protected:
 

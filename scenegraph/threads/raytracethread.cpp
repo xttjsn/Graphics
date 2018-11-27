@@ -6,8 +6,9 @@ RayTraceThread::RayTraceThread(QObject* parent)
     : QThread(parent)
 {}
 
-RayTraceThread::RayTraceThread(RayScene* rayscene, int row, int col, int sz, int width, int height, BGRA* data)
-    : QThread(0), m_rayscene(rayscene), m_row(row), m_col(col), m_sz(sz), m_width(width), m_height(height), m_data(data)
+RayTraceThread::RayTraceThread(RayScene* rayscene, SupportCanvas2D* canvas, int row, int col, int sz)
+    : QThread(0), m_rayscene(rayscene), m_row(row), m_col(col), m_sz(sz), m_width(canvas->width()),
+      m_height(canvas->height()), m_data(canvas->data()), m_canvas(canvas)
 {
 }
 
@@ -21,8 +22,11 @@ void RayTraceThread::run() {
             m_rayscene->rayTrace(row, col, m_width, m_height, bgra);
             *(m_data + row * m_width + col) = bgra;
             bgra = BGRA(0,0,0,255);
+
         }
     }
+    // Call update
+    m_canvas->update();
 
     float change, maxChange = 0.2;
     BGRA LU, RU, LD, RD;
@@ -52,20 +56,20 @@ void RayTraceThread::run() {
 RayTraceMaster::RayTraceMaster(QObject *parent)
     : QThread(parent) {}
 
-RayTraceMaster::RayTraceMaster(RayScene *rayscene, int width, int height, BGRA *data)
-    : QThread(0), m_rayscene(rayscene), m_width(width), m_height(height), m_data(data), m_subSize(30),
-      m_nThrds(0), m_nextThr(0), m_nActiveThrds(0), m_nMaxThrds(10)
+RayTraceMaster::RayTraceMaster(RayScene *rayscene, SupportCanvas2D* canvas)
+    : QThread(0), m_rayscene(rayscene), m_width(canvas->width()), m_height(canvas->height()), m_data(canvas->data()), m_subSize(30),
+      m_nThrds(0), m_nextThr(0), m_nActiveThrds(0), m_nMaxThrds(10), m_canvas(canvas)
 {
     m_row = 0;
     m_col = 0;
 
-    int nTrunkH = std::ceil(static_cast<float>(width) / m_subSize);
-    int nTrunkV = std::ceil(static_cast<float>(height) / m_subSize);
+    int nTrunkH = std::ceil(static_cast<float>(m_width) / m_subSize);
+    int nTrunkV = std::ceil(static_cast<float>(m_height) / m_subSize);
 
     m_nThrds = nTrunkH * nTrunkV;
     for (int i = 0; i < nTrunkV; i++) {
         for (int j = 0; j < nTrunkH; j++) {
-            RayTraceThread* thr = new RayTraceThread(rayscene, i * m_subSize, j * m_subSize, m_subSize, width, height, data);
+            RayTraceThread* thr = new RayTraceThread(rayscene, m_canvas, i * m_subSize, j * m_subSize, m_subSize);
             QObject::connect(thr, SIGNAL(rayTraceFinish()), this, SLOT(ThreadFinished()));
             m_thrds.push_back(thr);
         }

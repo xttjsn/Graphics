@@ -119,7 +119,7 @@ void Canvas2D::renderImage(Camera *camera, int width, int height) {
         // If you want the interface to stay responsive, make sure to call
         // QCoreApplication::processEvents() periodically during the rendering.
         resize(width, height);
-        m_rayScene->render(this, camera, width, height);
+        m_rayScene->render(this, camera);
         update();
     }
 }
