@@ -10,8 +10,8 @@ public:
     ~ImplicitCube() {}
 
     Intersect intersect(const Ray& ray) override;
-    glm::vec4 normal(const Intersect& intersect) override;
-    glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV) override;
+    glm::vec4 normal(const Ray& ray, glm::vec4 pos) override;
+    glm::vec2 getUV(glm::vec4 pos, float repeatU, float repeatV) override;
     float surfaceArea() override;
     BoundingBox boundingBox() override;
 };

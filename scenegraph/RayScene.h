@@ -43,6 +43,7 @@ protected:
     void trySplit(KDTreeNode* root, float& mincost, float& split, Axis axis);
     void rayTrace(float row, float col, int width, int height, BGRA& bgra);
     glm::vec4 rayTraceImpl(Ray& ray, int recursionLevel);
+    bool getRefractRay(const Ray& incident_ray, const Intersect& intersect, Ray& refract_ray, float ior);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
 
@@ -51,8 +52,7 @@ protected:
     glm::vec4 getFilmPixelPosition(float row, float col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
-    glm::vec4 calcNormal(const Intersect& intersect);
-    glm::vec4 calcLight(const Ray& ray, const Intersect& intersect, glm::vec4 normal);
+    glm::vec4 calcLight(const Ray& ray, const Intersect& intersect);
     glm::vec4 getDiffuse(const Intersect& intersect);
 
     std::unique_ptr<ImplicitCone> m_cone;
@@ -74,7 +74,7 @@ protected:
 
     KDTreeNode    m_kd_root;
 
-    RayTraceMaster *m_master;
+    std::unique_ptr<RayTraceMaster> m_master;
 
     std::map<std::string, QImage> m_texture_images;
 

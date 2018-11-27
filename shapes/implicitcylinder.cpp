@@ -55,17 +55,21 @@ Intersect ImplicitCylinder::intersect(const Ray& ray) {
         best_t = std::min(best_t, t);
 
     if (fequal2(best_t, FLT_MAX)) {
-        return Intersect(true, glm::vec4(0), glm::vec4(0), FLT_MAX);
+        return Intersect();
     }
 
     x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), glm::vec4(x, y, z, 1), best_t);
+    glm::vec4 pos(x, y, z, 1);
+    return Intersect(false,
+                     m_transform * pos,
+                     pos,
+                     normal(ray, pos),
+                     best_t);
 }
 
-glm::vec4 ImplicitCylinder::normal(const Intersect& intersect) {
-    if (intersect.miss) return glm::vec4(0);
+glm::vec4 ImplicitCylinder::normal(const Ray& ray, glm::vec4 pos) {
 
-    glm::vec4 pos = intersect.pos_objSpace, norm;
+    glm::vec4 norm;
 
     if (fequal2(pos.y, -0.5f))            // Bottom cap
         norm = glm::normalize(glm::vec4(0, -1, 0, 0));
@@ -78,15 +82,19 @@ glm::vec4 ImplicitCylinder::normal(const Intersect& intersect) {
         norm = glm::normalize(glm::vec4(glm::cos(phi), 0, glm::sin(phi), 0));
     }
 
+    norm = glm::vec4(glm::normalize(glm::mat3(glm::transpose(m_transform_inv)) * glm::vec3(norm)), 0);
+
+    float delta = glm::dot(ray.delta, norm);
+    if (delta > 0)  // delta align with the norm, meaning ray is shooting from inside
+        norm = -norm;
+
     return norm;
 }
 
-glm::vec2 ImplicitCylinder::getUV(const Intersect& intersect, float repeatU, float repeatV) {
-    if (intersect.miss) return glm::vec2(0);
+glm::vec2 ImplicitCylinder::getUV(glm::vec4 pos, float repeatU, float repeatV) {
 
     float u, v;
     glm::vec2 uv;
-    glm::vec4 pos = intersect.pos_objSpace;
 
     if (fequal2(pos.y, -0.5f)) {
         // Bottom cap

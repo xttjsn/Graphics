@@ -59,18 +59,20 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
         best_t = std::min(t, best_t);
 
     if (fequal2(best_t, FLT_MAX)) {
-        return Intersect(true, glm::vec4(0), glm::vec4(0), FLT_MAX);
+        return Intersect();
     }
 
     x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), glm::vec4(x, y, z, 1), best_t);
+    glm::vec4 pos(x, y, z, 1);
+    return Intersect(false,
+                     m_transform * pos,
+                     pos,
+                     normal(ray, pos),
+                     best_t);
 }
 
-glm::vec4 ImplicitCube::normal(const Intersect& intersect) {
-    // Again, assuming that intersect is a valid, don't perform any check
-    if (intersect.miss) return glm::vec4(0, 0, 0, 0);
-
-    glm::vec4 pos = intersect.pos_objSpace, norm;
+glm::vec4 ImplicitCube::normal(const Ray& ray, glm::vec4 pos) {
+    glm::vec4 norm;
 
     if (fequal2(pos.x, -0.5f))
         norm = glm::vec4(-1, 0, 0, 0);
@@ -89,16 +91,19 @@ glm::vec4 ImplicitCube::normal(const Intersect& intersect) {
         exit(1);
     }
 
+    norm = glm::vec4(glm::normalize(glm::mat3(glm::transpose(m_transform_inv)) * glm::vec3(norm)), 0);
+
+    float delta = glm::dot(ray.delta, norm);
+    if (delta > 0)  // delta align with the norm, meaning ray is shooting from inside
+        norm = -norm;
+
     return norm;
 }
 
-glm::vec2 ImplicitCube::getUV(const Intersect& intersect, float repeatU, float repeatV) {
-
-    if (intersect.miss) return glm::vec2(0, 0);
+glm::vec2 ImplicitCube::getUV(glm::vec4 pos, float repeatU, float repeatV) {
 
     float u, v;
     glm::vec2 uv;
-    glm::vec4 pos = intersect.pos_objSpace;
 
     if (fequal2(pos.x, -0.5f)) {
         u = pos.z + 0.5f;

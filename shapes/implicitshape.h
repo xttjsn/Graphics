@@ -26,11 +26,29 @@ struct Intersect
     bool miss;
     glm::vec4 pos_worldSpace;
     glm::vec4 pos_objSpace;
+    glm::vec4 norm_worldSpace;
     float t;
     CS123TransformPrimitive* transprim;
-    Intersect() : miss(true), pos_worldSpace(glm::vec4(0)), pos_objSpace(glm::vec4(0)), t(FLT_MAX), transprim(nullptr) {}
-    Intersect(const bool Amiss, const glm::vec4& Apos_worldSpace, const glm::vec4 Apos_objSpace, float At)
-        : miss(Amiss), pos_worldSpace(Apos_worldSpace), pos_objSpace(Apos_objSpace), t(At), transprim(nullptr) {}
+    Intersect() :
+        miss(true),
+        pos_worldSpace(glm::vec4(0)),
+        pos_objSpace(glm::vec4(0)),
+        norm_worldSpace(glm::vec4(0)),
+        t(FLT_MAX),
+        transprim(nullptr) {}
+
+    Intersect(const bool Amiss,
+              const glm::vec4& Apos_worldSpace,
+              const glm::vec4 Apos_objSpace,
+              const glm::vec4 Anorm_worldSpace,
+              float At)
+        :
+          miss(Amiss),
+          pos_worldSpace(Apos_worldSpace),
+          pos_objSpace(Apos_objSpace),
+          norm_worldSpace(Anorm_worldSpace),
+          t(At),
+          transprim(nullptr) {}
 };
 
 struct itsctComp
@@ -89,8 +107,8 @@ public:
     virtual ~ImplicitShape() {}
 
     virtual Intersect intersect(const Ray& ray) = 0;
-    virtual glm::vec4 normal(const Intersect& intersect) = 0;
-    virtual glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV) = 0;
+    virtual glm::vec4 normal(const Ray& ray, glm::vec4 pos) = 0;
+    virtual glm::vec2 getUV(glm::vec4 pos, float repeatU, float repeatV) = 0;
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;
     void setTransform(const glm::mat4x4& transform, const glm::mat4x4& transformInv);
