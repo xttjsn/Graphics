@@ -275,7 +275,7 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
       glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     // Compute illumination
-    glm::vec4 color = calcLight(intersect, normal);
+    glm::vec4 color = calcLight(ray, intersect, normal);
 
     // Get reflection coefficient
     glm::vec4 reflect_coef = intersect.transprim->primitive.material.cReflective;
@@ -284,7 +284,7 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
         // Compute the reflected ray
         Ray ref_ray;
         ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal_worldSpace));
-        ref_ray.start = intersect.pos + FLT_EPSILON * ref_ray.delta * 1000.f;
+        ref_ray.start = intersect.pos + RAY_OFFSET * ref_ray.delta;
 
         color += rayTraceImpl(ref_ray, recursionLevel + 1) * reflect_coef * m_global.ks;
     }
@@ -292,49 +292,47 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     return color;
 }
 
-glm::vec4 RayScene::calcNormal(Intersect& intersect){
+glm::vec4 RayScene::calcNormal(const Intersect& intersect){
     CS123TransformPrimitive * transprim = intersect.transprim;
     ImplicitShape * shape = getShapePointer(transprim->primitive.type);
 
-    glm::mat4x4 model    = transprim->transform;
-    glm::mat4x4 modelInv = transprim->transformInv;
     shape->setTransform(transprim->transform, transprim->transformInv);
     glm::vec4 normal = shape->normal(intersect);
     returnShapePointer(transprim->primitive.type, shape);
     return normal;
 }
 
-glm::vec4 RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
+glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::vec4 normal_worldSpace){
     CS123TransformPrimitive * transprim = intersect.transprim;
 
-    glm::vec4 final (0), ambient, diffuse, specular;
+    glm::vec4 final (0), ambient, diffuse, specular, lightColor;
+    glm::vec4 vertexToLight, vertexToEye, lightReflect;
+
+    float shininess         = transprim->primitive.material.shininess,
+          dist              = 0.0f,
+          attenuation       = 1.0f,
+          diffuseIntensity  = 0.0f,
+          specularIntensity = 0.0f;
+
+
     ambient  = m_global.ka * transprim->primitive.material.cAmbient;
-    diffuse = getDiffuse(intersect);
+    diffuse  = getDiffuse(intersect);
     specular = m_global.ks * transprim->primitive.material.cSpecular;
-    float shininess = transprim->primitive.material.shininess;
 
-    glm::vec4 position_worldSpace = intersect.pos;
-    glm::mat4x4 modelInv        = transprim->transformInv;
-    glm::vec4 normal_worldSpace =
-      glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
+    final += ambient;
 
-    final = ambient;
-    glm::vec4 lightColor;
-    glm::vec4 vertexToLight;
-    float dist = 0.0f;
-    float attenuation;
-    glm::vec4 vertexToEye = glm::normalize(m_viewInv * glm::vec4(glm::vec3(-(m_view * intersect.pos)), 0));
-    glm::vec4 lightReflect;
-    float diffuseIntensity, specularIntensity;
+    vertexToEye = ray.start - intersect.pos;
 
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
             case LightType::LIGHT_POINT:
-                vertexToLight = glm::normalize(light.pos - position_worldSpace);
-                dist = glm::distance(light.pos, position_worldSpace);
+                vertexToLight = glm::normalize(light.pos - intersect.pos);
+                dist = glm::length(vertexToLight);
+                attenuation = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
                 break;
             case LightType::LIGHT_DIRECTIONAL:
                 vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
+                attenuation = 1.0f;
                 break;
             case LightType::LIGHT_SPOT:
                 perror("Unsupported light type.");
@@ -348,7 +346,8 @@ glm::vec4 RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
 
         Ray ray_to_light;
         ray_to_light.delta = vertexToLight;
-        ray_to_light.start = intersect.pos + FLT_EPSILON * ray_to_light.delta * 1000.f;
+        ray_to_light.start = intersect.pos + RAY_OFFSET * ray_to_light.delta;
+
         Intersect ray_light_intersect;
         kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
 
@@ -357,12 +356,9 @@ glm::vec4 RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
 
         lightColor       = light.color;
 
-        attenuation      = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
-
         diffuseIntensity = glm::max(0.f, glm::dot(vertexToLight, normal_worldSpace));
 
         lightReflect      = glm::normalize(glm::reflect(-vertexToLight, normal_worldSpace));
-
         specularIntensity = glm::pow(glm::max(0.0f, glm::dot(vertexToEye, lightReflect)), shininess);
 
         final += attenuation * lightColor * (diffuse * diffuseIntensity + specular * specularIntensity);
@@ -371,7 +367,7 @@ glm::vec4 RayScene::calcLight(Intersect& intersect, glm::vec4 normal){
     return final;
 } // RayScene::calcLight
 
-glm::vec4 RayScene::getDiffuse(Intersect& intersect) {
+glm::vec4 RayScene::getDiffuse(const Intersect& intersect) {
 
     CS123TransformPrimitive * transprim = intersect.transprim;
 

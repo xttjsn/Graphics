@@ -49,9 +49,9 @@ protected:
     glm::vec4 getFilmPixelPosition(float row, float col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
 
-    glm::vec4 calcNormal(Intersect& intersect);
-    glm::vec4 calcLight(Intersect& intersect, glm::vec4 normal);
-    glm::vec4 getDiffuse(Intersect& intersect);
+    glm::vec4 calcNormal(const Intersect& intersect);
+    glm::vec4 calcLight(const Ray& ray, const Intersect& intersect, glm::vec4 normal);
+    glm::vec4 getDiffuse(const Intersect& intersect);
 
     std::unique_ptr<ImplicitCone> m_cone;
     std::unique_ptr<ImplicitCube> m_cube;
