@@ -97,11 +97,10 @@ void RayScene::loadKDTree(){
 void RayScene::split(KDTreeNode * root){
     float costNotSplit = root->primitives.size(), costX = FLT_MAX, costY = FLT_MAX, costZ = FLT_MAX, splitX, splitY,
       splitZ;
-    float surfaceLX, surfaceRX, surfaceLY, surfaceRY, surfaceLZ, surfaceRZ;
 
-    trySplit(root, costX, splitX, surfaceLX, surfaceRX, AXIS_X);
-    trySplit(root, costY, splitY, surfaceLY, surfaceRY, AXIS_Y);
-    trySplit(root, costZ, splitZ, surfaceLZ, surfaceRZ, AXIS_Z);
+    trySplit(root, costX, splitX, AXIS_X);
+    trySplit(root, costY, splitY, AXIS_Y);
+    trySplit(root, costZ, splitZ, AXIS_Z);
 
     if (costNotSplit < costX && costNotSplit < costY && costNotSplit < costZ)
         return;
@@ -111,8 +110,8 @@ void RayScene::split(KDTreeNode * root){
 
     if (costX <= costY && costX <= costZ) {
         // Split along X-axis
-        root->left->surface  = surfaceLX;
-        root->right->surface = surfaceRX;
+        root->left->surface  = 0.f;
+        root->right->surface = 0.f;
         root->left->bbox     = BoundingBox(root->bbox.xMin, splitX,
             root->bbox.yMin, root->bbox.yMax,
             root->bbox.zMin, root->bbox.zMax);
@@ -121,15 +120,19 @@ void RayScene::split(KDTreeNode * root){
             root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.xMin <= splitX)
+            if (prim.bbox.xMin <= splitX) {
                 root->left->primitives.push_back(prim);
-            if (prim.bbox.xMax > splitX)
+                root->left->surface += prim.surface;
+            }
+            if (prim.bbox.xMax > splitX) {
                 root->right->primitives.push_back(prim);
+                root->right->surface += prim.surface;
+            }
         }
     } else if (costY <= costX && costY <= costZ) {
         // Split along Y-axis
-        root->left->surface  = surfaceLY;
-        root->right->surface = surfaceRY;
+        root->left->surface  = 0.f;
+        root->right->surface = 0.f;
         root->left->bbox     = BoundingBox(root->bbox.xMin, root->bbox.xMax,
             root->bbox.yMin, splitY,
             root->bbox.zMin, root->bbox.zMax);
@@ -138,15 +141,19 @@ void RayScene::split(KDTreeNode * root){
             root->bbox.zMin, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.yMin <= splitY)
+            if (prim.bbox.yMin <= splitY) {
                 root->left->primitives.push_back(prim);
-            if (prim.bbox.yMax > splitY)
+                root->left->surface += prim.surface;
+            }
+            if (prim.bbox.yMax > splitY) {
                 root->right->primitives.push_back(prim);
+                root->right->surface += prim.surface;
+            }
         }
     } else {
         // Split along Z-axis
-        root->left->surface  = surfaceLZ;
-        root->right->surface = surfaceRZ;
+        root->left->surface  = 0.f;
+        root->right->surface = 0.f;
         root->left->bbox     = BoundingBox(root->bbox.xMin, root->bbox.xMax,
             root->bbox.yMin, root->bbox.yMax,
             root->bbox.zMin, splitZ);
@@ -155,21 +162,25 @@ void RayScene::split(KDTreeNode * root){
             splitZ, root->bbox.zMax);
 
         for (KDTreePrimitive& prim : root->primitives) {
-            if (prim.bbox.zMin <= splitZ)
+            if (prim.bbox.zMin <= splitZ) {
                 root->left->primitives.push_back(prim);
-            if (prim.bbox.zMax > splitZ)
+                root->left->surface += prim.surface;
+            }
+            if (prim.bbox.zMax > splitZ) {
                 root->right->primitives.push_back(prim);
+                root->right->surface += prim.surface;
+            }
         }
     }
 
     // Don't need primitives anymore
-    root->primitives.clear();
+//    root->primitives.clear();
 
     split(root->left);
     split(root->right);
 } // RayScene::split
 
-void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis){
+void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, Axis axis){
     float cost;
     float surfaceLeft = 0, surfaceRight = root->surface;
     float surfaceLeftBase = 0, surfaceRightBase = root->surface;
@@ -220,8 +231,6 @@ void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, float& 
             split   = axis == AXIS_X ? root->primitives[i].bbox.xMax :
               (axis == AXIS_Y ? root->primitives[i].bbox.yMax :
               root->primitives[i].bbox.zMax);
-            surfaceL = surfaceLeft;
-            surfaceR = surfaceRight;
         }
     }
 } // RayScene::trySplit
@@ -347,11 +356,13 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::v
         Ray ray_to_light;
         ray_to_light.delta = vertexToLight;
         ray_to_light.start = intersect.pos + RAY_OFFSET * ray_to_light.delta;
+        // Light ray might hit light before hitting an object
+        float light_t = glm::length(light.pos - intersect.pos) / glm::length(ray_to_light.delta);
 
         Intersect ray_light_intersect;
         kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
 
-        if (!ray_light_intersect.miss)
+        if (!ray_light_intersect.miss && ray_light_intersect.t < light_t)
             continue;
 
         lightColor       = light.color;
@@ -375,7 +386,7 @@ glm::vec4 RayScene::getDiffuse(const Intersect& intersect) {
     if (!transprim->primitive.material.textureMap.isUsed ||
          transprim->primitive.material.textureMap.filename.empty() ||
          m_texture_images.find(transprim->primitive.material.textureMap.filename) == m_texture_images.end())
-        return transprim->primitive.material.cDiffuse;
+        return m_global.kd * transprim->primitive.material.cDiffuse;
 
     // Get UV
     ImplicitShape *shape;

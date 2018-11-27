@@ -16,7 +16,7 @@
 
 const int MAX_RECURSION = 2;
 const float RAY_OFFSET = 1e-4;
-const float MIN_REFLECT = 0;
+const float MIN_REFLECT = 0.001;
 
 /**
  * @class RayScene
@@ -38,7 +38,7 @@ protected:
     void loadCameraMatrices(Camera* camera);
     void loadKDTree();
     void split(KDTreeNode* root);
-    void trySplit(KDTreeNode* root, float& mincost, float& split, float& surfaceL, float& surfaceR, Axis axis);
+    void trySplit(KDTreeNode* root, float& mincost, float& split, Axis axis);
     void rayTrace(float row, float col, int width, int height, BGRA& bgra);
     glm::vec4 rayTraceImpl(Ray& ray, int recursionLevel);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
