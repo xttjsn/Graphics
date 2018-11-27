@@ -11,7 +11,7 @@ public:
 
     Intersect intersect(const Ray& ray) override;
     glm::vec4 normal(const Intersect& intersect) override;
-    glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV);
+    glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV) override;
     float surfaceArea() override;
     BoundingBox boundingBox() override;
 };

@@ -15,7 +15,7 @@
 #include <QImage>
 
 const int MAX_RECURSION = 2;
-const float RAY_OFFSET = 1e-4;
+const float RAY_OFFSET = 1e-3;
 const float MIN_REFLECT = 0.001;
 
 /**
