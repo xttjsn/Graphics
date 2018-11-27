@@ -28,8 +28,8 @@ private:
 
     RayScene *m_rayscene;
     int m_row, m_col, m_width, m_height, m_subSize;
-    int m_nThrds, m_nextThr, m_nActiveThrds, m_nMaxThrds;
     BGRA* m_data;
+    int m_nThrds, m_nextThr, m_nActiveThrds, m_nMaxThrds;
     std::vector<RayTraceThread*> m_thrds;
     SupportCanvas2D *m_canvas;
 };

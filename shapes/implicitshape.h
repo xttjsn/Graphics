@@ -28,7 +28,7 @@ struct Intersect
     glm::vec4 pos_objSpace;
     float t;
     CS123TransformPrimitive* transprim;
-    Intersect() : miss(true), pos_worldSpace(glm::vec4(0)), pos_objSpace(glm::vec4(0)), t(FLT_MAX) {}
+    Intersect() : miss(true), pos_worldSpace(glm::vec4(0)), pos_objSpace(glm::vec4(0)), t(FLT_MAX), transprim(nullptr) {}
     Intersect(const bool Amiss, const glm::vec4& Apos_worldSpace, const glm::vec4 Apos_objSpace, float At)
         : miss(Amiss), pos_worldSpace(Apos_worldSpace), pos_objSpace(Apos_objSpace), t(At), transprim(nullptr) {}
 };

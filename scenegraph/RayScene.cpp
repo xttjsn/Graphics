@@ -237,8 +237,21 @@ void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, Axis ax
 
 void RayScene::render(SupportCanvas2D * canvas, Camera * camera){
     loadCameraMatrices(camera);
-    m_master = new RayTraceMaster(this, canvas);
-    m_master->start();
+
+    if (settings.useMultiThreading) {
+        m_master = new RayTraceMaster(this, canvas);
+        m_master->start();
+    } else {
+        BGRA bgra, *data = canvas->data();
+        int h = canvas->height(), w = canvas->width();
+        for (int row = 0; row < h; row++)  {
+            for (int col = 0; col < w; col++) {
+                rayTrace(row, col, w, h, bgra);
+                *(data + row * w + col) = bgra;
+                bgra = BGRA(0,0,0,255);
+            }
+        }
+    }
 }
 
 void RayScene::loadCameraMatrices(Camera * camera){
@@ -268,7 +281,10 @@ void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra)
 glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     // Try to find an intersection using kd-tree
     Intersect intersect;
-    kdTreeIntersect(&m_kd_root, ray, intersect);
+    if (settings.useKDTree)
+        kdTreeIntersect(&m_kd_root, ray, intersect);
+    else
+        naiveIntersect(ray, intersect);
 
     if (intersect.miss) {
         return glm::vec4(0);
@@ -286,7 +302,7 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     // Get reflection coefficient
     glm::vec4 reflect_coef = intersect.transprim->primitive.material.cReflective;
 
-    if (recursionLevel < MAX_RECURSION) {
+    if (settings.useReflection && recursionLevel < MAX_RECURSION) {
         // Compute the reflected ray
         Ray ref_ray;
         ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal_worldSpace));
@@ -332,35 +348,44 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::v
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
             case LightType::LIGHT_POINT:
+                if (!settings.usePointLights)
+                    continue;
                 vertexToLight = glm::normalize(light.pos - intersect.pos_worldSpace);
                 dist = glm::length(vertexToLight);
                 attenuation = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
                 break;
             case LightType::LIGHT_DIRECTIONAL:
+                if (!settings.useDirectionalLights)
+                    continue;
                 vertexToLight = glm::normalize(glm::vec4(-glm::vec3(light.dir), 0));
                 attenuation = 1.0f;
                 break;
             case LightType::LIGHT_SPOT:
                 perror("Unsupported light type.");
-                exit(1);
+                continue;
                 break;
             case LightType::LIGHT_AREA:
                 perror("Unsupported light type.");
-                exit(1);
+                continue;
                 break;
         }
 
-        Ray ray_to_light;
-        ray_to_light.delta = vertexToLight;
-        ray_to_light.start = intersect.pos_worldSpace + RAY_OFFSET * ray_to_light.delta;
-        // Light ray might hit light before hitting an object
-        float light_t = glm::length(light.pos - intersect.pos_worldSpace) / glm::length(ray_to_light.delta);
+        if (settings.useShadows) {
+            Ray ray_to_light;
+            ray_to_light.delta = vertexToLight;
+            ray_to_light.start = intersect.pos_worldSpace + RAY_OFFSET * ray_to_light.delta;
+            // Light ray might hit light before hitting an object
+            float light_t = glm::length(light.pos - intersect.pos_worldSpace) / glm::length(ray_to_light.delta);
 
-        Intersect ray_light_intersect;
-        kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
+            Intersect ray_light_intersect;
+            if (settings.useKDTree)
+                kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);
+            else
+                naiveIntersect(ray_to_light, ray_light_intersect);
 
-        if (!ray_light_intersect.miss && ray_light_intersect.t < light_t)
-            continue;
+            if (!ray_light_intersect.miss && ray_light_intersect.t < light_t)
+                continue;
+        }
 
         lightColor       = light.color;
 
@@ -382,7 +407,8 @@ glm::vec4 RayScene::getDiffuse(const Intersect& intersect) {
     // No texture
     if (!transprim->primitive.material.textureMap.isUsed ||
          transprim->primitive.material.textureMap.filename.empty() ||
-         m_texture_images.find(transprim->primitive.material.textureMap.filename) == m_texture_images.end())
+         m_texture_images.find(transprim->primitive.material.textureMap.filename) == m_texture_images.end() ||
+         !settings.useTextureMapping)
         return m_global.kd * transprim->primitive.material.cDiffuse;
 
     // Get UV
