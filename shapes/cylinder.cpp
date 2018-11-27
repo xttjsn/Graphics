@@ -34,11 +34,13 @@ void Cylinder::reCalculateVertices() {
     int sz              = vertices.size();
     for (int i = 0; i < sz; i++) {
         vertices.push_back(vertices[i].rotate(rot));
+        vertices[vertices.size() - 1].texcoord.y = 1.0f - vertices[vertices.size() - 1].texcoord.y;
+        vertices[vertices.size() - 1].texcoord.x = 1.0f - vertices[vertices.size() - 1].texcoord.x;
     }
 
     // Prepare parameters
     std::vector<OpenGLVertex> side;
-    float theta = 0, delta = 2.0f * PI / p2;
+    float theta = PI / 2.0f, delta = 2.0f * PI / p2;
     glm::vec4 A, B, C, D;
     glm::mat4 rot_next = glm::rotate(delta, glm::vec3(0, 1, 0));
     glm::mat4 rot_prev = glm::rotate(-delta, glm::vec3(0, 1, 0));
