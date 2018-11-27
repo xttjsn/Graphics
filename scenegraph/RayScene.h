@@ -17,6 +17,8 @@
 const int MAX_RECURSION = 5;
 const float RAY_OFFSET = 1e-3;
 const float MIN_REFLECT = 0.001;
+const int MAX_NUM_THREADS = 10;
+const int SUB_SIZE = 50;
 
 /**
  * @class RayScene

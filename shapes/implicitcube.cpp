@@ -59,19 +59,18 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
         best_t = std::min(t, best_t);
 
     if (fequal2(best_t, FLT_MAX)) {
-        return Intersect(true, glm::vec4(0), FLT_MAX);
+        return Intersect(true, glm::vec4(0), glm::vec4(0), FLT_MAX);
     }
 
     x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitCube::normal(const Intersect& intersect) {
     // Again, assuming that intersect is a valid, don't perform any check
     if (intersect.miss) return glm::vec4(0, 0, 0, 0);
 
-    glm::vec4 pos = intersect.pos, norm;
-    pos = m_transform_inv * pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace, norm;
 
     if (fequal2(pos.x, -0.5f))
         norm = glm::vec4(-1, 0, 0, 0);
@@ -99,7 +98,7 @@ glm::vec2 ImplicitCube::getUV(const Intersect& intersect, float repeatU, float r
 
     float u, v;
     glm::vec2 uv;
-    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace;
 
     if (fequal2(pos.x, -0.5f)) {
         u = pos.z + 0.5f;
@@ -139,8 +138,8 @@ float ImplicitCube::surfaceArea() {
     glm::vec4 v0(-0.5, -0.5, -0.5, 1);
     glm::vec4 v1(-0.5, -0.5, 0.5, 1);
 
-    v0 = m_transform_inv * v0;
-    v1 = m_transform_inv * v1;
+    v0 = m_transform * v0;
+    v1 = m_transform * v1;
 
     float dist = glm::distance(v0, v1);
 

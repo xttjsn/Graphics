@@ -57,8 +57,8 @@ RayTraceMaster::RayTraceMaster(QObject *parent)
     : QThread(parent) {}
 
 RayTraceMaster::RayTraceMaster(RayScene *rayscene, SupportCanvas2D* canvas)
-    : QThread(0), m_rayscene(rayscene), m_width(canvas->width()), m_height(canvas->height()), m_data(canvas->data()), m_subSize(30),
-      m_nThrds(0), m_nextThr(0), m_nActiveThrds(0), m_nMaxThrds(10), m_canvas(canvas)
+    : QThread(0), m_rayscene(rayscene), m_width(canvas->width()), m_height(canvas->height()), m_data(canvas->data()), m_subSize(SUB_SIZE),
+      m_nThrds(0), m_nextThr(0), m_nActiveThrds(0), m_nMaxThrds(MAX_NUM_THREADS), m_canvas(canvas)
 {
     m_row = 0;
     m_col = 0;

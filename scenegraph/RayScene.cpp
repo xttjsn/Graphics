@@ -290,7 +290,7 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
         // Compute the reflected ray
         Ray ref_ray;
         ref_ray.delta = glm::normalize(glm::reflect(ray.delta, normal_worldSpace));
-        ref_ray.start = intersect.pos + RAY_OFFSET * ref_ray.delta;
+        ref_ray.start = intersect.pos_worldSpace + RAY_OFFSET * ref_ray.delta;
 
         color += rayTraceImpl(ref_ray, recursionLevel + 1) * reflect_coef * m_global.ks;
     }
@@ -327,12 +327,12 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::v
 
     final += ambient;
 
-    vertexToEye = glm::normalize(ray.start - intersect.pos);
+    vertexToEye = glm::normalize(ray.start - intersect.pos_worldSpace);
 
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {
             case LightType::LIGHT_POINT:
-                vertexToLight = glm::normalize(light.pos - intersect.pos);
+                vertexToLight = glm::normalize(light.pos - intersect.pos_worldSpace);
                 dist = glm::length(vertexToLight);
                 attenuation = glm::min(1.0f, 1.0f / (light.function.x + light.function.y * dist + light.function.z * dist * dist));
                 break;
@@ -352,9 +352,9 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::v
 
         Ray ray_to_light;
         ray_to_light.delta = vertexToLight;
-        ray_to_light.start = intersect.pos + RAY_OFFSET * ray_to_light.delta;
+        ray_to_light.start = intersect.pos_worldSpace + RAY_OFFSET * ray_to_light.delta;
         // Light ray might hit light before hitting an object
-        float light_t = glm::length(light.pos - intersect.pos) / glm::length(ray_to_light.delta);
+        float light_t = glm::length(light.pos - intersect.pos_worldSpace) / glm::length(ray_to_light.delta);
 
         Intersect ray_light_intersect;
         kdTreeIntersect(&m_kd_root, ray_to_light, ray_light_intersect);

@@ -41,11 +41,11 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
     /****************** Take the smallest *****************/
 
     if (fequal2(best_t, FLT_MAX)) {
-        return Intersect(true, glm::vec4(0), FLT_MAX);
+        return Intersect(true, glm::vec4(0), glm::vec4(0), FLT_MAX);
     }
 
     x = p.x + d.x * best_t; y = p.y + d.y * best_t; z = p.z + d.z * best_t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitCone::normal(const Intersect& intersect) {
@@ -54,8 +54,7 @@ glm::vec4 ImplicitCone::normal(const Intersect& intersect) {
     // position might result in incorrect normal
     if (intersect.miss) return glm::vec4(0);
 
-    glm::vec4 pos = intersect.pos, norm;
-    pos = m_transform_inv * pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace, norm;
 
     if (fequal2(pos.y, -0.5f)) {
         // Intersect lies on cone cap
@@ -77,7 +76,7 @@ glm::vec2 ImplicitCone::getUV(const Intersect& intersect, float repeatU, float r
 
     float u, v;
     glm::vec2 uv(0);
-    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace;        // Get intersection point in object space
 
     if (fequal2(pos.y, -0.5f)) {
         // Intersect lies on cone cap

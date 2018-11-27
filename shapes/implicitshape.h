@@ -24,12 +24,13 @@ struct Ray
 struct Intersect
 {
     bool miss;
-    glm::vec4 pos;
+    glm::vec4 pos_worldSpace;
+    glm::vec4 pos_objSpace;
     float t;
     CS123TransformPrimitive* transprim;
-    Intersect() : miss(true), pos(glm::vec4(0)), t(FLT_MAX) {}
-    Intersect(const bool Amiss, const glm::vec4& Apos, float At)
-        : miss(Amiss), pos(Apos), t(At), transprim(nullptr) {}
+    Intersect() : miss(true), pos_worldSpace(glm::vec4(0)), pos_objSpace(glm::vec4(0)), t(FLT_MAX) {}
+    Intersect(const bool Amiss, const glm::vec4& Apos_worldSpace, const glm::vec4 Apos_objSpace, float At)
+        : miss(Amiss), pos_worldSpace(Apos_worldSpace), pos_objSpace(Apos_objSpace), t(At), transprim(nullptr) {}
 };
 
 struct itsctComp
@@ -89,7 +90,6 @@ public:
 
     virtual Intersect intersect(const Ray& ray) = 0;
     virtual glm::vec4 normal(const Intersect& intersect) = 0;
-    virtual glm::vec4 diffuseAtIntersect(const Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global);
     virtual glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV) = 0;
     virtual float surfaceArea() = 0;
     virtual BoundingBox boundingBox() = 0;

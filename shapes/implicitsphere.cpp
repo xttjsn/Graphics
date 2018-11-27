@@ -38,18 +38,17 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
     }
 
     if (fequal2(best_t, FLT_MAX)) {
-        return Intersect(true, glm::vec4(0), FLT_MAX);
+        return Intersect(true, glm::vec4(0), glm::vec4(0), FLT_MAX);
     }
 
     x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
-    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
+    return Intersect(false, m_transform * glm::vec4(x, y, z, 1), glm::vec4(x, y, z, 1), best_t);
 }
 
 glm::vec4 ImplicitSphere::normal(const Intersect& intersect) {
     if (intersect.miss) return glm::vec4(0);
 
-    glm::vec4 pos = intersect.pos, norm;
-    pos = m_transform_inv * pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace, norm;
 
     norm = glm::vec4(glm::normalize(glm::vec3(pos)), 0);
     return norm;
@@ -60,7 +59,7 @@ glm::vec2 ImplicitSphere::getUV(const Intersect& intersect, float repeatU, float
 
     float u, v;
     glm::vec2 uv;
-    glm::vec4 pos = m_transform_inv * intersect.pos;        // Get intersection point in object space
+    glm::vec4 pos = intersect.pos_objSpace;
 
     float theta = glm::acos(pos.y / 0.5);
     float phi = std::atan2(pos.z, pos.x);
