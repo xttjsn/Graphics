@@ -46,14 +46,17 @@ Intersect ImplicitCone::intersect(const Ray& ray) {
 
     x = p.x + d.x * best_t; y = p.y + d.y * best_t; z = p.z + d.z * best_t;
     glm::vec4 pos(x, y, z, 1);
+    bool inside;
+    glm::vec4 norm = normal(ray, pos, inside);
     return Intersect(false,
                      m_transform * pos,
                      pos,
-                     normal(ray, pos),
+                     norm,
+                     inside,
                      best_t);
 }
 
-glm::vec4 ImplicitCone::normal(const Ray& ray, glm::vec4 pos) {
+glm::vec4 ImplicitCone::normal(const Ray& ray, glm::vec4 pos, bool& inside) {
 
     glm::vec4 norm;
 
@@ -70,8 +73,11 @@ glm::vec4 ImplicitCone::normal(const Ray& ray, glm::vec4 pos) {
     norm = glm::vec4(glm::normalize(glm::mat3(glm::transpose(m_transform_inv)) * glm::vec3(norm)), 0);
 
     float delta = glm::dot(ray.delta, norm);
-    if (delta > 0)  // delta align with the norm, meaning ray is shooting from inside
+    if (delta > 0) {  // delta align with the norm, meaning ray is shooting from inside
         norm = -norm;
+        inside = true;
+    } else
+        inside = false;
 
     return norm;
 }

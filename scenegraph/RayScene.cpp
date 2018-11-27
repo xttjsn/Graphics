@@ -173,7 +173,7 @@ void RayScene::split(KDTreeNode * root){
     }
 
     // Don't need primitives anymore
-//    root->primitives.clear();
+    root->primitives.clear();
 
     split(root->left);
     split(root->right);
@@ -297,16 +297,13 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     // Get refraction coefficient
     glm::vec4 transparent_coef = intersect.transprim->primitive.material.cTransparent;
 
-    if (transparent_coef.a != 0) {
+    if (transparent_coef.a != 0 && settings.useRefraction && recursionLevel < MAX_RECURSION) {
         // We check for refraction only if the material is transparent
-        color *= (1.0f - transparent_coef.a);
-
-        if (settings.useRefraction && recursionLevel < MAX_RECURSION) {
-            Ray refract_ray;
-            if (getRefractRay(ray, intersect, refract_ray, intersect.transprim->primitive.material.ior)) {
-                // Not rotal reflection
-                color += rayTraceImpl(refract_ray, recursionLevel + 1) * transparent_coef * transparent_coef.a;
-            }
+        Ray refract_ray;
+        if (getRefractRay(ray, intersect, refract_ray, 1.0f / intersect.transprim->primitive.material.ior)) {
+            // Not rotal reflection
+//            color *= (1.0f - transparent_coef.a);
+            color += rayTraceImpl(refract_ray, recursionLevel + 1) * transparent_coef;
         }
     }
 
@@ -405,6 +402,9 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect){
 
 bool RayScene::getRefractRay(const Ray& incident_ray, const Intersect& intersect, Ray& refract_ray, float ior) {
     // Use formula 16.33 from the textbook
+//    ior = intersect.inside ? 1.0f / ior : ior;
+    if (intersect.inside)
+        ior = 1.0f / ior;
     float sq = 1.0f - ior * ior * (1.0f - glm::pow(glm::dot(intersect.norm_worldSpace, -incident_ray.delta), 2.f));
     if (sq < 0.f)
         return false;

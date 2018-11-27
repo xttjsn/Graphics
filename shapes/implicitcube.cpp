@@ -64,14 +64,17 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
 
     x = px + dx * best_t; y = py + dy * best_t; z = pz + dz * best_t;
     glm::vec4 pos(x, y, z, 1);
+    bool inside;
+    glm::vec4 norm = normal(ray, pos, inside);
     return Intersect(false,
                      m_transform * pos,
                      pos,
-                     normal(ray, pos),
+                     norm,
+                     inside,
                      best_t);
 }
 
-glm::vec4 ImplicitCube::normal(const Ray& ray, glm::vec4 pos) {
+glm::vec4 ImplicitCube::normal(const Ray& ray, glm::vec4 pos, bool& inside) {
     glm::vec4 norm;
 
     if (fequal2(pos.x, -0.5f))
@@ -94,8 +97,11 @@ glm::vec4 ImplicitCube::normal(const Ray& ray, glm::vec4 pos) {
     norm = glm::vec4(glm::normalize(glm::mat3(glm::transpose(m_transform_inv)) * glm::vec3(norm)), 0);
 
     float delta = glm::dot(ray.delta, norm);
-    if (delta > 0)  // delta align with the norm, meaning ray is shooting from inside
+    if (delta > 0) {  // delta align with the norm, meaning ray is shooting from inside
         norm = -norm;
+        inside = true;
+    } else
+        inside = false;
 
     return norm;
 }

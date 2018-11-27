@@ -8,7 +8,7 @@ Intersect ImplicitTorus::intersect(const Ray& ray) {
     return Intersect();
 }
 
-glm::vec4 ImplicitTorus::normal(const Ray& ray, glm::vec4 pos) {
+glm::vec4 ImplicitTorus::normal(const Ray& ray, glm::vec4 pos, bool& inside) {
     return glm::vec4();
 }
 
