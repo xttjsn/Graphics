@@ -66,7 +66,7 @@ Intersect ImplicitCube::intersect(const Ray& ray) {
     return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
-glm::vec4 ImplicitCube::normal(Intersect& intersect) {
+glm::vec4 ImplicitCube::normal(const Intersect& intersect) {
     // Again, assuming that intersect is a valid, don't perform any check
     if (intersect.miss) return glm::vec4(0, 0, 0, 0);
 
@@ -93,7 +93,7 @@ glm::vec4 ImplicitCube::normal(Intersect& intersect) {
     return norm;
 }
 
-glm::vec2 ImplicitCube::getUV(Intersect& intersect, float repeatU, float repeatV) {
+glm::vec2 ImplicitCube::getUV(const Intersect& intersect, float repeatU, float repeatV) {
 
     if (intersect.miss) return glm::vec2(0, 0);
 

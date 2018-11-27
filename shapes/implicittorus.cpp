@@ -8,11 +8,11 @@ Intersect ImplicitTorus::intersect(const Ray& ray) {
     return Intersect();
 }
 
-glm::vec4 ImplicitTorus::normal(Intersect& intersect) {
+glm::vec4 ImplicitTorus::normal(const Intersect& intersect) {
     return glm::vec4();
 }
 
-glm::vec2 ImplicitTorus::getUV(Intersect& intersect, float repeatU, float repeatV) {
+glm::vec2 ImplicitTorus::getUV(const Intersect& intersect, float repeatU, float repeatV) {
     return glm::vec2(0);
 }
 

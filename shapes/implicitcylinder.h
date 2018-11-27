@@ -10,8 +10,8 @@ public:
     ~ImplicitCylinder(){}
 
     Intersect intersect(const Ray& ray) override;
-    glm::vec4 normal(Intersect& intersect) override;
-    glm::vec2 getUV(Intersect& intersect, float repeatU, float repeatV);
+    glm::vec4 normal(const Intersect& intersect) override;
+    glm::vec2 getUV(const Intersect& intersect, float repeatU, float repeatV);
     float surfaceArea() override;
     BoundingBox boundingBox() override;
 };

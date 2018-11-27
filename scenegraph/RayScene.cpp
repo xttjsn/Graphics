@@ -275,7 +275,7 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
       glm::vec4(glm::normalize(glm::mat3(glm::transpose(modelInv)) * glm::vec3(normal)), 0);
 
     // Compute illumination
-    glm::vec4 color = calcLight(ray, intersect, normal);
+    glm::vec4 color = calcLight(ray, intersect, normal_worldSpace);
 
     // Get reflection coefficient
     glm::vec4 reflect_coef = intersect.transprim->primitive.material.cReflective;
@@ -321,7 +321,7 @@ glm::vec4 RayScene::calcLight(const Ray& ray, const Intersect& intersect, glm::v
 
     final += ambient;
 
-    vertexToEye = ray.start - intersect.pos;
+    vertexToEye = glm::normalize(ray.start - intersect.pos);
 
     for (CS123SceneLightData& light : m_lights) {
         switch (light.type) {

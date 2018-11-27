@@ -45,7 +45,7 @@ Intersect ImplicitSphere::intersect(const Ray& ray) {
     return Intersect(false, m_transform * glm::vec4(x, y, z, 1), best_t);
 }
 
-glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
+glm::vec4 ImplicitSphere::normal(const Intersect& intersect) {
     if (intersect.miss) return glm::vec4(0);
 
     glm::vec4 pos = intersect.pos, norm;
@@ -55,7 +55,7 @@ glm::vec4 ImplicitSphere::normal(Intersect& intersect) {
     return norm;
 }
 
-glm::vec2 ImplicitSphere::getUV(Intersect& intersect, float repeatU, float repeatV) {
+glm::vec2 ImplicitSphere::getUV(const Intersect& intersect, float repeatU, float repeatV) {
     if (intersect.miss) return glm::vec2(0);
 
     float u, v;

@@ -42,7 +42,7 @@ void ImplicitShape::setMaterial(const CS123SceneMaterial &material) {
     m_material = material;
 }
 
-glm::vec4 ImplicitShape::diffuseAtIntersect(Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) {
+glm::vec4 ImplicitShape::diffuseAtIntersect(const Intersect& intersect, CS123SceneLightData& light, CS123SceneGlobalData& global) {
     // Assume intersect is valid. We don't perform any test for its validity.
     if (intersect.miss) return glm::vec4(0);
 
