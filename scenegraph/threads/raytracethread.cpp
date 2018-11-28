@@ -20,7 +20,11 @@ void RayTraceThread::run() {
 
     for (int row = m_row; row < std::min(m_height, m_row + m_sz); row++)  {
         for (int col = m_col; col < std::min(m_width, m_col + m_sz); col++) {
-            m_rayscene->rayTrace(row, col, m_width, m_height, bgra);
+
+            if (settings.useSuperSampling && settings.numSuperSamples > 1)
+                bgra = m_rayscene->vec2bgra(m_rayscene->superSampleRayTrace(row, col, 1));
+            else
+                bgra = m_rayscene->vec2bgra(m_rayscene->rayTrace(row, col));
             *(m_data + row * m_width + col) = bgra;
             bgra = BGRA(0,0,0,255);
 
@@ -28,30 +32,6 @@ void RayTraceThread::run() {
     }
     // Call update
     m_canvas->update();
-
-    if (settings.useSuperSampling) {
-        float change, maxChange = 0.2;
-        BGRA LU, RU, LD, RD;
-        for (int row = m_row; row < std::min(m_height, m_row + m_sz) - 1; row++)  {
-            for (int col = m_col; col < std::min(m_width, m_col + m_sz) - 1; col++) {
-                LU = *(m_data + row * m_width + col);
-                RU = *(m_data + row * m_width + col + 1);
-                LD = *(m_data + (row + 1) * m_width + col);
-                RD = *(m_data + (row + 1) * m_width + col + 1);
-                change = bgraDifference(LU, RU, LD, RD);
-
-                float step = 0.5;
-                if (change > maxChange) {
-                    m_rayscene->rayTrace(row - step, col - step, m_width, m_height, LU);
-                    m_rayscene->rayTrace(row - step, col + step, m_width, m_height, RU);
-                    m_rayscene->rayTrace(row + step, col - step, m_width, m_height, LD);
-                    m_rayscene->rayTrace(row + step, col + step, m_width, m_height, RD);
-                    averageBGRA(LU, RU, LD, RD, bgra);
-                    *(m_data + row * m_width + col) = bgra;
-                }
-            }
-        }
-    }
 
     emit rayTraceFinish();
 }

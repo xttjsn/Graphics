@@ -237,6 +237,7 @@ void RayScene::trySplit(KDTreeNode * root, float& mincost, float& split, Axis ax
 void RayScene::render(SupportCanvas2D * canvas, Camera * camera){
     loadCameraMatrices(camera);
 
+    m_canvas = canvas;
     if (settings.useMultiThreading) {
         m_master = std::make_unique<RayTraceMaster>(this, canvas);
         m_master->start();
@@ -245,7 +246,12 @@ void RayScene::render(SupportCanvas2D * canvas, Camera * camera){
         int h = canvas->height(), w = canvas->width();
         for (int row = 0; row < h; row++)  {
             for (int col = 0; col < w; col++) {
-                rayTrace(row, col, w, h, bgra);
+
+                if (settings.useSuperSampling && settings.numSuperSamples > 1)
+                    bgra = vec2bgra(superSampleRayTrace(row, col, 1));
+                else
+                    bgra = vec2bgra(rayTrace(row, col));
+
                 *(data + row * w + col) = bgra;
                 bgra = BGRA(0,0,0,255);
             }
@@ -261,22 +267,65 @@ void RayScene::loadCameraMatrices(Camera * camera){
     m_scaleInv = glm::inverse(m_scale);
 }
 
-void RayScene::rayTrace(float row, float col, int width, int height, BGRA& bgra) {
+glm::vec4 RayScene::rayTrace(float row, float col) {
     // Generate ray in camera space, and then transform it into world space
     Ray ray;
 
-    glm::vec4 filmPixelPos = getFilmPixelPosition(row, col, width, height);
+    glm::vec4 filmPixelPos = getFilmPixelPosition(row, col, m_canvas->width(), m_canvas->height());
     filmPixelPos = m_viewInv * m_scaleInv * filmPixelPos;
     ray.start    = m_viewInv * glm::vec4(0, 0, 0, 1);
     ray.delta    = glm::normalize(filmPixelPos - ray.start);
 
     glm::vec4 color = rayTraceImpl(ray, 0);
 
-    bgra.r = FilterUtils::REAL2byte(color.r);
-    bgra.g = FilterUtils::REAL2byte(color.g);
-    bgra.b = FilterUtils::REAL2byte(color.b);
-    bgra.a = 255;
+    return color;
 } // RayScene::rayTrace
+
+glm::vec4 RayScene::superSampleRayTrace(float row, float col, int samplingLevel) {
+
+    // left up, left down, right up, right down
+    float step = glm::pow(0.5f, static_cast<float>(samplingLevel));
+    float lu_row = row - step, lu_col = col - step;
+    float ld_row = row + step, ld_col = col - step;
+    float ru_row = row - step, ru_col = col + step;
+    float rd_row = row + step, rd_col = col + step;
+
+    glm::vec4 center = superSampleRayTraceImpl(row, col);
+    glm::vec4 lu = superSampleRayTraceImpl(lu_row, lu_col);
+    glm::vec4 ld = superSampleRayTraceImpl(ld_row, ld_col);
+    glm::vec4 ru = superSampleRayTraceImpl(ru_row, ru_col);
+    glm::vec4 rd = superSampleRayTraceImpl(rd_row, rd_col);
+
+    m_color_map[std::make_pair(row, col)] = CENTER_WEIGHT * center +
+                                            SUB_WEIGHT * lu +
+                                            SUB_WEIGHT * ld +
+                                            SUB_WEIGHT * ru +
+                                            SUB_WEIGHT * rd;
+
+
+    if (samplingLevel < settings.numSuperSamples)
+        return m_color_map[std::make_pair(row, col)];
+
+    if (colorVariation(center, lu) > MAX_VARIATION)
+        lu = superSampleRayTrace(row - step / 2.f, col - step / 2.f, samplingLevel + 1);
+
+    if (colorVariation(center, ld) > MAX_VARIATION)
+        ld = superSampleRayTrace(row + step / 2.f, col - step / 2.f, samplingLevel + 1);
+
+    if (colorVariation(center, ru) > MAX_VARIATION)
+        ru = superSampleRayTrace(row - step / 2.f, col + step / 2.f, samplingLevel + 1);
+
+    if (colorVariation(center, rd) > MAX_VARIATION)
+        rd = superSampleRayTrace(row + step / 2.f, col + step / 2.f, samplingLevel + 1);
+
+    m_color_map[std::make_pair(row, col)] = CENTER_WEIGHT * center +
+                                            SUB_WEIGHT * lu +
+                                            SUB_WEIGHT * ld +
+                                            SUB_WEIGHT * ru +
+                                            SUB_WEIGHT * rd;
+
+    return m_color_map[std::make_pair(row, col)];
+}
 
 glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     // Try to find an intersection using kd-tree
@@ -320,6 +369,15 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     }
 
 
+    return color;
+}
+
+glm::vec4 RayScene::superSampleRayTraceImpl(float row, float col) {
+    if (m_color_map.find(std::make_pair(row, col)) != m_color_map.end())
+        return m_color_map[std::make_pair(row, col)];
+
+    glm::vec4 color = rayTrace(row, col);
+    m_color_map.emplace(std::make_pair(row, col), color);
     return color;
 }
 
@@ -617,4 +675,17 @@ glm::mat4x4 RayScene::boundingBoxToTransform(BoundingBox& bbox){
 
     glm::mat4x4 mat = glm::scale(glm::vec3(xs, ys, zs)) * glm::translate(glm::vec3(xc, yc, zc));
     return mat;
+}
+
+BGRA RayScene::vec2bgra(glm::vec4 color) {
+    BGRA bgra;
+    bgra.r = FilterUtils::REAL2byte(color.r);
+    bgra.g = FilterUtils::REAL2byte(color.g);
+    bgra.b = FilterUtils::REAL2byte(color.b);
+    bgra.a = 255;
+    return bgra;
+}
+
+float RayScene::colorVariation(glm::vec4 colorA, glm::vec4 colorB) {
+    return glm::distance(colorA, colorB);
 }

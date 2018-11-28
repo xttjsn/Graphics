@@ -19,6 +19,9 @@ const float RAY_OFFSET = 1e-3;
 const float MIN_REFLECT = 0.001;
 const int MAX_NUM_THREADS = 10;
 const int SUB_SIZE = 50;
+const float CENTER_WEIGHT = 0.5;
+const float SUB_WEIGHT = 0.125;
+const float MAX_VARIATION = 0.5;
 
 /**
  * @class RayScene
@@ -41,8 +44,10 @@ protected:
     void loadKDTree();
     void split(KDTreeNode* root);
     void trySplit(KDTreeNode* root, float& mincost, float& split, Axis axis);
-    void rayTrace(float row, float col, int width, int height, BGRA& bgra);
+    glm::vec4 rayTrace(float row, float col);
+    glm::vec4 superSampleRayTrace(float row, float col, int samplingLevel);
     glm::vec4 rayTraceImpl(Ray& ray, int recursionLevel);
+    glm::vec4 superSampleRayTraceImpl(float row, float col);
     bool getRefractRay(const Ray& incident_ray, const Intersect& intersect, Ray& refract_ray, float ior);
     void kdTreeIntersect(KDTreeNode* root, Ray& ray, Intersect& intersect);
     void naiveIntersect(Ray& ray, Intersect& intersect);
@@ -51,6 +56,8 @@ protected:
     void returnShapePointer(PrimitiveType type, ImplicitShape* shape);
     glm::vec4 getFilmPixelPosition(float row, float col, int width, int height);
     glm::mat4x4 boundingBoxToTransform(BoundingBox& bbox);
+    BGRA vec2bgra(glm::vec4 color);
+    float colorVariation(glm::vec4 colorA, glm::vec4 colorB);
 
     glm::vec4 calcLight(const Ray& ray, const Intersect& intersect);
     glm::vec4 getDiffuse(const Intersect& intersect);
@@ -77,6 +84,10 @@ protected:
     std::unique_ptr<RayTraceMaster> m_master;
 
     std::map<std::string, QImage> m_texture_images;
+    std::map<std::pair<float, float>, glm::vec4> m_color_map;
+
+    SupportCanvas2D *m_canvas;
+
 
 friend class RayTraceThread;
 };
