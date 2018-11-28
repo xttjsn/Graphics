@@ -297,12 +297,11 @@ glm::vec4 RayScene::rayTraceImpl(Ray& ray, int recursionLevel) {
     // Get refraction coefficient
     glm::vec4 transparent_coef = intersect.transprim->primitive.material.cTransparent;
 
-    if (transparent_coef.a != 0 && settings.useRefraction && recursionLevel < MAX_RECURSION) {
+    if (transparent_coef != glm::vec4(0) && settings.useRefraction && recursionLevel < MAX_RECURSION) {
         // We check for refraction only if the material is transparent
         Ray refract_ray;
         if (getRefractRay(ray, intersect, refract_ray, 1.0f / intersect.transprim->primitive.material.ior)) {
             // Not rotal reflection
-//            color *= (1.0f - transparent_coef.a);
             color += rayTraceImpl(refract_ray, recursionLevel + 1) * transparent_coef;
         }
     }
